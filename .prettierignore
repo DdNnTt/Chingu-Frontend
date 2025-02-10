@@ -1,0 +1,4 @@
+# Prettier 검사 제외 폴더
+node_modules
+.next
+out
