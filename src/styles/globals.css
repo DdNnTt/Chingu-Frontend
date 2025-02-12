@@ -1,0 +1,146 @@
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================
+  Point Colors
+============================================ */
+.main-color {
+  color: #6845F5;
+}
+.sub-color {
+  color: #AA96FC;
+}
+.point1-color {
+  color: #F6D094;
+}
+.point2-color {
+  color: #F5B2B2;
+}
+
+
+/* ============================================
+  Style Reset
+============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+html, body {
+  height: 100%;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif, 'Hakgyo-Black', 'Hakgyo-Outline';
+  background-color: #eee;
+  color: #161616;
+}
+html {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+body {
+  background-color: #fff;
+  max-width: 400px;
+  width: 100%;
+  height: 800px;
+  border-radius: 20px;
+}
+main, main > div {
+  height: 100%;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+
+/* ============================================
+  Point Fonts
+============================================ */
+.hakgyo-black {
+  font-family: 'Hakgyo-Black', sans-serif;
+}
+.hakgyo-outline {
+  font-family: 'Hakgyo-Outline', sans-serif;
+}
+
+/* ============================================
+Custom Fonts
+============================================ */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Thin.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-ExtraLight.ttf') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+}
+
+/* 학교 안심폰트 */
+@font-face {
+  font-family: 'Hakgyo-Black';
+  src: url('/fonts/Hakgyoansim-Puzzle-Black.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Hakgyo-Outline';
+  src: url('/fonts/Hakgyoansim-Puzzle-Outline.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
