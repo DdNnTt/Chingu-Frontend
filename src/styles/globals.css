@@ -1,4 +1,6 @@
-
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 
 
@@ -14,6 +16,9 @@
 ============================================ */
 .main-color {
   color: #6845F5;
+}
+.bg-main-color {
+  background-color: #6845F5;
 }
 .sub-color {
   color: #AA96FC;
