@@ -24,9 +24,9 @@ const meta = {
     value: { control: 'text', description: '입력 값' },
   },
   args: {
-    label: '이메일',
-    type: 'email',
-    placeholder: '이메일을 입력하세요',
+    label: '제목',
+    type: 'text',
+    placeholder: '제목을 입력하세요',
     value: '',
     onChange: () => {},
   },
