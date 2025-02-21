@@ -1,16 +1,79 @@
 name: Chromatic Deployment
 
-on: push
+on:
+  pull_request:
+    branches: ["main", "develop"]
+
+permissions:
+  contents: write
+  pages: write
+  deployments: write
+  id-token: write
+  issues: write
+  pull-requests: write
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
+  storybook-preview:
+    # 스토리북 수정이 될 경우에만 실행
+    if: contains(github.event.pull_request.head.ref, 'storybook') || contains(join(github.event.pull_request.commits.*.modified, ','), '.storybook') || contains(join(github.event.pull_request.commits.*.modified, ','), '.stories.tsx')
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v1
-      - run: yarn
-      - uses: chromaui/action@v1
+      # GitHub 저장소의 최신 코드 가져오기
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
-          #👇 Chromatic 프로젝트 토큰, 확인 방법: https://storybook.js.org/tutorials/intro-to-storybook/react/ko/deploy/
+          fetch-depth: 0
+
+      # 캐싱해서 빌드 속도 향상
+      - name: Cache Dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}-storybook
+
+      # 종속성 설치
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: yarn install
+
+      # Chromatic에 배포
+      - name: Publish to Chromatic
+        id: chromatic
+        uses: chromaui/action@v1
+        with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          onlyChanged: true
+          autoAcceptChanges: true
+
+      # Chromatic에서 배포된 Storybook URL을 환경변수에 저장하기
+      - name: Extract Storybook URL
+        run: echo "STORYBOOK_URL=$(cat .chromatic/url.txt)" >> $GITHUB_ENV
+
+      # 현재 시간을 가져와서 PR 코멘트에 추가
+      - name: Get Current Time
+        uses: josStorer/get-current-time@v2
+        id: current-time
+        with:
+          format: "YYYY-MM-DD HH:mm:ss"
+          utcOffset: "+09:00"
+
+    outputs:
+      # 다음 작업에서 사용할 출력값 설정
+      storybook_url: ${{ env.STORYBOOK_URL }}
+      current_time: ${{ steps.current-time.outputs.formattedTime }}
+
+  github-bot-storybook:
+    runs-on: ubuntu-latest
+    needs: [storybook-preview]
+    steps:
+      # PR에 Storybook 배포 결과를 자동으로 코멘트
+      - name: Comment on Pull Request
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          comment_tag: ${{ github.event.number }}-storybook
+          message: |
+            💄 **Storybook Preview Deployment Complete!**  
+            🔗 [View Storybook](${{ needs.storybook-preview.outputs.storybook_url }})  
+            🕖 Last Updated: ${{ needs.storybook-preview.outputs.current_time }}
