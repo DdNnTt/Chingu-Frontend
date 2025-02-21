@@ -47,7 +47,9 @@ jobs:
 
       # Chromatic에서 받은 URL을 환경 변수로 저장
       - name: Save Storybook URL to Environment
-        run: echo "STORYBOOK_URL=${{ steps.chromatic.outputs.webUrl }}" >> $GITHUB_ENV
+        run: |
+          echo "STORYBOOK_URL=${{ steps.chromatic.outputs.webUrl }}" >> $GITHUB_ENV
+          echo "Storybook URL: ${{ steps.chromatic.outputs.webUrl }}"
 
       # 현재 시간을 가져와서 PR 코멘트에 추가
       - name: Get Current Time
