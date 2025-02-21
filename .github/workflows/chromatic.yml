@@ -14,8 +14,6 @@ permissions:
 
 jobs:
   storybook-preview:
-    # 스토리북 수정이 될 경우에만 실행
-    if: contains(github.event.pull_request.head.ref, 'storybook') || contains(join(github.event.pull_request.commits.*.modified, ','), '.storybook') || contains(join(github.event.pull_request.commits.*.modified, ','), '.stories.tsx')
     runs-on: ubuntu-20.04
     steps:
       # GitHub 저장소의 최신 코드 가져오기
@@ -47,21 +45,17 @@ jobs:
           onlyChanged: true
           autoAcceptChanges: true
 
-      # Chromatic에서 배포된 Storybook URL을 환경변수에 저장하기
-      - name: Extract Storybook URL
-        run: echo "STORYBOOK_URL=$(cat .chromatic/url.txt)" >> $GITHUB_ENV
-
       # 현재 시간을 가져와서 PR 코멘트에 추가
       - name: Get Current Time
-        uses: josStorer/get-current-time@v2
         id: current-time
+        uses: josStorer/get-current-time@v2
         with:
           format: "YYYY-MM-DD HH:mm:ss"
           utcOffset: "+09:00"
 
     outputs:
-      # 다음 작업에서 사용할 출력값 설정
-      storybook_url: ${{ env.STORYBOOK_URL }}
+      # Chromatic Actions에서 제공되는 webUrl로 Storybook URL 가져오기
+      storybook_url: ${{ steps.chromatic.outputs.webUrl }}
       current_time: ${{ steps.current-time.outputs.formattedTime }}
 
   github-bot-storybook:
@@ -75,5 +69,5 @@ jobs:
           comment_tag: ${{ github.event.number }}-storybook
           message: |
             💄 **Storybook Preview Deployment Complete!**  
-            🔗 [View Storybook](${{ needs.storybook-preview.outputs.storybook_url }})  
+            🔗 **[View Storybook](${{ needs.storybook-preview.outputs.storybook_url }})**  
             🕖 Last Updated: ${{ needs.storybook-preview.outputs.current_time }}
