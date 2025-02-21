@@ -16,13 +16,13 @@ jobs:
   storybook-preview:
     runs-on: ubuntu-20.04
     steps:
-      # GitHub 저장소의 최신 코드 가져오기
+      # 최신 코드 체크아웃
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # 캐싱해서 빌드 속도 향상
+      # 캐싱
       - name: Cache Dependencies
         id: cache
         uses: actions/cache@v3
@@ -45,13 +45,14 @@ jobs:
           onlyChanged: true
           autoAcceptChanges: true
 
-      # Chromatic에서 받은 URL을 환경 변수로 저장
-      - name: Save Storybook URL to Environment
+      # Chromatic URL을 job outputs에 세팅
+      - name: Set Storybook URL
+        id: set-storybook-url
         run: |
-          echo "STORYBOOK_URL=${{ steps.chromatic.outputs.webUrl }}" >> $GITHUB_ENV
-          echo "Storybook URL: ${{ steps.chromatic.outputs.webUrl }}"
+          echo "storybook_url=${{ steps.chromatic.outputs.webUrl }}" >> $GITHUB_OUTPUT
+          echo "Storybook URL => ${{ steps.chromatic.outputs.webUrl }}"
 
-      # 현재 시간을 가져와서 PR 코멘트에 추가
+      # 현재 시간
       - name: Get Current Time
         id: current-time
         uses: josStorer/get-current-time@v2
@@ -60,24 +61,21 @@ jobs:
           utcOffset: "+09:00"
 
     outputs:
-      # 환경 변수에서 Storybook URL을 가져와서 저장
-      storybook_url: ${{ env.STORYBOOK_URL }}
+      # Set Storybook URL 단계에서 쓰인 storybook_url
+      storybook_url: ${{ steps.set-storybook-url.outputs.storybook_url }}
+      # 현재 시간
       current_time: ${{ steps.current-time.outputs.formattedTime }}
 
   github-bot-storybook:
     runs-on: ubuntu-latest
     needs: [storybook-preview]
     steps:
-      # 이전 Job에서 저장한 환경 변수를 로드
-      - name: Load Storybook URL
-        run: echo "STORYBOOK_URL=${{ needs.storybook-preview.outputs.storybook_url }}" >> $GITHUB_ENV
-
-      # PR에 Storybook 배포 결과를 자동으로 코멘트
+      # PR 코멘트
       - name: Comment on Pull Request
         uses: thollander/actions-comment-pull-request@v2
         with:
           comment_tag: ${{ github.event.number }}-storybook
           message: |
             💄 **Storybook Preview Deployment Complete!**  
-            🔗 **[View Storybook](${{ env.STORYBOOK_URL }})**  
+            🔗 **[View Storybook](${{ needs.storybook-preview.outputs.storybook_url }})**  
             🕖 Last Updated: ${{ needs.storybook-preview.outputs.current_time }}
