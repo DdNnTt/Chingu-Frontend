@@ -42,7 +42,7 @@ jobs:
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          onlyChanged: true
+          onlyChanged: false
           autoAcceptChanges: true
 
       # (디버깅) Chromatic에서 받은 URL을 로그로 출력
