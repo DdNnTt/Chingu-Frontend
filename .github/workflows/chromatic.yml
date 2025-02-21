@@ -3,6 +3,10 @@ name: Chromatic Deployment
 on:
   pull_request:
     branches: ["main", "develop"]
+    paths:
+      - ".storybook/**"
+      - "storybook-static/**"
+      - "src/app/components/common/**.stories.tsx"
 
 permissions:
   contents: write
