@@ -49,8 +49,8 @@ jobs:
       - name: Set Storybook URL
         id: set-storybook-url
         run: |
-          echo "storybook_url=${{ steps.chromatic.outputs.webUrl }}" >> $GITHUB_OUTPUT
-          echo "Storybook URL => ${{ steps.chromatic.outputs.webUrl }}"
+          echo "storybook_url=${{ steps.chromatic.outputs.storybookUrl }}" >> $GITHUB_OUTPUT
+          echo "Storybook URL => ${{ steps.chromatic.outputs.storybookUrl }}"
 
       # 현재 시간
       - name: Get Current Time
