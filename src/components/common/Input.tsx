@@ -13,7 +13,6 @@ const Input: React.FC<InputProps> = ({ label, className, ...props }) => {
       >
         {label}
       </label>
-
       <input
         id={label}
         className={`mt-1 block w-full px-3 py-2 border bg-[#f3f3f5] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-300 ${className}`}
