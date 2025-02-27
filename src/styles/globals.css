@@ -58,12 +58,22 @@
 .sub-color {
   color: #AA96FC;
 }
+.bg-sub-color {
+  background-color: #AA96FC;
+}
 .point1-color {
   color: #F6D094;
+}
+.bg-point1-color {
+  background-color: #F6D094;
 }
 .point2-color {
   color: #F5B2B2;
 }
+.bg-point2-color {
+  background-color: #F5B2B2;
+}
+
 
 
 /* ============================================
