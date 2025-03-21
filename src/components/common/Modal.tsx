@@ -1,7 +1,7 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, HTMLAttributes } from 'react';
 import Button from './Button';
 
-interface ModalProps {
+interface ModalProps extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean;
   onClose: () => void;
   title: string;
@@ -10,6 +10,8 @@ interface ModalProps {
   cancelLabel?: string;
   onSubmit?: () => void;
   size?: 'sm' | 'md' | 'lg';
+  hideFooter?: boolean;
+  contentClassName?: string;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -21,6 +23,10 @@ const Modal: React.FC<ModalProps> = ({
   cancelLabel = '취소',
   onSubmit,
   size = 'md',
+  hideFooter = false,
+  className = '',
+  contentClassName = '',
+  ...props
 }) => {
   if (!isOpen) return null;
 
@@ -31,30 +37,37 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className={`bg-white rounded-lg p-6 w-[90%] ${sizeClasses[size]}`}>
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      {...props}
+    >
+      <div
+        className={`bg-white rounded-lg p-6 w-[90%] ${sizeClasses[size]} ${className}`}
+      >
         <h2 className="text-xl font-semibold mb-4">{title}</h2>
 
-        <div className="modal-content">{children}</div>
+        <div className={`modal-content ${contentClassName}`}>{children}</div>
 
-        <div className="flex gap-2 mt-6">
-          <Button
-            type="button"
-            className="flex-1 bg-gray-500 text-white"
-            onClick={onClose}
-          >
-            {cancelLabel}
-          </Button>
-          {onSubmit && (
+        {!hideFooter && (
+          <div className="flex gap-2 mt-6">
             <Button
               type="button"
-              className="flex-1 text-white"
-              onClick={onSubmit}
+              className="flex-1 bg-gray-500 text-white"
+              onClick={onClose}
             >
-              {submitLabel}
+              {cancelLabel}
             </Button>
-          )}
-        </div>
+            {onSubmit && (
+              <Button
+                type="button"
+                className="flex-1 text-white"
+                onClick={onSubmit}
+              >
+                {submitLabel}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
