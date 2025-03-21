@@ -5,7 +5,7 @@ on:
     branches: ["main", "develop"]
     paths:
       - ".storybook/**"
-      - "src/app/components/common/**.stories.tsx"
+      - "src/components/common/**.stories.tsx"
 
 permissions:
   contents: write
