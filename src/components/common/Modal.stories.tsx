@@ -25,14 +25,6 @@ const meta = {
       description: '모달의 제목',
       control: 'text',
     },
-    size: {
-      description: '모달의 크기',
-      control: 'radio',
-      options: ['sm', 'md', 'lg'],
-      table: {
-        type: { summary: "'sm' | 'md' | 'lg'" },
-      },
-    },
     submitLabel: {
       description: '확인 버튼의 텍스트',
       control: 'text',
@@ -51,7 +43,6 @@ const meta = {
   args: {
     isOpen: true,
     title: '기본 모달',
-    size: 'md',
     submitLabel: '확인',
     cancelLabel: '취소',
     hideFooter: false,
