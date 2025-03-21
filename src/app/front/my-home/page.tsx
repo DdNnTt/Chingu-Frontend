@@ -1,8 +1,22 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
+import ScheduleModal from '@/components/schedule/ScheduleModal';
+import { useState } from 'react';
 
 export default function MyHome() {
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+
+  const handleOpenScheduleModal = () => {
+    setIsScheduleModalOpen(true);
+  };
+
+  const handleCloseScheduleModal = () => {
+    setIsScheduleModalOpen(false);
+  };
+
   return (
     <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
       <h2 className="text-2xl font-semibold mb-6 text-center">마이 홈</h2>
@@ -38,7 +52,11 @@ export default function MyHome() {
           </span>
         </Link>
 
-        <Button type="button" className="flex-1 text-white">
+        <Button
+          type="button"
+          className="flex-1 text-white"
+          onClick={handleOpenScheduleModal}
+        >
           일정 등록
         </Button>
       </div>
@@ -60,6 +78,11 @@ export default function MyHome() {
           더보기
         </Button>
       </div>
+
+      <ScheduleModal
+        isOpen={isScheduleModalOpen}
+        onClose={handleCloseScheduleModal}
+      />
     </div>
   );
 }
