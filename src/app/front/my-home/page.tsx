@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
-import ScheduleModal from '@/components/schedule/ScheduleModal';
+import ScheduleModal from '@/components/my-home/ScheduleModal';
 import { useState } from 'react';
 
 export default function MyHome() {

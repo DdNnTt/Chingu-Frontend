@@ -54,7 +54,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose }) => {
             일정 설명
           </label>
           <textarea
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 resize-none"
             rows={3}
             placeholder="일정에 대한 설명을 입력하세요"
             value={description}
