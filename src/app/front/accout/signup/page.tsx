@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import Input from '../../../../components/common/Input';
-import Button from '../../../../components/common/Button';
+import Input from '@/components/common/Input';
+import Button from '@/components/common/Button';
 
 export default function Signup() {
   const handleSubmit = (e: React.FormEvent) => {
