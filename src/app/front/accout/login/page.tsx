@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import Input from '../../../../components/common/Input';
-import Button from '../../../../components/common/Button';
+import Input from '@/components/common/Input';
+import Button from '@/components/common/Button';
 import Link from 'next/link';
 
 export default function Login() {
@@ -65,17 +65,17 @@ export default function Login() {
           </Button>
           <Link
             href="signup"
-            className="flex-1 bg-main-color text-white px-4 py-3 rounded w-full text-center"
+            className="flex-1 bg-main-color text-white px-4 py-3 rounded-md w-full text-center"
           >
             회원가입
           </Link>
         </div>
       </form>
       <div className="social-login-wrap mt-28">
-        <div className="border border-[#6845F5] text-sm px-2 py-2 rounded w-full text-center">
+        <div className="border border-[#6845F5] text-sm px-2 py-2 rounded-md w-full text-center">
           Google 로그인
         </div>
-        <div className="border border-[#6845F5] text-sm px-2 py-2 rounded w-full text-center mt-2">
+        <div className="border border-[#6845F5] text-sm px-2 py-2 rounded-md w-full text-center mt-2">
           Kakao 로그인
         </div>
       </div>
