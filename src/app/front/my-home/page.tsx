@@ -31,9 +31,12 @@ export default function MyHome() {
         />
         <div className="profile-info">
           <h3 className="text-lg font-semibold">닉네임</h3>
-          <p className="text-sm text-gray-500">
+          <Link
+            href="/front/my-home/friend-list"
+            className="text-sm text-gray-500 hover:text-gray-700"
+          >
             친구 수 <span>20</span>
-          </p>
+          </Link>
         </div>
       </div>
 
