@@ -10,7 +10,7 @@ import Link from 'next/link';
 
 // Zod 스키마 정의
 const LoginSchema = z.object({
-  id: z.string().min(1, '아이디는 필수입니다'),
+  id: z.string().min(5, '아이디는 필수입니다'),
   password: z
     .string()
     .min(6, '비밀번호는 최소 6자 이상이어야 합니다')
