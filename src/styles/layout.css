@@ -1,0 +1,17 @@
+/* ============================================
+  로그인, 회원가입 레이아웃웃
+============================================ */
+/* 인풋 + 버튼 */
+.flex-btn {
+  align-items: stretch;
+}
+.flex-btn .mb-4 {
+  width: 100%;
+  margin: 0;
+}
+.flex-btn .mb-4 input {
+  margin: 0;
+}
+.flex-btn .mb-4 + button {
+  min-width: 120px;
+}
