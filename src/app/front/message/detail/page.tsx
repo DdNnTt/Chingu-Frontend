@@ -14,6 +14,15 @@ export default function MessageDetail() {
     date: '2025.04.24',
   };
 
+  const handleDelete = () => {
+    const isConfirmed = confirm('쪽지를 삭제하시겠습니까?');
+
+    if (isConfirmed) {
+      alert('해당 쪽지가 삭제되었습니다.');
+      router.push('/front/message/list');
+    }
+  };
+
   return (
     <div className="flex flex-col bg-gray-100 overflow-hidden">
       <div className="bg-white p-4 flex items-center border-b">
@@ -38,13 +47,13 @@ export default function MessageDetail() {
       <div className="bg-white p-4 flex gap-4 border-t">
         <button
           className="flex-1 py-2 text-center bg-gray-200 rounded-lg"
-          onClick={() => router.back()}
+          onClick={handleDelete}
         >
           삭제
         </button>
         <button
           className="flex-1 py-2 text-center bg-main-color text-white rounded-lg"
-          onClick={() => router.back()}
+          onClick={() => router.push('/front/message/list')}
         >
           목록
         </button>
