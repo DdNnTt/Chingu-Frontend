@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function MessageList() {
-  const [activeTab, setActiveTab] = useState('sent'); // 'sent' or 'received'
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState('sent');
 
   const messages = [
     {
@@ -53,7 +55,13 @@ export default function MessageList() {
 
       <div className="space-y-2">
         {messages.map((message) => (
-          <div key={message.id} className="bg-white p-4 rounded-lg shadow-sm">
+          <div
+            key={message.id}
+            className="bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50"
+            onClick={() =>
+              router.push(`/front/message/detail?id=${message.id}`)
+            }
+          >
             <div className="text-gray-600 text-sm">
               {activeTab === 'sent' ? '받는 사람 ' : '보낸 사람 '}
               <span className="main-color">{message.sender}</span>
