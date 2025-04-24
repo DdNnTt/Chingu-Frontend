@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import Button from '@/components/common/Button';
 
 export default function MessageDetail() {
   const router = useRouter();
@@ -44,19 +45,23 @@ export default function MessageDetail() {
         </div>
       </div>
 
-      <div className="bg-white p-4 flex gap-4 border-t">
-        <button
-          className="flex-1 py-2 text-center bg-gray-200 rounded-lg"
+      <div className="bg-white p-4 flex gap-2 border-t">
+        <Button
+          type="button"
+          variant="secondary"
+          className="flex-1"
           onClick={handleDelete}
         >
           삭제
-        </button>
-        <button
-          className="flex-1 py-2 text-center bg-main-color text-white rounded-lg"
+        </Button>
+        <Button
+          type="button"
+          variant="primary"
+          className="flex-1"
           onClick={() => router.push('/front/message/list')}
         >
           목록
-        </button>
+        </Button>
       </div>
     </div>
   );

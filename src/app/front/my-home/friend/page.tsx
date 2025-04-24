@@ -1,7 +1,16 @@
+'use client';
+
 import Image from 'next/image';
 import Button from '@/components/common/Button';
+import { useRouter } from 'next/navigation';
 
 export default function MyHomeFriend() {
+  const router = useRouter();
+
+  const handleSendMessage = () => {
+    router.push('/front/message/write');
+  };
+
   return (
     <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
       <h2 className="text-2xl font-semibold mb-6 text-center">친구 마이 홈</h2>
@@ -35,7 +44,11 @@ export default function MyHomeFriend() {
         <Button type="button" className="flex-1 text-white">
           친구 끊기
         </Button>
-        <Button type="button" className="flex-1 text-white">
+        <Button
+          type="button"
+          className="flex-1 text-white"
+          onClick={handleSendMessage}
+        >
           쪽지 보내기
         </Button>
       </div>
