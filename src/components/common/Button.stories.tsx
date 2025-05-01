@@ -8,12 +8,21 @@ const meta = {
     layout: 'centered',
     docs: {
       description: {
-        component: '기본 button 컴포넌트 입니다.',
+        component: '기본 button 컴포넌트입니다.',
       },
     },
   },
   tags: ['autodocs'],
   argTypes: {
+    variant: {
+      description: '버튼의 스타일 variant',
+      control: 'radio',
+      options: ['primary', 'secondary'],
+      table: {
+        type: { summary: "'primary' | 'secondary'" },
+        defaultValue: { summary: 'primary' },
+      },
+    },
     type: {
       description: '버튼의 타입',
       control: 'radio',
@@ -24,7 +33,7 @@ const meta = {
     },
     onClick: { action: 'clicked' },
     className: {
-      description: 'Tailwind CSS 클래스 적용 테스트',
+      description: 'Tailwind CSS 클래스 추가 적용',
       control: 'text',
     },
     children: {
@@ -34,8 +43,8 @@ const meta = {
   },
   args: {
     type: 'button',
-    className: 'bg-gray-500 text-white px-4 py-2 rounded-md',
-    children: '기본 버튼',
+    variant: 'primary',
+    children: '버튼',
   },
 } satisfies Meta<typeof Button>;
 
@@ -43,9 +52,24 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Primary: Story = {
   args: {
-    className: 'bg-gray-500 text-white px-4 py-2 rounded-md',
-    children: '기본 버튼',
+    variant: 'primary',
+    children: '확인',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: 'secondary',
+    children: '취소',
+  },
+};
+
+export const CustomClassName: Story = {
+  args: {
+    variant: 'primary',
+    className: 'w-full max-w-xs',
+    children: '커스텀 클래스 적용',
   },
 };
