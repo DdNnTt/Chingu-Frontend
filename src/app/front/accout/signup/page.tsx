@@ -201,7 +201,7 @@ export default function Signup() {
         {/* 취소 버튼 / 회원가입 */}
         <div className="flex items-center justify-center gap-1.5 mt-10">
           <Link
-            href="login"
+            href="/front/accout/login"
             className="flex-1 bg-main-color text-white px-4 py-3 rounded-md w-full text-center"
           >
             취소
