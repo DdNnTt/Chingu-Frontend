@@ -17,6 +17,10 @@ export default function MyHome() {
     setIsScheduleModalOpen(false);
   };
 
+  const handleScheduleSuccess = () => {
+    alert('일정이 성공적으로 등록되었습니다.');
+  };
+
   return (
     <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
       <h2 className="text-2xl font-semibold mb-6 text-center">마이 홈</h2>
@@ -85,6 +89,7 @@ export default function MyHome() {
       <ScheduleModal
         isOpen={isScheduleModalOpen}
         onClose={handleCloseScheduleModal}
+        onSuccess={handleScheduleSuccess}
       />
     </div>
   );
