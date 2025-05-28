@@ -81,6 +81,7 @@ export default function CheckableInput<T extends FieldValues>({
         <Input
           type="text"
           placeholder={placeholder}
+          autoComplete="off"
           {...register(name as Path<T>)}
           className="flex-1 px-3 py-2 border rounded-md"
         />

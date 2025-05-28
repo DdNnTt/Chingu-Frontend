@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
     `${API_BASE}/api/auth/email/confirm?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`,
     {
       method: 'POST',
+      credentials: 'include', // 인증번호 요청과 확인 시 동일한 쿠키/세션 유지 필요
       headers: {
         'Content-Type': 'application/json',
       },
