@@ -1,25 +1,12 @@
 import { NextResponse } from 'next/server';
 
 // 그룹 스케줄 등록
-export async function POST(
-  request: Request,
-  { params }: { params: { groupId: string } }
-) {
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { title, description, scheduleDate } = body;
-    const { groupId } = params;
+    await request.json(); // 요청 데이터 검증용
 
-    // TODO: 실제 데이터베이스 연동
-    // 임시 응답
     return NextResponse.json(
-      {
-        id: 1,
-        groupId,
-        title,
-        description,
-        scheduleDate,
-      },
+      { message: '그룹 스케줄이 등록되었습니다.' },
       { status: 201 }
     );
   } catch {
@@ -31,31 +18,9 @@ export async function POST(
 }
 
 // 그룹 스케줄 목록 조회
-export async function GET(
-  request: Request,
-  { params }: { params: { groupId: string } }
-) {
+export async function GET() {
   try {
-    const { groupId } = params;
-
-    // TODO: 실제 데이터베이스 연동
-    // 임시 응답
-    return NextResponse.json([
-      {
-        id: 1,
-        groupId,
-        title: '그룹 미팅',
-        description: '월간 회고 미팅',
-        scheduleDate: '2024-03-20',
-      },
-      {
-        id: 2,
-        groupId,
-        title: '그룹 점심',
-        description: '팀 점심 모임',
-        scheduleDate: '2024-03-21',
-      },
-    ]);
+    return NextResponse.json({ message: '그룹 스케줄 목록을 조회합니다.' });
   } catch {
     return NextResponse.json(
       { error: '그룹 스케줄 조회에 실패했습니다.' },
