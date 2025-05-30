@@ -17,8 +17,45 @@ export default function MyHome() {
     setIsScheduleModalOpen(false);
   };
 
+  // 가라 데이터 추가
+  const mockSchedules = [
+    {
+      id: 1,
+      title: '팀 미팅',
+      scheduleDate: '2024-03-20',
+    },
+    {
+      id: 2,
+      title: '프로젝트 기획 회의',
+      scheduleDate: '2024-03-22',
+    },
+    {
+      id: 3,
+      title: '클라이언트 미팅',
+      scheduleDate: '2024-03-25',
+    },
+    {
+      id: 4,
+      title: '주간 회고',
+      scheduleDate: '2024-03-27',
+    },
+    {
+      id: 5,
+      title: '신규 프로젝트 미팅',
+      scheduleDate: '2024-03-29',
+    },
+  ];
+
+  // 최신 3개의 일정만 표시
+  const recentSchedules = mockSchedules
+    .sort(
+      (a, b) =>
+        new Date(b.scheduleDate).getTime() - new Date(a.scheduleDate).getTime()
+    )
+    .slice(0, 3);
+
   return (
-    <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 h-[calc(100vh-5rem)] overflow-y-auto">
       <h2 className="text-2xl font-semibold mb-6 text-center">마이 홈</h2>
 
       <div className="profile-card flex items-center mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
@@ -64,8 +101,19 @@ export default function MyHome() {
         </Button>
       </div>
 
-      <div className="schedule-calendar bg-white p-6 rounded-lg shadow-sm mb-4 text-center text-gray-500">
-        일정 캘린더가 들어갈 부분
+      <div className="schedule-calendar bg-white p-6 rounded-lg shadow-sm mb-4">
+        <h2 className="text-lg font-semibold mb-4">나의 일정</h2>
+        <div className="space-y-2">
+          {recentSchedules.map((schedule) => (
+            <div
+              key={schedule.id}
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+            >
+              <span className="font-medium">{schedule.title}</span>
+              <span className="text-gray-600">{schedule.scheduleDate}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="my-groups bg-white p-4 rounded-lg shadow-sm">
