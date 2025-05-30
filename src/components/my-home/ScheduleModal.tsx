@@ -1,18 +1,48 @@
 import React, { useState } from 'react';
 import Modal from '@/components/common/Modal';
+import { AxiosError } from 'axios';
+import instance from '@/libs/axios';
 
 interface ScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+interface ApiErrorResponse {
+  error: string;
+}
+
 const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose }) => {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [description, setDescription] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    onClose();
+  const handleSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+
+      const { data } = await instance.post('/api/schedules', {
+        title,
+        description,
+        scheduleDate: date,
+      });
+
+      alert(data.message);
+      setTitle('');
+      setDate('');
+      setDescription('');
+      onClose();
+    } catch (error) {
+      console.error('일정 생성 중 오류 발생:', error);
+      const axiosError = error as AxiosError<ApiErrorResponse>;
+      const errorMessage =
+        axiosError.response?.data?.error ||
+        '일정 등록에 실패했습니다. 다시 시도해주세요.';
+      alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -20,7 +50,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose }) => {
       isOpen={isOpen}
       onClose={onClose}
       title="일정 등록"
-      submitLabel="등록"
+      submitLabel={isSubmitting ? '등록 중...' : '등록'}
       onSubmit={handleSubmit}
     >
       <div className="space-y-4">
@@ -34,6 +64,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose }) => {
             placeholder="일정 제목을 입력하세요"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -46,6 +77,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose }) => {
             className="w-full border border-gray-300 rounded-md px-3 py-2"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -59,6 +91,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose }) => {
             placeholder="일정에 대한 설명을 입력하세요"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            disabled={isSubmitting}
           />
         </div>
       </div>
