@@ -4,10 +4,39 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
 import ScheduleModal from '@/components/my-home/ScheduleModal';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from '@/libs/axios';
+
+interface Schedule {
+  id: number;
+  title: string;
+  scheduleDate: string;
+}
 
 export default function MyHome() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // 일정 목록 조회
+  const fetchSchedules = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      const response = await axios.get('/api/schedules');
+      setSchedules(response.data);
+    } catch (err) {
+      setError('일정을 불러오는데 실패했습니다.');
+      console.error('일정 조회 실패:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSchedules();
+  }, []);
 
   const handleOpenScheduleModal = () => {
     setIsScheduleModalOpen(true);
@@ -15,39 +44,12 @@ export default function MyHome() {
 
   const handleCloseScheduleModal = () => {
     setIsScheduleModalOpen(false);
+    // 모달이 닫힐 때 일정 목록 새로고침
+    fetchSchedules();
   };
 
-  // 가라 데이터 추가
-  const mockSchedules = [
-    {
-      id: 1,
-      title: '팀 미팅',
-      scheduleDate: '2024-03-20',
-    },
-    {
-      id: 2,
-      title: '프로젝트 기획 회의',
-      scheduleDate: '2024-03-22',
-    },
-    {
-      id: 3,
-      title: '클라이언트 미팅',
-      scheduleDate: '2024-03-25',
-    },
-    {
-      id: 4,
-      title: '주간 회고',
-      scheduleDate: '2024-03-27',
-    },
-    {
-      id: 5,
-      title: '신규 프로젝트 미팅',
-      scheduleDate: '2024-03-29',
-    },
-  ];
-
   // 최신 3개의 일정만 표시
-  const recentSchedules = mockSchedules
+  const recentSchedules = schedules
     .sort(
       (a, b) =>
         new Date(b.scheduleDate).getTime() - new Date(a.scheduleDate).getTime()
@@ -103,17 +105,27 @@ export default function MyHome() {
 
       <div className="schedule-calendar bg-white p-6 rounded-lg shadow-sm mb-4">
         <h2 className="text-lg font-semibold mb-4">나의 일정</h2>
-        <div className="space-y-2">
-          {recentSchedules.map((schedule) => (
-            <div
-              key={schedule.id}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-            >
-              <span className="font-medium">{schedule.title}</span>
-              <span className="text-gray-600">{schedule.scheduleDate}</span>
-            </div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="text-center text-gray-500">일정을 불러오는 중...</div>
+        ) : error ? (
+          <div className="text-center text-red-500">{error}</div>
+        ) : recentSchedules.length === 0 ? (
+          <div className="text-center text-gray-500">
+            등록된 일정이 없습니다.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {recentSchedules.map((schedule) => (
+              <div
+                key={schedule.id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <span className="font-medium">{schedule.title}</span>
+                <span className="text-gray-600">{schedule.scheduleDate}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="my-groups bg-white p-4 rounded-lg shadow-sm">
