@@ -16,6 +16,7 @@
   padding: 24px 40px;
   border-radius: 16px;
   background: #6845f5;
+  border: 1px solid rgb(255 255 255 / 50%);
   box-shadow: 0 7px 15px 0px rgba(0, 0, 0, 0.2);
   z-index: 10;
   opacity: 1;
