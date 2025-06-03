@@ -4,9 +4,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
 import ScheduleModal from '@/components/my-home/ScheduleModal';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function MyHome() {
+  const [nickname, setNickname] = useState('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   const handleOpenScheduleModal = () => {
@@ -16,6 +17,29 @@ export default function MyHome() {
   const handleCloseScheduleModal = () => {
     setIsScheduleModalOpen(false);
   };
+
+  // 로그인 후 닉네임 노출
+  function parseJwt(token: string) {
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    const payload = parseJwt(token);
+    // console.log('[토큰 payload]', payload);
+
+    if (payload?.nickname) {
+      setNickname(payload.nickname);
+    } else if (payload?.sub) {
+      setNickname(payload.sub);
+    }
+  }, []);
 
   return (
     <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
@@ -30,7 +54,8 @@ export default function MyHome() {
           className="object-cover rounded-full border border-gray-300"
         />
         <div className="profile-info">
-          <h3 className="text-lg font-semibold">닉네임</h3>
+          {/* <h3 className="text-lg font-semibold">닉네임</h3> */}
+          <h3 className="text-lg font-semibold">{nickname || '닉네임'}</h3>
           <Link
             href="/front/my-home/friend-list"
             className="text-sm text-gray-500 hover:text-gray-700"
