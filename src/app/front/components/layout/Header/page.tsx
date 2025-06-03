@@ -4,21 +4,30 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search } from 'lucide-react'; // 아이콘 라이브러리 (lucide-react)
+import { Search } from 'lucide-react';
 
 export default function Header() {
   const router = useRouter();
   const [nickname, setNickname] = useState('');
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
+    // localStorage 우선
+    const storedNickname = localStorage.getItem('nickname');
+    if (storedNickname) {
+      setNickname(storedNickname);
+    }
+
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      setNickname(payload?.nickname || payload?.sub || '');
+      setNickname(payload?.nickname || storedNickname || '');
+      setUserId(payload?.sub || '');
     } catch {
-      setNickname('');
+      setNickname(storedNickname || '');
+      setUserId('');
     }
   }, []);
 
@@ -30,7 +39,7 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full bg-white shadow-sm px-4 py-3 flex justify-between items-center">
+    <header className="absolute top-0 w-full z-50 bg-white shadow-sm px-4 py-3 flex justify-between items-center">
       {/* 로고 */}
       <Link href="/front/my-home" className="text-xl font-bold text-main-color">
         <Image
@@ -44,9 +53,9 @@ export default function Header() {
 
       {/* 프로필 / 검색 / 로그아웃 */}
       <div className="flex items-center gap-3">
-        {nickname && (
+        {(nickname || userId) && (
           <span className="text-sm text-gray-700">
-            👋 {nickname}님 (로그인여부체크)
+            👋 {nickname} ({userId})님
           </span>
         )}
 
@@ -54,7 +63,7 @@ export default function Header() {
         <button
           type="button"
           className="hover:text-main-color text-gray-700"
-          onClick={() => router.push('/front/search')} // 예: 검색 페이지 경로
+          onClick={() => router.push('/front/search')}
         >
           <Search size={20} />
         </button>

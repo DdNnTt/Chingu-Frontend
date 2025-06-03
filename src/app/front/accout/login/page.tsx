@@ -82,9 +82,12 @@ export default function Login() {
         password: data.password,
       });
 
-      const { accessToken, tokenType } = response.data;
+      const { accessToken, tokenType, nickname } = response.data;
+
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('tokenType', tokenType);
+      localStorage.setItem('nickname', nickname); // ✅ 여기로 이동
+
       router.push('/front/my-home');
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {

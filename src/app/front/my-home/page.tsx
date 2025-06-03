@@ -28,12 +28,18 @@ export default function MyHome() {
   }
 
   useEffect(() => {
+    // 1순위: localStorage의 nickname 사용
+    const storedNickname = localStorage.getItem('nickname');
+    if (storedNickname) {
+      setNickname(storedNickname);
+      return;
+    }
+
+    // 2순위: accessToken payload에서 nickname 추출
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
     const payload = parseJwt(token);
-    // console.log('[토큰 payload]', payload);
-
     if (payload?.nickname) {
       setNickname(payload.nickname);
     } else if (payload?.sub) {
