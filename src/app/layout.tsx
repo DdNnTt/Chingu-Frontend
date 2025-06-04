@@ -16,6 +16,8 @@ export default function RootLayout({
   const hideHeader =
     pathname === '/' ||
     pathname === '/front/accout/login' ||
+    pathname === '/front/accout/find-id' ||
+    pathname === '/front/accout/find-pw' ||
     pathname === '/front/accout/signup';
 
   return (
