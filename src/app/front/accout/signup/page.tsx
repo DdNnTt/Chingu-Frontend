@@ -8,6 +8,7 @@ import Input from '@/components/common/Input';
 import CheckableInput from '@/components/common/CheckableInput';
 import Button from '@/components/common/Button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import EmailVerificationInput from '@/components/common/EmailVerificationInput';
 
 // Zod 스키마 정의
@@ -44,6 +45,7 @@ const SignUpSchema = z
 type SignUpFormValues = z.infer<typeof SignUpSchema>;
 
 export default function Signup() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -107,7 +109,7 @@ export default function Signup() {
       }
 
       alert('회원가입이 완료되었습니다!');
-      // router.push('/front/accout/login');
+      router.push('/front/accout/login');
     } catch (error) {
       console.error('[회원가입 요청 오류]', error);
       alert('서버 오류가 발생했습니다.');
