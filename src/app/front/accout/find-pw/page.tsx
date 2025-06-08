@@ -38,7 +38,7 @@ export default function FindPasswordPage() {
     if (!data.emailVerified) return;
 
     router.push(
-      `/front/accout/change-pw?email=${encodeURIComponent(data.email)}`
+      `/front/accout/change-pw?email=${encodeURIComponent(data.email)}&code=${encodeURIComponent(data.confirmCode)}`
     );
   };
 

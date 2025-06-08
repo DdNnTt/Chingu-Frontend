@@ -9,7 +9,6 @@ import Button from '@/components/common/Button';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// 유효성 검사 스키마
 const ChangePwSchema = z
   .object({
     newPassword: z.string().min(6, '새 비밀번호는 최소 6자 이상이어야 합니다.'),
@@ -25,6 +24,7 @@ type ChangePwFormValues = z.infer<typeof ChangePwSchema>;
 export default function ChangePasswordPage() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
+  const code = searchParams.get('code');
   const router = useRouter();
 
   const {
@@ -39,11 +39,11 @@ export default function ChangePasswordPage() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    if (!email) {
-      alert('잘못된 접근입니다.');
-      router.replace('/front/login');
+    if (!email || !code) {
+      alert('잘못된 접근입니다. 이메일 인증을 다시 진행해주세요.');
+      router.replace('/front/account/find-pw');
     }
-  }, [email, router]);
+  }, [email, code, router]);
 
   const onSubmit = async (data: ChangePwFormValues) => {
     try {
@@ -53,10 +53,11 @@ export default function ChangePasswordPage() {
       const res = await axios.post('/api/auth/email/password/reset', {
         email,
         newPassword: data.newPassword,
+        code, // ✅ 인증번호도 함께 전송
       });
 
       setMessage(res.data?.message || '비밀번호가 변경되었습니다.');
-      setTimeout(() => router.push('/front/login'), 2000);
+      setTimeout(() => router.push('/front/accout/login'), 2000);
     } catch (err: unknown) {
       console.error('[비밀번호 변경 오류]', err);
       if (axios.isAxiosError(err)) {

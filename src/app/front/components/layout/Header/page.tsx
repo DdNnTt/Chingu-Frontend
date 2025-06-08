@@ -5,31 +5,32 @@ import Image from 'next/image';
 // import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function Header() {
   const router = useRouter();
-  // const [nickname, setNickname] = useState('');
-  // const [userId, setUserId] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [userId, setUserId] = useState('');
 
-  // useEffect(() => {
-  //   // localStorage 우선
-  //   const storedNickname = localStorage.getItem('nickname');
-  //   if (storedNickname) {
-  //     setNickname(storedNickname);
-  //   }
+  useEffect(() => {
+    // localStorage 우선
+    const storedNickname = localStorage.getItem('nickname');
+    if (storedNickname) {
+      setNickname(storedNickname);
+    }
 
-  //   const token = localStorage.getItem('accessToken');
-  //   if (!token) return;
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
 
-  //   try {
-  //     const payload = JSON.parse(atob(token.split('.')[1]));
-  //     setNickname(payload?.nickname || storedNickname || '');
-  //     setUserId(payload?.sub || '');
-  //   } catch {
-  //     setNickname(storedNickname || '');
-  //     setUserId('');
-  //   }
-  // }, []);
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      setNickname(payload?.nickname || storedNickname || '');
+      setUserId(payload?.sub || '');
+    } catch {
+      setNickname(storedNickname || '');
+      setUserId('');
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -53,11 +54,11 @@ export default function Header() {
 
       {/* 프로필 / 검색 / 로그아웃 */}
       <div className="flex items-center gap-3">
-        {/* {(nickname || userId) && (
+        {(nickname || userId) && (
           <span className="text-sm text-gray-700">
             👋 {nickname} ({userId})님
           </span>
-        )} */}
+        )}
 
         {/* 검색 아이콘 */}
         <button
