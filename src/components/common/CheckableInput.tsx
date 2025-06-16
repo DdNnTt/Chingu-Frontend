@@ -41,7 +41,7 @@ export default function CheckableInput<T extends FieldValues>({
   const [message, setMessage] = useState('');
 
   const handleCheck = async () => {
-    const value = getValues(name as Path<T>);
+    const value = getValues(name as Path<T>).trim();
 
     if (!value) {
       setMessage('입력값을 작성해주세요.');
@@ -49,13 +49,20 @@ export default function CheckableInput<T extends FieldValues>({
       return;
     }
 
+    console.log('중복 확인 요청 URL:', `${checkUrl}?${queryKey}=${value}`);
+
     setIsChecking(true);
     setMessage('');
 
     try {
-      const response = await fetch(`${checkUrl}?${queryKey}=${value}`);
-      if (!response.ok) throw new Error('서버 오류');
+      const response = await fetch(
+        `${checkUrl}?${queryKey}=${encodeURIComponent(value)}`
+      );
       const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(`서버 오류: ${response.status}`);
+      }
 
       if (result === true) {
         setIsAvailable(true);
@@ -64,10 +71,10 @@ export default function CheckableInput<T extends FieldValues>({
       } else {
         setIsAvailable(false);
         setMessage(failureMessage);
-        setValue(flagField, true as PathValue<T, Path<T>>);
+        setValue(flagField, false as PathValue<T, Path<T>>);
       }
     } catch (err) {
-      console.error(err);
+      console.error('중복 확인 에러:', err);
       setIsAvailable(null);
       setMessage('중복 확인 중 오류가 발생했습니다.');
     } finally {
