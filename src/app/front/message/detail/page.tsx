@@ -12,7 +12,7 @@ export default function MessageDetail() {
     id: messageId,
     sender: '닉네임1',
     content: '쪽지 내용입니다. 테스트입니다.',
-    date: '2025.04.24',
+    date: '2025.04.25',
   };
 
   const handleDelete = () => {
