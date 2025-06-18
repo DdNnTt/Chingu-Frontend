@@ -35,7 +35,7 @@ export default function Header() {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('tokenType');
     alert('다음에 또 만나요 👋');
-    router.replace('/front/accout/login');
+    router.replace('/front/account/login');
   };
 
   return (

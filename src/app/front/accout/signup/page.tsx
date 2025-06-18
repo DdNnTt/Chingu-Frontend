@@ -109,7 +109,7 @@ export default function Signup() {
       }
 
       alert('회원가입이 완료되었습니다!');
-      router.push('/front/accout/login');
+      router.push('/front/account/login');
     } catch (error) {
       console.error('[회원가입 요청 오류]', error);
       alert('서버 오류가 발생했습니다.');
@@ -254,7 +254,7 @@ export default function Signup() {
         {/* 취소 버튼 / 회원가입 */}
         <div className="flex items-center justify-center gap-1.5 mt-10">
           <Link
-            href="/front/accout/login"
+            href="/front/account/login"
             className="flex-1 bg-main-color text-white px-4 py-3 rounded-md w-full text-center"
           >
             취소

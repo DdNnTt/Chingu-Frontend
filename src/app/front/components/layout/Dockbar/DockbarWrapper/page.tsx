@@ -8,11 +8,11 @@ export default function DockbarWrapper() {
 
   const hideDockbarPages = [
     '/',
-    '/front/accout/login',
-    '/front/accout/find-id',
-    '/front/accout/find-pw',
-    '/front/accout/change-pw',
-    '/front/accout/signup',
+    '/front/account/login',
+    '/front/account/find-id',
+    '/front/account/find-pw',
+    '/front/account/change-pw',
+    '/front/account/signup',
   ];
 
   const shouldHideDockbar = hideDockbarPages.includes(pathname);

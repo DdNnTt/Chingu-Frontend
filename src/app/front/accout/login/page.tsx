@@ -181,13 +181,13 @@ export default function Login() {
         {/* 링크 */}
         <div className="flex items-center justify-end mt-2">
           <Link
-            href="/front/accout/find-id"
+            href="/front/account/find-id"
             className="text-sm max-w-fit px-2 text-center border-r border-[#000000]"
           >
             아이디 찾기
           </Link>
           <Link
-            href="/front/accout/find-pw"
+            href="/front/account/find-pw"
             className="text-sm max-w-fit px-2 text-center"
           >
             비밀번호 찾기

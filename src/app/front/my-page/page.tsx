@@ -88,7 +88,7 @@ export default function Mypage() {
     const token = localStorage.getItem('accessToken');
     if (!token) {
       alert('로그인이 필요합니다.');
-      router.push('/front/accout/login');
+      router.push('/front/account/login');
     } else {
       router.push('/front/my-page/change-pw');
     }
@@ -98,9 +98,9 @@ export default function Mypage() {
     const token = localStorage.getItem('accessToken');
     if (!token) {
       alert('로그인이 필요합니다.');
-      router.push('/front/accout/login');
+      router.push('/front/account/login');
     } else {
-      router.push('/front/accout/del-account');
+      router.push('/front/account/del-account');
     }
   };
 
