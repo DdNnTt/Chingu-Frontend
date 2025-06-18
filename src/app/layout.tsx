@@ -18,6 +18,7 @@ export default function RootLayout({
     pathname === '/front/accout/login' ||
     pathname === '/front/accout/find-id' ||
     pathname === '/front/accout/find-pw' ||
+    pathname === '/front/accout/change-pw' ||
     pathname === '/front/accout/signup';
 
   return (
