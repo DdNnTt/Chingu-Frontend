@@ -4,12 +4,28 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
 import ScheduleModal from '@/components/my-home/ScheduleModal';
+import ScheduleEditModal from '@/components/my-home/ScheduleEditModal';
 import { useState, useEffect } from 'react';
 import axios from '@/libs/axios';
 
 interface Schedule {
   id: number;
+  user: {
+    id: number;
+    userId: string;
+    name: string;
+    nickname: string;
+    email: string;
+    password: string;
+    profilePictureUrl: string;
+    bio: string;
+    joinDate: string;
+    lastLoginDate: string;
+    uniqueKey: string;
+    socialType: string;
+  };
   title: string;
+  description: string;
   scheduleDate: string;
 }
 
@@ -19,12 +35,17 @@ export default function MyHome() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
+    null
+  );
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // 일정 목록 조회
   const fetchSchedules = async () => {
     try {
       setIsLoading(true);
       setError('');
+
       const response = await axios.get('/api/schedules');
       setSchedules(response.data);
     } catch (err) {
@@ -49,6 +70,17 @@ export default function MyHome() {
     fetchSchedules();
   };
 
+  const handleOpenEditModal = (schedule: Schedule) => {
+    setSelectedSchedule(schedule);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedSchedule(null);
+    // 모달이 닫힐 때 일정 목록 새로고침
+    fetchSchedules();
+  };
 
   // 로그인 후 닉네임 노출
   function parseJwt(token: string) {
@@ -86,7 +118,6 @@ export default function MyHome() {
         new Date(b.scheduleDate).getTime() - new Date(a.scheduleDate).getTime()
     )
     .slice(0, 3);
-
 
   return (
     <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 h-[calc(100vh-5rem)] overflow-y-auto">
@@ -151,7 +182,8 @@ export default function MyHome() {
             {recentSchedules.map((schedule) => (
               <div
                 key={schedule.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={() => handleOpenEditModal(schedule)}
               >
                 <span className="font-medium">{schedule.title}</span>
                 <span className="text-gray-600">{schedule.scheduleDate}</span>
@@ -178,6 +210,12 @@ export default function MyHome() {
       <ScheduleModal
         isOpen={isScheduleModalOpen}
         onClose={handleCloseScheduleModal}
+      />
+
+      <ScheduleEditModal
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        schedule={selectedSchedule}
       />
     </div>
   );
