@@ -39,11 +39,16 @@ export default function Login() {
 
   // 로그인 상태 체크 및 토큰 콘솔 출력
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const getCookieValue = (name: string) => {
+      const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+      return match ? decodeURIComponent(match[2]) : null;
+    };
+
+    const token = getCookieValue('accessToken'); // 쿠키에서 accessToken 가져오기
     if (token && !hasAlerted.current) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log('[토큰 payload]', payload);
+        console.log('[쿠키 토큰 payload]', payload);
         alert('이미 로그인된 상태입니다.');
         hasAlerted.current = true;
         router.replace('/front/my-home');
@@ -181,13 +186,13 @@ export default function Login() {
         {/* 링크 */}
         <div className="flex items-center justify-end mt-2">
           <Link
-            href="/front/accout/find-id"
+            href="/front/account/find-id"
             className="text-sm max-w-fit px-2 text-center border-r border-[#000000]"
           >
             아이디 찾기
           </Link>
           <Link
-            href="/front/accout/find-pw"
+            href="/front/account/find-pw"
             className="text-sm max-w-fit px-2 text-center"
           >
             비밀번호 찾기

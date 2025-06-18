@@ -57,7 +57,7 @@ export default function ChangePasswordPage() {
       });
 
       setMessage(res.data?.message || '비밀번호가 변경되었습니다.');
-      setTimeout(() => router.push('/front/accout/login'), 2000);
+      setTimeout(() => router.push('/front/account/login'), 2000);
     } catch (err: unknown) {
       console.error('[비밀번호 변경 오류]', err);
       if (axios.isAxiosError(err)) {

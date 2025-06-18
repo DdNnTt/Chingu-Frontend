@@ -13,7 +13,7 @@ export default function Intro() {
         친구들과 소통하고 그룹으로 추억을 쌓아보세요!
       </p>
       <Link
-        href="/front/accout/login"
+        href="/front/account/login"
         className="bg-main-color text-white px-4 py-3 rounded w-full text-center mt-20 inline-block animate-slideUp delay-1200 opacity-0"
       >
         지금 시작하기

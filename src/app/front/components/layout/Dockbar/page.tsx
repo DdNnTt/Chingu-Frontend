@@ -9,7 +9,11 @@ export default function Dockbar() {
 
   const items = [
     { href: '/front/my-home', label: '마이홈', icon: <Home size={20} /> },
-    { href: '/front/group', label: '그룹', icon: <Users size={20} /> },
+    {
+      href: '/front/my-home/group-list',
+      label: '그룹',
+      icon: <Users size={20} />,
+    },
     {
       href: '/front/my-page',
       label: '마이페이지',
@@ -19,7 +23,7 @@ export default function Dockbar() {
   ];
 
   return (
-    <div className="dockbar absolute bottom-0 left-0 right-0 bg-gray-200 px-4 py-3 shadow-md z-50 rounded-b-md">
+    <div className="dockbar absolute bottom-0 left-0 right-0 bg-[rgba(104,69,245,0.1)] px-4 py-3 shadow-md z-50 rounded-b-md">
       <nav className="flex justify-around text-center text-sm text-black">
         {items.map((item) => (
           <Link
