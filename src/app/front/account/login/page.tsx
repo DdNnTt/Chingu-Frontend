@@ -38,21 +38,6 @@ export default function Login() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // 로그인 상태 체크 및 토큰 콘솔 출력
-  // useEffect(() => {
-  //   const token = localStorage.getItem('accessToken');
-  //   if (token && !hasAlerted.current) {
-  //     try {
-  //       const payload = JSON.parse(atob(token.split('.')[1]));
-  //       console.log('[토큰 payload]', payload);
-  //       alert('이미 로그인된 상태입니다.');
-  //       hasAlerted.current = true;
-  //       router.replace('/front/my-home');
-  //     } catch (err) {
-  //       console.error('[토큰 파싱 오류]', err);
-  //     }
-  //   }
-  // }, []);
-
   useEffect(() => {
     const getCookieValue = (name: string) => {
       const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));

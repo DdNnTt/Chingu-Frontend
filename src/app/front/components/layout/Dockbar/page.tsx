@@ -9,7 +9,11 @@ export default function Dockbar() {
 
   const items = [
     { href: '/front/my-home', label: '마이홈', icon: <Home size={20} /> },
-    { href: '/front/group', label: '그룹', icon: <Users size={20} /> },
+    {
+      href: '/front/my-home/group-list',
+      label: '그룹',
+      icon: <Users size={20} />,
+    },
     {
       href: '/front/my-page',
       label: '마이페이지',

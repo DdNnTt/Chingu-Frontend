@@ -49,7 +49,6 @@ export default function MyHome() {
     fetchSchedules();
   };
 
-
   // 로그인 후 닉네임 노출
   function parseJwt(token: string) {
     try {
@@ -86,7 +85,6 @@ export default function MyHome() {
         new Date(b.scheduleDate).getTime() - new Date(a.scheduleDate).getTime()
     )
     .slice(0, 3);
-
 
   return (
     <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 h-[calc(100vh-5rem)] overflow-y-auto">
@@ -167,12 +165,14 @@ export default function MyHome() {
         <div className="group-item bg-gray-200 p-3 rounded mb-2">그룹2</div>
         <div className="group-item bg-gray-200 p-3 rounded">그룹3</div>
 
-        <Button
-          type="button"
-          className="flex-1 w-full bg-blue-600 text-white mt-4"
-        >
-          더보기
-        </Button>
+        <div className="mt-5">
+          <Link
+            href="/front/my-home/group-list"
+            className="inline-block bg-main-color text-white px-4 py-3 rounded-md w-full text-center"
+          >
+            더보기
+          </Link>
+        </div>
       </div>
 
       <ScheduleModal
