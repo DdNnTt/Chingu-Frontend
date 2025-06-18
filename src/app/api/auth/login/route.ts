@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
+  console.log('[env 확인]', process.env.API_BASE_URL);
   const API_BASE = process.env.API_BASE_URL;
+  console.log('[API_BASE]', API_BASE);
 
   if (!API_BASE) {
     console.error('[환경변수 오류] API_BASE_URL이 설정되지 않았습니다.');
@@ -13,6 +15,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    console.log('[받은 요청 body]', body);
 
     const backendRes = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
@@ -23,11 +26,14 @@ export async function POST(req: NextRequest) {
     });
 
     const contentType = backendRes.headers.get('content-type');
+    const rawText = await backendRes.text();
+
+    console.log('[백엔드 응답 상태]', backendRes.status);
+    console.log('[백엔드 응답 본문]', rawText);
+    console.log('[백엔드 응답 타입]', contentType);
 
     if (!backendRes.ok) {
-      const errorBody = await backendRes.text();
-      console.error('[백엔드 로그인 에러]', backendRes.status, errorBody);
-      return new NextResponse(errorBody, {
+      return new NextResponse(rawText, {
         status: backendRes.status,
         headers: {
           'Content-Type': contentType ?? 'text/plain',
@@ -35,19 +41,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const data = contentType?.includes('application/json')
-      ? await backendRes.json()
-      : await backendRes.text();
-
-    return new NextResponse(
-      contentType?.includes('application/json') ? JSON.stringify(data) : data,
-      {
-        status: backendRes.status,
-        headers: {
-          'Content-Type': contentType ?? 'text/plain',
-        },
-      }
-    );
+    return new NextResponse(rawText, {
+      status: backendRes.status,
+      headers: {
+        'Content-Type': contentType ?? 'text/plain',
+      },
+    });
   } catch (err) {
     console.error('[프록시 로그인 오류]', err);
     return NextResponse.json(

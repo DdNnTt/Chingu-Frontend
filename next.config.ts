@@ -1,16 +1,16 @@
-import type { NextConfig } from 'next';
-
-const API_BASE = process.env.API_BASE_URL;
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  env: {
+    API_BASE_URL: process.env.API_BASE_URL,
+  },
   async rewrites() {
     return [
       {
         source: '/api/users/:path*',
-        destination: `${API_BASE}/api/users/:path*`,
+        destination: `${process.env.API_BASE_URL}/api/users/:path*`,
       },
     ];
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

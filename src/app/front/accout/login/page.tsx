@@ -37,7 +37,7 @@ export default function Login() {
   const [hideAlert, setHideAlert] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // ✅ 로그인 상태 체크 및 토큰 콘솔 출력
+  // 로그인 상태 체크 및 토큰 콘솔 출력
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (token && !hasAlerted.current) {
@@ -74,24 +74,36 @@ export default function Login() {
   }, [loginError]);
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoggingIn(true); // 로그인 시작
+    setIsLoggingIn(true);
+
+    const payload = {
+      userId: data.id,
+      password: data.password,
+    };
+
+    console.log('[로그인 요청 payload]', payload); // 디버깅용
 
     try {
-      const response = await axios.post('/api/auth/login', {
-        userId: data.id,
-        password: data.password,
+      const response = await axios.post('/api/auth/login', payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
       });
 
       const { accessToken, tokenType, nickname } = response.data;
 
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('tokenType', tokenType);
-      localStorage.setItem('nickname', nickname); // ✅ 여기로 이동
+      localStorage.setItem('nickname', nickname);
 
       router.push('/front/my-home');
     } catch (error: unknown) {
+      console.error('[로그인 실패]', error);
+
       if (axios.isAxiosError(error)) {
         const message = error.response?.data?.message;
+        console.error('[서버 응답 메시지]', message);
 
         if (message === 'Bad credentials') {
           setShowAlert(false);
@@ -106,7 +118,7 @@ export default function Login() {
         setLoginError('알 수 없는 오류가 발생했습니다.');
       }
     } finally {
-      setIsLoggingIn(false); // 실패 or 성공 후 로그인 상태 해제
+      setIsLoggingIn(false);
     }
   };
 
