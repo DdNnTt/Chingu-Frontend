@@ -116,7 +116,14 @@ html {
   justify-content: center;
   align-items: center;
 }
+@media (max-width: 767px) {
+  html {
+    /* display: inline-block; */
+    align-items: initial;
+  }
+}
 body {
+  position: relative;
   background-color: #fff;
   max-width: 400px;
   width: 100%;

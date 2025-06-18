@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,6 +35,23 @@ export default function Login() {
   const [loginError, setLoginError] = useState('');
   const [showAlert, setShowAlert] = useState(false);
   const [hideAlert, setHideAlert] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // ✅ 로그인 상태 체크 및 토큰 콘솔 출력
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token && !hasAlerted.current) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        console.log('[토큰 payload]', payload);
+        alert('이미 로그인된 상태입니다.');
+        hasAlerted.current = true;
+        router.replace('/front/my-home');
+      } catch (err) {
+        console.error('[토큰 파싱 오류]', err);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (loginError) {
@@ -57,16 +74,19 @@ export default function Login() {
   }, [loginError]);
 
   const onSubmit = async (data: LoginFormValues) => {
+    setIsLoggingIn(true); // 로그인 시작
+
     try {
       const response = await axios.post('/api/auth/login', {
         userId: data.id,
         password: data.password,
       });
 
-      const { accessToken, tokenType } = response.data;
+      const { accessToken, tokenType, nickname } = response.data;
 
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('tokenType', tokenType);
+      localStorage.setItem('nickname', nickname); // ✅ 여기로 이동
 
       router.push('/front/my-home');
     } catch (error: unknown) {
@@ -85,8 +105,22 @@ export default function Login() {
       } else {
         setLoginError('알 수 없는 오류가 발생했습니다.');
       }
+    } finally {
+      setIsLoggingIn(false); // 실패 or 성공 후 로그인 상태 해제
     }
   };
+
+  // 로그인 후 진입
+  const hasAlerted = useRef(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token && !hasAlerted.current) {
+      alert('이미 로그인된 상태입니다.');
+      hasAlerted.current = true;
+      router.replace('/front/my-home');
+    }
+  }, []);
 
   return (
     <div className="login-page py-4 px-4 mt-20">
@@ -150,18 +184,19 @@ export default function Login() {
 
         {/* 로그인 버튼 / 회원가입 */}
         <div className="flex items-center justify-center gap-1.5 mt-10">
-          <Button
-            type="submit"
-            className="flex-1 w-full bg-blue-600 text-white"
-          >
-            로그인
-          </Button>
           <Link
             href="signup"
             className="flex-1 bg-main-color text-white px-4 py-3 rounded-md w-full text-center"
           >
             회원가입
           </Link>
+          <Button
+            type="submit"
+            className="flex-1 w-full bg-blue-600 text-white"
+            disabled={isLoggingIn}
+          >
+            {isLoggingIn ? '로그인 중...' : '로그인'}
+          </Button>
         </div>
       </form>
 

@@ -14,6 +14,7 @@ interface Schedule {
 }
 
 export default function MyHome() {
+  const [nickname, setNickname] = useState('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,6 +49,36 @@ export default function MyHome() {
     fetchSchedules();
   };
 
+
+  // 로그인 후 닉네임 노출
+  function parseJwt(token: string) {
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    // 1순위: localStorage의 nickname 사용
+    const storedNickname = localStorage.getItem('nickname');
+    if (storedNickname) {
+      setNickname(storedNickname);
+      return;
+    }
+
+    // 2순위: accessToken payload에서 nickname 추출
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    const payload = parseJwt(token);
+    if (payload?.nickname) {
+      setNickname(payload.nickname);
+    } else if (payload?.sub) {
+      setNickname(payload.sub);
+    }
+  }, []);
+
   // 최신 3개의 일정만 표시
   const recentSchedules = schedules
     .sort(
@@ -55,6 +86,7 @@ export default function MyHome() {
         new Date(b.scheduleDate).getTime() - new Date(a.scheduleDate).getTime()
     )
     .slice(0, 3);
+
 
   return (
     <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 h-[calc(100vh-5rem)] overflow-y-auto">
@@ -69,7 +101,8 @@ export default function MyHome() {
           className="object-cover rounded-full border border-gray-300"
         />
         <div className="profile-info">
-          <h3 className="text-lg font-semibold">닉네임</h3>
+          {/* <h3 className="text-lg font-semibold">닉네임</h3> */}
+          <h3 className="text-lg font-semibold">{nickname || '닉네임'}</h3>
           <Link
             href="/front/my-home/friend-list"
             className="text-sm text-gray-500 hover:text-gray-700"

@@ -1,4 +1,6 @@
-import Intro from "@/front/intro/page";
+'use client';
+
+import Intro from '@/front/intro/page';
 
 export default function Home() {
   return (
