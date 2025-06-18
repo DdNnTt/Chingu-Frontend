@@ -25,6 +25,8 @@ type MypageFormValues = z.infer<typeof MypageSchema>;
 export default function Mypage() {
   const router = useRouter();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isEditable, setIsEditable] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { register, reset, getValues, setValue } = useForm<MypageFormValues>({
     resolver: zodResolver(MypageSchema),
@@ -102,73 +104,176 @@ export default function Mypage() {
     }
   };
 
+  const handleBlockedClick = (e: React.MouseEvent) => {
+    if (!isEditable) {
+      e.preventDefault();
+      e.stopPropagation();
+      alert('수정을 원하시면 "마이페이지 수정" 버튼을 눌러주세요.');
+    }
+  };
+
+  const handleSubmitEdit = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      router.push('/front/account/login');
+      return;
+    }
+
+    const values = getValues();
+
+    const payload = {
+      nickname: values.nickname,
+      email: values.email,
+      profilePictureUrl: imagePreview || '',
+    };
+
+    try {
+      setIsSubmitting(true);
+
+      const res = await fetch('/api/users/mypage/edit', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error('[수정 실패]', data);
+        alert('수정에 실패했습니다.');
+        return;
+      }
+
+      alert('정보가 성공적으로 수정되었습니다.');
+      setIsEditable(false);
+    } catch (err) {
+      console.error('[정보 수정 오류]', err);
+      alert('정보 수정 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="mypage-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
       <h2 className="text-2xl font-semibold mb-6 text-center">마이페이지</h2>
 
       <div className="mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
-        {/* 닉네임 - 중복 확인 api */}
-        <CheckableInput<MypageFormValues>
-          name="nickname"
-          placeholder="닉네임"
-          checkUrl="/api/users/check-nickname"
-          queryKey="nickname"
-          successMessage="사용 가능한 닉네임입니다."
-          failureMessage="이미 사용 중인 닉네임입니다."
-          register={register}
-          getValues={getValues}
-          setValue={setValue}
-          flagField="isNicknameChecked"
-        />
-
-        {/* 이름 */}
-        <div className="relative mb-6">
-          <Input
-            type="text"
-            placeholder="이름"
-            {...register('name')}
-            disabled
-          />
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold mb-2">내 정보</h3>
+          <Button
+            type="button"
+            onClick={() => setIsEditable(true)}
+            className="!text-xs !p-2 !bg-[#aa96fc] text-white mb-4"
+          >
+            마이페이지 수정
+          </Button>
         </div>
 
-        {/* 아이디 */}
-        <div className="relative mb-6">
-          <Input
-            type="text"
-            placeholder="아이디"
-            {...register('userId')}
-            disabled
-          />
-        </div>
+        <div onClick={handleBlockedClick}>
+          {/* 닉네임 - 중복 확인 api */}
+          <div className={isEditable ? '' : 'pointer-events-none'}>
+            <CheckableInput<MypageFormValues>
+              name="nickname"
+              placeholder="닉네임"
+              checkUrl="/api/users/check-nickname"
+              queryKey="nickname"
+              successMessage="사용 가능한 닉네임입니다."
+              failureMessage="이미 사용 중인 닉네임입니다."
+              register={register}
+              getValues={getValues}
+              setValue={setValue}
+              flagField="isNicknameChecked"
+            />
+          </div>
 
-        {/* 이메일 */}
-        <div className="relative mb-6">
-          <Input
-            type="email"
-            placeholder="이메일"
-            {...register('email')}
-            disabled
-          />
-        </div>
+          {/* 이름 */}
+          <div className="relative mb-6">
+            <Input
+              type="text"
+              placeholder="이름"
+              {...register('name')}
+              readOnly={!isEditable}
+              onClick={(e) => {
+                if (!isEditable) {
+                  e.stopPropagation();
+                  alert('수정을 원하시면 "마이페이지 수정" 버튼을 눌러주세요.');
+                }
+              }}
+            />
+          </div>
 
-        {/* 프로필 */}
-        <div className="mb-4">
-          <label className="block font-semibold mb-1">프로필</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="mb-2"
-          />
-          {imagePreview && (
-            <div className="border w-32 h-32 relative">
-              <Image
-                src={imagePreview}
-                alt="미리보기"
-                fill
-                className="object-cover rounded-md"
-              />
-            </div>
+          {/* 아이디 */}
+          <div className="relative mb-6">
+            <Input
+              type="text"
+              placeholder="아이디"
+              {...register('userId')}
+              readOnly={!isEditable}
+              onClick={(e) => {
+                if (!isEditable) {
+                  e.stopPropagation();
+                  alert('수정을 원하시면 "마이페이지 수정" 버튼을 눌러주세요.');
+                }
+              }}
+            />
+          </div>
+
+          {/* 이메일 */}
+          <div className="relative mb-6">
+            <Input
+              type="email"
+              placeholder="이메일"
+              {...register('email')}
+              readOnly={!isEditable}
+              onClick={(e) => {
+                if (!isEditable) {
+                  e.stopPropagation();
+                  alert('수정을 원하시면 "마이페이지 수정" 버튼을 눌러주세요.');
+                }
+              }}
+            />
+          </div>
+
+          {/* 프로필 */}
+          <div className="mb-4">
+            <label className="block font-medium text-sm mb-1">프로필</label>
+            <input
+              type="file"
+              accept="image/*"
+              className="mb-2"
+              disabled={!isEditable}
+              onChange={(e) => {
+                if (!isEditable) return;
+                handleImageChange(e);
+              }}
+            />
+            {imagePreview && (
+              <div className="border w-32 h-32 relative">
+                <Image
+                  src={imagePreview}
+                  alt="미리보기"
+                  fill
+                  className="object-cover rounded-md"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 수정 완료 버튼 */}
+          {isEditable && (
+            <Button
+              type="button"
+              onClick={handleSubmitEdit}
+              className="w-full !bg-[#aa96fc]"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? '수정 중...' : '수정 완료'}
+            </Button>
           )}
         </div>
       </div>
@@ -183,6 +288,7 @@ export default function Mypage() {
           비밀번호 수정
         </Button>
 
+        {/* 회원 탈퇴 버튼 */}
         <Button type="button" onClick={handleWithdraw} className="w-full">
           회원 탈퇴
         </Button>
