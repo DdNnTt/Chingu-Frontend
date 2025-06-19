@@ -13,30 +13,56 @@ interface Schedule {
   scheduleDate: string;
 }
 
+interface Friend {
+  friendUserId: number;
+  nickname: string;
+  name: string;
+  score: number;
+  friendSince: string;
+}
+
 export default function MyHome() {
   const [nickname, setNickname] = useState('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   // 일정 목록 조회
   const fetchSchedules = async () => {
     try {
-      setIsLoading(true);
-      setError('');
       const response = await axios.get('/api/schedules');
       setSchedules(response.data);
     } catch (err) {
-      setError('일정을 불러오는데 실패했습니다.');
       console.error('일정 조회 실패:', err);
-    } finally {
-      setIsLoading(false);
+    }
+  };
+
+  // 친구 목록 조회
+  const fetchFriends = async () => {
+    try {
+      const response = await axios.get('/api/friends');
+      setFriends(response.data);
+    } catch (err) {
+      console.error('친구 목록 조회 실패:', err);
     }
   };
 
   useEffect(() => {
-    fetchSchedules();
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        await Promise.all([fetchSchedules(), fetchFriends()]);
+      } catch {
+        setError('데이터를 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleOpenScheduleModal = () => {
@@ -105,7 +131,7 @@ export default function MyHome() {
             href="/front/my-home/friend-list"
             className="text-sm text-gray-500 hover:text-gray-700"
           >
-            친구 수 <span>20</span>
+            친구 수 <span>{friends.length}</span>
           </Link>
         </div>
       </div>
