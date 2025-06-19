@@ -87,7 +87,7 @@ export default function MyHome() {
     .slice(0, 3);
 
   return (
-    <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 h-[calc(100vh-5rem)] overflow-y-auto">
+    <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <h2 className="text-2xl font-semibold mb-6 text-center">마이 홈</h2>
 
       <div className="profile-card flex items-center mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
