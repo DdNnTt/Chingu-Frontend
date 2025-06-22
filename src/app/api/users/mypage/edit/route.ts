@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function PUT(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
   const token = req.headers.get('authorization');
   const API_BASE = process.env.API_BASE_URL;
 
@@ -9,11 +9,11 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json();
-  console.log('[프록시 전송 body]', body);
+  console.log('[프록시 PATCH 요청]', body);
 
   try {
     const res = await fetch(`${API_BASE}/api/users/mypage/edit`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         Authorization: token ?? '',
@@ -21,14 +21,15 @@ export async function PUT(req: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const contentType = res.headers.get('content-type');
-    const result = contentType?.includes('application/json')
-      ? await res.json()
-      : await res.text();
-
-    return NextResponse.json({ data: result }, { status: res.status });
-  } catch (error) {
-    console.error('[마이페이지 수정 프록시 오류]', error);
+    const text = await res.text();
+    try {
+      const data = JSON.parse(text);
+      return NextResponse.json(data, { status: res.status });
+    } catch {
+      return NextResponse.json({ message: text }, { status: res.status });
+    }
+  } catch (err) {
+    console.error('[프록시 PATCH 오류]', err);
     return NextResponse.json({ message: '서버 오류' }, { status: 500 });
   }
 }
