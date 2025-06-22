@@ -40,7 +40,12 @@ export default function Mypage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const getCookieValue = (name: string) => {
+      const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+      return match ? decodeURIComponent(match[2]) : null;
+    };
+
+    const token = getCookieValue('accessToken');
     if (!token) return;
 
     fetch('/api/users/mypage', {
@@ -85,7 +90,12 @@ export default function Mypage() {
   };
 
   const handlePasswordEdit = () => {
-    const token = localStorage.getItem('accessToken');
+    const getCookieValue = (name: string) => {
+      const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+      return match ? decodeURIComponent(match[2]) : null;
+    };
+
+    const token = getCookieValue('accessToken');
     if (!token) {
       alert('로그인이 필요합니다.');
       router.push('/front/account/login');
@@ -95,7 +105,12 @@ export default function Mypage() {
   };
 
   const handleWithdraw = () => {
-    const token = localStorage.getItem('accessToken');
+    const getCookieValue = (name: string) => {
+      const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+      return match ? decodeURIComponent(match[2]) : null;
+    };
+
+    const token = getCookieValue('accessToken');
     if (!token) {
       alert('로그인이 필요합니다.');
       router.push('/front/account/login');
@@ -113,7 +128,12 @@ export default function Mypage() {
   };
 
   const handleSubmitEdit = async () => {
-    const token = localStorage.getItem('accessToken');
+    const getCookieValue = (name: string) => {
+      const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+      return match ? decodeURIComponent(match[2]) : null;
+    };
+
+    const token = getCookieValue('accessToken');
     if (!token) {
       alert('로그인이 필요합니다.');
       router.push('/front/account/login');
