@@ -4,12 +4,28 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
 import ScheduleModal from '@/components/my-home/ScheduleModal';
+import ScheduleEditModal from '@/components/my-home/ScheduleEditModal';
 import { useState, useEffect } from 'react';
 import axios from '@/libs/axios';
 
 interface Schedule {
   id: number;
+  user: {
+    id: number;
+    userId: string;
+    name: string;
+    nickname: string;
+    email: string;
+    password: string;
+    profilePictureUrl: string;
+    bio: string;
+    joinDate: string;
+    lastLoginDate: string;
+    uniqueKey: string;
+    socialType: string;
+  };
   title: string;
+  description: string;
   scheduleDate: string;
 }
 
@@ -28,6 +44,10 @@ export default function MyHome() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
+    null
+  );
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // 일정 목록 조회
   const fetchSchedules = async () => {
@@ -71,6 +91,18 @@ export default function MyHome() {
 
   const handleCloseScheduleModal = () => {
     setIsScheduleModalOpen(false);
+    // 모달이 닫힐 때 일정 목록 새로고침
+    fetchSchedules();
+  };
+
+  const handleOpenEditModal = (schedule: Schedule) => {
+    setSelectedSchedule(schedule);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedSchedule(null);
     // 모달이 닫힐 때 일정 목록 새로고침
     fetchSchedules();
   };
@@ -175,7 +207,8 @@ export default function MyHome() {
             {recentSchedules.map((schedule) => (
               <div
                 key={schedule.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={() => handleOpenEditModal(schedule)}
               >
                 <span className="font-medium">{schedule.title}</span>
                 <span className="text-gray-600">{schedule.scheduleDate}</span>
@@ -191,19 +224,23 @@ export default function MyHome() {
         <div className="group-item bg-gray-200 p-3 rounded mb-2">그룹2</div>
         <div className="group-item bg-gray-200 p-3 rounded">그룹3</div>
 
-        <div className="mt-5">
-          <Link
-            href="/front/my-home/group-list"
-            className="inline-block bg-main-color text-white px-4 py-3 rounded-md w-full text-center"
-          >
-            더보기
-          </Link>
-        </div>
+        <Button
+          type="button"
+          className="flex-1 w-full bg-blue-600 text-white mt-4"
+        >
+          더보기
+        </Button>
       </div>
 
       <ScheduleModal
         isOpen={isScheduleModalOpen}
         onClose={handleCloseScheduleModal}
+      />
+
+      <ScheduleEditModal
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        schedule={selectedSchedule}
       />
     </div>
   );
