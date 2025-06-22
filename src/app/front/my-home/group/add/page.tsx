@@ -6,8 +6,9 @@ import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 
 type Friend = {
-  userId: number;
+  friendUserId: number;
   nickname: string;
+  name: string;
 };
 
 export default function GroupAdd() {
@@ -36,10 +37,36 @@ export default function GroupAdd() {
       },
     })
       .then((res) => res.json())
-      .then((data: Friend[]) => setFriends(data))
+      .then((data: Friend[]) => {
+        if (data.length === 0) {
+          // 친구가 없을 경우 테스트용 친구 추가
+          setFriends([
+            {
+              friendUserId: 1,
+              nickname: 'UI 확인용 친구1',
+              name: '테스트 유저',
+            },
+            {
+              friendUserId: 2,
+              nickname: 'UI 확인용 친구2',
+              name: '테스트 유저',
+            },
+          ]);
+        } else {
+          setFriends(data);
+        }
+      })
       .catch((err) => {
         console.error('[친구 목록 조회 오류]', err);
         alert('친구 목록을 불러오지 못했습니다.');
+        // 에러 발생 시에도 테스트용 친구 추가
+        setFriends([
+          {
+            friendUserId: 1,
+            nickname: '친구1',
+            name: '테스트 유저',
+          },
+        ]);
       });
   }, [router]);
 
@@ -71,6 +98,7 @@ export default function GroupAdd() {
         body: JSON.stringify({
           groupName,
           description,
+          invitedFriendIds: selectedFriendIds,
         }),
       });
 
@@ -123,13 +151,13 @@ export default function GroupAdd() {
             ) : (
               friends.map((friend) => (
                 <label
-                  key={friend.userId}
+                  key={friend.friendUserId}
                   className="flex items-center space-x-2"
                 >
                   <input
                     type="checkbox"
-                    checked={selectedFriendIds.includes(friend.userId)}
-                    onChange={() => handleCheck(friend.userId)}
+                    checked={selectedFriendIds.includes(friend.friendUserId)}
+                    onChange={() => handleCheck(friend.friendUserId)}
                   />
                   <span>{friend.nickname}</span>
                 </label>

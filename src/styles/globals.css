@@ -89,6 +89,31 @@
   opacity: 0;
 }
 
+input[type='checkbox'] {
+  appearance: none; /* 브라우저 기본 체크박스 제거 */
+  width: 16px;
+  height: 16px;
+  border: 1px solid #bba8ff;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type='checkbox']:checked {
+  background-color: #6845f5;
+  border-color: #6845f5;
+}
+
+input[type='checkbox']:checked::after {
+  content: '✔';
+  color: white;
+  font-size: 10px;
+  position: absolute;
+  top: 0;
+  left: 3px;
+}
+
 /* ============================================
   Animation
 ============================================ */
