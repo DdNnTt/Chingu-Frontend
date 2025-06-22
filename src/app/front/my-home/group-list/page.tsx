@@ -61,7 +61,7 @@ export default function GroupList() {
       })
       .finally(() => setIsLoading(false));
 
-    // 초대 목록 조회 (여기에 추가)
+    // 초대 목록 조회
     fetch('/api/groups/invites', {
       method: 'GET',
       headers: {
@@ -141,7 +141,7 @@ export default function GroupList() {
       <div className="flex justify-end mb-4">
         <Link
           href="/front/my-home/group/add"
-          className="text-sm px-3 py-1 bg-main-color text-white rounded hover:bg-blue-700"
+          className="text-sm px-3 py-1 bg-[#9477ff] hover:bg-[#6845f5] text-white rounded"
         >
           그룹 생성
         </Link>
@@ -149,7 +149,7 @@ export default function GroupList() {
 
       {/* 그룹 목록 */}
       <div
-        className="group-list bg-white rounded-lg shadow-sm p-4 space-y-3 max-h-[calc(90px*3)] overflow-y-auto"
+        className="group-list bg-white rounded-lg shadow-sm p-4 pr-1 space-y-3 max-h-[calc(90px*3)] overflow-y-auto scroll-overlay"
         style={{ scrollbarGutter: 'stable' }}
       >
         {isLoading ? (
@@ -166,7 +166,12 @@ export default function GroupList() {
           groups.slice(0, visibleGroups).map((group) => (
             <div
               key={group.groupId}
-              className="flex items-center justify-between bg-white p-3 rounded-md shadow-sm"
+              className="group-item flex items-center justify-between bg-white py-2 px-3 rounded-md shadow-sm cursor-pointer hover:bg-gray-50"
+              onClick={() =>
+                router.push(
+                  `/front/my-home/group/detail?groupId=${group.groupId}`
+                )
+              }
             >
               <div>
                 <div className="font-semibold text-gray-800">
@@ -175,8 +180,11 @@ export default function GroupList() {
                 <div className="text-sm text-gray-500">{group.description}</div>
               </div>
               <button
-                onClick={() => handleGroupDelete(group.groupId)}
-                className="text-sm px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                onClick={(e) => {
+                  e.stopPropagation(); // 버튼 클릭 시 부모 div의 클릭 이벤트 방지
+                  handleGroupDelete(group.groupId);
+                }}
+                className="text-sm px-2 py-1 bg-point2-color text-white rounded hover:bg-red-400"
               >
                 그룹 탈퇴
               </button>
@@ -197,7 +205,7 @@ export default function GroupList() {
       </div>
 
       {/* 초대 목록 */}
-      <div className="group-vite-list bg-white rounded-lg shadow-sm p-4 mt-10 space-y-3 max-h-[calc(75px*3)] overflow-y-auto">
+      <div className="group-vite-list bg-white rounded-lg shadow-sm p-4 mt-10 space-y-3 max-h-[calc(90px*3)] overflow-y-auto scroll-overlay">
         {isLoading ? (
           <p className="text-center text-gray-400 text-sm">불러오는 중...</p>
         ) : invites.length === 0 ? (
