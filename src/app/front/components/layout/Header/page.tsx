@@ -32,8 +32,14 @@ export default function Header() {
   // }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
+    // localStorage 비우기
     localStorage.removeItem('tokenType');
+    localStorage.removeItem('nickname');
+
+    // 쿠키 삭제 (accessToken)
+    document.cookie =
+      'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
     alert('다음에 또 만나요 👋');
     router.replace('/front/account/login');
   };
