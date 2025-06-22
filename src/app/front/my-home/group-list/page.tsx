@@ -2,87 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-// type Friend = {
-//   friendUserId: number;
-//   nickname: string;
-//   name: string;
-//   score: number;
-//   friendSince: string;
-// };
-
-// const FRIENDS_DATA: Friend[] = [
-//   {
-//     friendUserId: 1,
-//     nickname: '그룹리스트에용',
-//     name: '친구이름1',
-//     score: 85,
-//     friendSince: '2025-01-22T10:30:00',
-//   },
-//   {
-//     friendUserId: 2,
-//     nickname: '친구닉네임2',
-//     name: '친구이름2',
-//     score: 90,
-//     friendSince: '2025-01-21T15:00:00',
-//   },
-//   {
-//     friendUserId: 3,
-//     nickname: '친구닉네임3',
-//     name: '친구이름3',
-//     score: 70,
-//     friendSince: '2025-01-20T09:15:00',
-//   },
-//   {
-//     friendUserId: 4,
-//     nickname: '친구닉네임4',
-//     name: '친구이름4',
-//     score: 75,
-//     friendSince: '2025-01-19T14:20:00',
-//   },
-//   {
-//     friendUserId: 5,
-//     nickname: '친구닉네임5',
-//     name: '친구이름5',
-//     score: 95,
-//     friendSince: '2025-01-18T11:45:00',
-//   },
-//   {
-//     friendUserId: 6,
-//     nickname: '친구닉네임6',
-//     name: '친구이름6',
-//     score: 80,
-//     friendSince: '2025-01-17T16:30:00',
-//   },
-//   {
-//     friendUserId: 7,
-//     nickname: '친구닉네임7',
-//     name: '친구이름7',
-//     score: 65,
-//     friendSince: '2025-01-16T13:10:00',
-//   },
-//   {
-//     friendUserId: 8,
-//     nickname: '친구닉네임8',
-//     name: '친구이름8',
-//     score: 65,
-//     friendSince: '2025-01-16T13:10:00',
-//   },
-//   {
-//     friendUserId: 9,
-//     nickname: '친구닉네임9',
-//     name: '친구이름9',
-//     score: 65,
-//     friendSince: '2025-01-16T13:10:00',
-//   },
-//   {
-//     friendUserId: 10,
-//     nickname: '친구닉네임10',
-//     name: '친구이름10',
-//     score: 65,
-//     friendSince: '2025-01-16T13:10:00',
-//   },
-// ];
+import Link from 'next/link';
 
 type Group = {
   groupId: number;
@@ -92,7 +12,6 @@ type Group = {
 };
 
 export default function GroupList() {
-  // const [friends] = useState<Friend[]>(FRIENDS_DATA);
   const [groups, setGroups] = useState<Group[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -130,7 +49,7 @@ export default function GroupList() {
   }, [router]);
 
   return (
-    <div className="friend-list-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="group-list-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
       <div className="flex items-center mb-6">
         <button
           onClick={() => router.back()}
@@ -156,7 +75,16 @@ export default function GroupList() {
         </h2>
       </div>
 
-      <div className="friend-list bg-white rounded-lg shadow-sm p-4 max-h-[calc(100vh-300px)] overflow-y-auto space-y-3">
+      <div className="flex justify-end mb-4">
+        <Link
+          href="/front/my-home/group/add"
+          className="text-sm px-3 py-1 bg-main-color text-white rounded hover:bg-blue-700"
+        >
+          그룹 생성
+        </Link>
+      </div>
+
+      <div className="group-list bg-white rounded-lg shadow-sm p-4 max-h-[calc(100vh-300px)] overflow-y-auto space-y-3">
         {isLoading ? (
           <div className="text-center text-gray-400">불러오는 중...</div>
         ) : error ? (
@@ -169,16 +97,53 @@ export default function GroupList() {
           groups.map((group) => (
             <div
               key={group.groupId}
-              className="friend-item flex flex-col gap-1 bg-gray-50 p-3 rounded-md"
+              className="flex items-center justify-between bg-white p-3 rounded-md shadow-sm"
             >
-              <div className="font-medium text-gray-800">{group.groupName}</div>
-              <div className="text-sm text-gray-500">{group.description}</div>
-              <div className="text-sm text-gray-400">
-                생성일: {new Date(group.createdAt).toLocaleDateString()}
+              <div>
+                <div className="font-semibold text-gray-800">
+                  {group.groupName}
+                </div>
+                <div className="text-sm text-gray-500">{group.description}</div>
               </div>
+              <button className="text-sm px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                그룹 탈퇴
+              </button>
             </div>
           ))
         )}
+      </div>
+
+      {/* 더보기 버튼 (예시용) */}
+      <div className="text-center mt-4">
+        <button className="text-sm text-blue-600 hover:underline">
+          더보기
+        </button>
+      </div>
+
+      {/* 요청 승인 대기 목록 */}
+      <div className="mt-10">
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">
+          요청 승인 대기
+        </h3>
+
+        {/* 예시 데이터, 향후 대기 목록 API로 대체 */}
+        <div className="flex items-center justify-between bg-white p-3 rounded-md shadow-sm">
+          <div className="font-medium text-gray-800">그룹4</div>
+          <div className="space-x-2">
+            <button className="text-xs px-2 py-1 bg-gray-300 rounded hover:bg-gray-400">
+              거절
+            </button>
+            <button className="text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+              승인
+            </button>
+          </div>
+        </div>
+
+        <div className="text-center mt-4">
+          <button className="text-sm text-blue-600 hover:underline">
+            더보기
+          </button>
+        </div>
       </div>
     </div>
   );
