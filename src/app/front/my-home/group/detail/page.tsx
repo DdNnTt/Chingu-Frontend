@@ -3,6 +3,7 @@
 import Calendar from 'react-calendar';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type Member = {
   userId: number;
@@ -53,9 +54,12 @@ export default function GroupDetail() {
       {/* 그룹 이름 */}
       <div className="bg-white p-4 rounded-md shadow mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">{groupName}</h1>
-        <button className="text-sm px-2 py-1 rounded text-white bg-[#9477ff] hover:bg-[#6845f5]">
+        <Link
+          href="/front/my-home/member/list"
+          className="text-sm px-2 py-1 rounded text-white bg-[#9477ff] hover:bg-[#6845f5]"
+        >
           멤버 {members.length}명
-        </button>
+        </Link>
       </div>
 
       {/* 그룹 추억 앨범 */}

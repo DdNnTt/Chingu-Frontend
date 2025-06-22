@@ -196,7 +196,8 @@ body {
 }
 main,
 main > div {
-  height: 100%;
+  height: inherit;
+  overflow: hidden;
   border-radius: 20px;
 }
 a {
