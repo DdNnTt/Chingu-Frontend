@@ -37,14 +37,15 @@ export default function Login() {
   const [hideAlert, setHideAlert] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // 쿠키 값 읽는 함수
+  const getCookieValue = (name: string) => {
+    const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+    return match ? decodeURIComponent(match[2]) : null;
+  };
+
   // 로그인 상태 체크 및 토큰 콘솔 출력
   useEffect(() => {
-    const getCookieValue = (name: string) => {
-      const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-      return match ? decodeURIComponent(match[2]) : null;
-    };
-
-    const token = getCookieValue('accessToken'); // 쿠키에서 accessToken 가져오기
+    const token = getCookieValue('accessToken');
     if (token && !hasAlerted.current) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
@@ -98,7 +99,10 @@ export default function Login() {
 
       const { accessToken, tokenType, nickname } = response.data;
 
-      localStorage.setItem('accessToken', accessToken);
+      // 쿠키로 저장 (secure, SameSite는 필요 시 조정)
+      document.cookie = `accessToken=${accessToken}; path=/; secure; SameSite=Lax`;
+
+      // localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('tokenType', tokenType);
       localStorage.setItem('nickname', nickname);
 
@@ -130,14 +134,14 @@ export default function Login() {
   // 로그인 후 진입
   const hasAlerted = useRef(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (token && !hasAlerted.current) {
-      alert('이미 로그인된 상태입니다.');
-      hasAlerted.current = true;
-      router.replace('/front/my-home');
-    }
-  }, []);
+  // useEffect(() => {
+  //   const token = localStorage.getItem('accessToken');
+  //   if (token && !hasAlerted.current) {
+  //     alert('이미 로그인된 상태입니다.');
+  //     hasAlerted.current = true;
+  //     router.replace('/front/my-home');
+  //   }
+  // }, []);
 
   return (
     <div className="login-page py-4 px-4 mt-20">
