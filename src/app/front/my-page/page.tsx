@@ -221,10 +221,13 @@ export default function Mypage() {
   // };
 
   return (
-    <div className="mypage-page overflow-y-auto py-20 px-4 mx-auto rounded-lg bg-gray-100">
+    <div className="mypage-page py-20 px-4 mx-auto rounded-lg bg-gray-100">
       <h2 className="text-2xl font-semibold mb-6 text-center">마이페이지</h2>
 
-      <div className="mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
+      <div
+        className="mb-4 p-4 pr-1 bg-white rounded-lg shadow-sm gap-2 max-h-[410px] overflow-y-auto scroll-overlay"
+        style={{ scrollbarGutter: 'stable' }}
+      >
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold mb-2">내 정보</h3>
           <Button

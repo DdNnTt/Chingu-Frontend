@@ -3,6 +3,24 @@
 @tailwind utilities;
 
 /* ============================================
+  Scroll Style
+============================================ */
+/* scroll-overlay 클래스용 스크롤바 커스텀 */
+.scroll-overlay::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-overlay::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.scroll-overlay {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* ============================================
   Common Style
 ============================================ */
 .cont-alert {
