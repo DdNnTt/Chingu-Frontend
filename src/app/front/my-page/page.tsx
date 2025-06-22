@@ -121,18 +121,56 @@ export default function Mypage() {
     }
 
     const values = getValues();
-
-    const payload = {
-      nickname: values.nickname,
-      email: values.email,
-      profilePictureUrl: imagePreview || '',
-    };
+    let uploadedImageUrl = imagePreview;
 
     try {
       setIsSubmitting(true);
 
+      // 새로 업로드한 이미지 파일이 있다면
+      const fileInput =
+        document.querySelector<HTMLInputElement>('input[type="file"]');
+      const file = fileInput?.files?.[0];
+
+      if (file) {
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+
+        // 1. presigned URL 요청
+        const presignRes = await fetch(
+          `/api/users/upload-url/profile?extension=${ext}`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const { uploadUrl, fileUrl } = await presignRes.json();
+        console.log('[프로필 업로드 응답]', { uploadUrl, fileUrl });
+
+        // 2. S3로 이미지 업로드
+        await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': file.type,
+          },
+          body: file,
+        });
+
+        // 3. 업로드된 이미지 URL 저장 및 반영
+        uploadedImageUrl = fileUrl;
+        setImagePreview(fileUrl);
+      }
+
+      // 최종 수정 요청
+      const payload = {
+        nickname: values.nickname,
+        email: values.email,
+        profilePictureUrl: uploadedImageUrl || '',
+      };
+
       const res = await fetch('/api/users/mypage/edit', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -158,8 +196,12 @@ export default function Mypage() {
     }
   };
 
+  // const handleImageRemove = () => {
+  //   setImagePreview(null);
+  // };
+
   return (
-    <div className="mypage-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="mypage-page overflow-y-auto py-20 px-4 mx-auto rounded-lg bg-gray-100">
       <h2 className="text-2xl font-semibold mb-6 text-center">마이페이지</h2>
 
       <div className="mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
@@ -242,25 +284,35 @@ export default function Mypage() {
           {/* 프로필 */}
           <div className="mb-4">
             <label className="block font-medium text-sm mb-1">프로필</label>
-            <input
-              type="file"
-              accept="image/*"
-              className="mb-2"
-              disabled={!isEditable}
-              onChange={(e) => {
-                if (!isEditable) return;
-                handleImageChange(e);
-              }}
-            />
-            {imagePreview && (
-              <div className="border w-32 h-32 relative">
-                <Image
-                  src={imagePreview}
-                  alt="미리보기"
-                  fill
-                  className="object-cover rounded-md"
-                />
-              </div>
+
+            <div className="w-20 h-20 relative">
+              <Image
+                src={imagePreview || '/images/default-profile.jpg'}
+                alt="프로필 이미지"
+                fill
+                className="object-cover rounded-md"
+              />
+            </div>
+
+            {/* 이미지 삭제 버튼 (수정 모드일 때만) */}
+            {/* {isEditable && imagePreview && (
+              <Button
+                type="button"
+                className="mt-2 mb-2 !text-xs !bg-red-500 text-white"
+                onClick={handleImageRemove}
+              >
+                이미지 삭제
+              </Button>
+            )} */}
+
+            {/* 파일 업로드 input */}
+            {isEditable && (
+              <input
+                type="file"
+                accept="image/*"
+                className="mt-2 mb-2"
+                onChange={handleImageChange}
+              />
             )}
           </div>
 
