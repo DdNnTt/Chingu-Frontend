@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: { groupId: string } }
+) {
   const token = req.headers.get('authorization');
-  const url = new URL(req.url);
-  const groupId = url.pathname.split('/').pop(); // /api/groups/[groupId] → groupId 추출
+  const groupId = context.params.groupId;
 
   if (!groupId) {
     return NextResponse.json({ message: 'groupId 누락' }, { status: 400 });
