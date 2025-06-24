@@ -7,6 +7,7 @@ import Button from '@/components/common/Button';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Input from '@/components/common/Input';
+import { getCookieValue } from '@/utils/cookie';
 
 const ChangePwSchema = z
   .object({
@@ -35,7 +36,7 @@ export default function MypageChangePw() {
   });
 
   const onSubmit = async (data: ChangePwFormValues) => {
-    const token = localStorage.getItem('accessToken');
+    const token = getCookieValue('accessToken');
     if (!token) {
       alert('로그인이 필요합니다.');
       router.push('/front/account/login');

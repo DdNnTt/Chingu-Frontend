@@ -47,10 +47,10 @@ export async function POST(req: NextRequest) {
         'Content-Type': contentType ?? 'text/plain',
       },
     });
-  } catch (err) {
-    console.error('[프록시 로그인 오류]', err);
+  } catch (error) {
+    console.error('[프록시 로그인 오류]', error);
     return NextResponse.json(
-      { message: '서버 프록시 오류 발생' },
+      { message: '로그인 중 오류 발생' },
       { status: 500 }
     );
   }

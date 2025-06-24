@@ -7,6 +7,7 @@ import Button from '@/components/common/Button';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Input from '@/components/common/Input';
+import { getCookieValue } from '@/utils/cookie';
 
 const DeleteAccountSchema = z.object({
   password: z.string().min(1, '비밀번호를 입력해주세요.'),
@@ -28,7 +29,7 @@ export default function MypageDeleteAccount() {
   });
 
   const onSubmit = async (data: DeleteAccountFormValues) => {
-    const token = localStorage.getItem('accessToken');
+    const token = getCookieValue('accessToken');
     if (!token) {
       alert('로그인이 필요합니다.');
       router.push('/front/account/login');
@@ -56,7 +57,6 @@ export default function MypageDeleteAccount() {
         return;
       }
 
-      localStorage.removeItem('accessToken');
       setMessage('회원 탈퇴가 완료되었습니다.');
       setTimeout(() => router.push('/'), 2000);
     } catch (error) {

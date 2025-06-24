@@ -9,6 +9,7 @@ import Image from 'next/image';
 import CheckableInput from '@/components/common/CheckableInput';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
+import { getCookieValue } from '@/utils/cookie';
 
 const MypageSchema = z.object({
   nickname: z.string().min(2, '닉네임은 2자 이상 입력해주세요.'),
@@ -40,12 +41,8 @@ export default function Mypage() {
   });
 
   useEffect(() => {
-    const getCookieValue = (name: string) => {
-      const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-      return match ? decodeURIComponent(match[2]) : null;
-    };
-
     const token = getCookieValue('accessToken');
+
     if (!token) return;
 
     fetch('/api/users/mypage', {
@@ -99,6 +96,7 @@ export default function Mypage() {
     if (!token) {
       alert('로그인이 필요합니다.');
       router.push('/front/account/login');
+      return;
     } else {
       router.push('/front/my-page/change-pw');
     }
@@ -114,6 +112,7 @@ export default function Mypage() {
     if (!token) {
       alert('로그인이 필요합니다.');
       router.push('/front/account/login');
+      return;
     } else {
       router.push('/front/account/del-account');
     }
