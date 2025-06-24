@@ -7,6 +7,7 @@ import ScheduleModal from '@/components/my-home/ScheduleModal';
 import ScheduleEditModal from '@/components/my-home/ScheduleEditModal';
 import { useState, useEffect } from 'react';
 import axios from '@/libs/axios';
+import { useRouter } from 'next/navigation';
 
 interface Schedule {
   id: number;
@@ -49,6 +50,7 @@ export default function MyHome() {
   );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showAllSchedules, setShowAllSchedules] = useState(false);
+  const router = useRouter();
 
   // 일정 목록 조회
   const fetchSchedules = async () => {
@@ -250,6 +252,7 @@ export default function MyHome() {
         <Button
           type="button"
           className="flex-1 w-full bg-blue-600 text-white mt-4"
+          onClick={() => router.push('/front/my-home/group-list')}
         >
           더보기
         </Button>
