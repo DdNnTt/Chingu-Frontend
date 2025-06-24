@@ -44,7 +44,7 @@ const Modal: React.FC<ModalProps> = ({
         <div className={`modal-content ${contentClassName}`}>{children}</div>
 
         {!hideFooter && (
-          <div className="flex gap-2 mt-6">
+          <div className="flex gap-2 mt-3">
             <Button
               type="button"
               className="flex-1 bg-gray-500 text-white"

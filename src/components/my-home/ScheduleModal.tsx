@@ -15,6 +15,21 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
+    if (!title.trim()) {
+      alert('일정 제목을 입력해주세요.');
+      return;
+    }
+
+    if (!date) {
+      alert('날짜를 선택해주세요.');
+      return;
+    }
+
+    if (!description.trim()) {
+      alert('일정 설명을 입력해주세요.');
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError('');
