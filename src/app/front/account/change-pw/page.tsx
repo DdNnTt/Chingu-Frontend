@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from 'axios'; // (에러 발생)원본으로 하는 이유: 원본 axios에서 정적 메서드 사용 가능 / 요청 보낼 때는 @/libs/axios 사용 가능
 
 const ChangePwSchema = z
   .object({

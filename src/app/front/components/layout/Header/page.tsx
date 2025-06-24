@@ -2,39 +2,14 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-// import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 
 export default function Header() {
   const router = useRouter();
-  // const [nickname, setNickname] = useState('');
-  // const [userId, setUserId] = useState('');
-
-  // useEffect(() => {
-  //   // localStorage 우선
-  //   const storedNickname = localStorage.getItem('nickname');
-  //   if (storedNickname) {
-  //     setNickname(storedNickname);
-  //   }
-
-  //   const token = localStorage.getItem('accessToken');
-  //   if (!token) return;
-
-  //   try {
-  //     const payload = JSON.parse(atob(token.split('.')[1]));
-  //     setNickname(payload?.nickname || storedNickname || '');
-  //     setUserId(payload?.sub || '');
-  //   } catch {
-  //     setNickname(storedNickname || '');
-  //     setUserId('');
-  //   }
-  // }, []);
 
   const handleLogout = () => {
-    // localStorage 비우기
-    localStorage.removeItem('tokenType');
-    localStorage.removeItem('nickname');
+    // localStorage.removeItem('nickname');
 
     // 쿠키 삭제 (accessToken)
     document.cookie =
