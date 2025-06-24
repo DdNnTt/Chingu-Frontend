@@ -1,38 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from '@/libs/axios';
+
+interface Message {
+  messageId: number;
+  sender: string;
+  receiver: string;
+  content: string;
+  sendTime: string;
+  readStatus: boolean;
+  senderDeleted: boolean;
+  receiverDeleted: boolean;
+}
 
 export default function MessageList() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('sent');
+  const [activeTab, setActiveTab] = useState<'sent' | 'received'>('sent');
+  const [sentMessages, setSentMessages] = useState<Message[]>([]);
+  const [receivedMessages, setReceivedMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const messages = [
-    {
-      id: 1,
-      sender: '닉네임1',
-      content: '쪽지 내용입니다.',
-      date: '2025.04.24',
-    },
-    {
-      id: 2,
-      sender: '닉네임2',
-      content: '쪽지 내용입니다.',
-      date: '2025.04.24',
-    },
-    {
-      id: 3,
-      sender: '닉네임3',
-      content: '쪽지 내용입니다.',
-      date: '2025.04.24',
-    },
-    {
-      id: 4,
-      sender: '닉네임4',
-      content: '쪽지 내용입니다.',
-      date: '2025.04.24',
-    },
-  ];
+  useEffect(() => {
+    const fetchMessages = async () => {
+      setIsLoading(true);
+      try {
+        if (activeTab === 'sent') {
+          const res = await axios.get('/api/messages/sent');
+          setSentMessages(res.data);
+        } else {
+          const res = await axios.get('/api/messages/read/all');
+          setReceivedMessages(res.data);
+        }
+      } catch {
+        alert('쪽지 목록을 불러오지 못했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMessages();
+  }, [activeTab]);
+
+  const messages = activeTab === 'sent' ? sentMessages : receivedMessages;
 
   return (
     <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
@@ -54,22 +64,31 @@ export default function MessageList() {
       </div>
 
       <div className="space-y-2">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className="bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50"
-            onClick={() =>
-              router.push(`/front/message/detail?id=${message.id}`)
-            }
-          >
-            <div className="text-gray-600 text-sm">
-              {activeTab === 'sent' ? '받는 사람 ' : '보낸 사람 '}
-              <span className="main-color">{message.sender}</span>
+        {isLoading ? (
+          <div className="text-center text-gray-500">쪽지를 불러오는 중...</div>
+        ) : messages.length === 0 ? (
+          <div className="text-center text-gray-500">쪽지가 없습니다.</div>
+        ) : (
+          messages.map((message) => (
+            <div
+              key={message.messageId}
+              className="bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50"
+              onClick={() =>
+                router.push(`/front/message/detail?id=${message.messageId}`)
+              }
+            >
+              <div className="text-gray-600 text-sm">
+                {activeTab === 'sent'
+                  ? `받는 사람 ${message.receiver}`
+                  : `보낸 사람 ${message.sender}`}
+              </div>
+              <div className="text-gray-600">{message.content}</div>
+              <div className="text-sm text-gray-400">
+                {new Date(message.sendTime).toLocaleString()}
+              </div>
             </div>
-            <div className="text-gray-600">{message.content}</div>
-            <div className="text-sm text-gray-400">{message.date}</div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
