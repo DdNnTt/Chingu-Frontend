@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import { useState } from 'react';
-import axios from '@/libs/axios';
+import axios from 'axios';
 
 const FindIdSchema = z.object({
   name: z.string().min(1, '이름을 입력해주세요'),

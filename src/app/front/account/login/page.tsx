@@ -8,7 +8,7 @@ import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import { getCookieValue } from '@/utils/cookie';
 
 // Zod 스키마 정의
@@ -104,7 +104,7 @@ export default function Login() {
     } catch (error: unknown) {
       console.error('[로그인 실패]', error);
 
-      if (axios.isAxiosError(error)) {
+      if (isAxiosError(error)) {
         const message = error.response?.data?.message;
         console.error('[서버 응답 메시지]', message);
 
