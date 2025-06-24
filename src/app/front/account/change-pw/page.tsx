@@ -1,5 +1,10 @@
-import ChangePasswordPage from './ChangePasswordPageClient';
+import { Suspense } from 'react';
+import MypageChangePwClient from './ChangePasswordPageClient';
 
 export default function Page() {
-  return <ChangePasswordPage />;
+  return (
+    <Suspense fallback={<div>로딩 중...</div>}>
+      <MypageChangePwClient />
+    </Suspense>
+  );
 }
