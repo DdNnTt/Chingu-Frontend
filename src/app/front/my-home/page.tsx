@@ -48,6 +48,7 @@ export default function MyHome() {
     null
   );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showAllSchedules, setShowAllSchedules] = useState(false);
 
   // 일정 목록 조회
   const fetchSchedules = async () => {
@@ -144,6 +145,15 @@ export default function MyHome() {
     )
     .slice(0, 3);
 
+  // 전체 일정 (최신순 정렬)
+  const allSchedules = schedules.sort(
+    (a, b) =>
+      new Date(b.scheduleDate).getTime() - new Date(a.scheduleDate).getTime()
+  );
+
+  // 현재 표시할 일정 목록
+  const displaySchedules = showAllSchedules ? allSchedules : recentSchedules;
+
   return (
     <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <h2 className="text-2xl font-semibold mb-6 text-center">마이 홈</h2>
@@ -198,13 +208,13 @@ export default function MyHome() {
           <div className="text-center text-gray-500">일정을 불러오는 중...</div>
         ) : error ? (
           <div className="text-center text-red-500">{error}</div>
-        ) : recentSchedules.length === 0 ? (
+        ) : displaySchedules.length === 0 ? (
           <div className="text-center text-gray-500">
             등록된 일정이 없습니다.
           </div>
         ) : (
           <div className="space-y-2">
-            {recentSchedules.map((schedule) => (
+            {displaySchedules.map((schedule) => (
               <div
                 key={schedule.id}
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
@@ -214,6 +224,19 @@ export default function MyHome() {
                 <span className="text-gray-600">{schedule.scheduleDate}</span>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* 전체 일정 보기/접기 버튼 */}
+        {schedules.length > 3 && (
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => setShowAllSchedules(!showAllSchedules)}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+            >
+              {showAllSchedules ? '최신 3개만 보기' : '전체 일정 보기'}
+            </button>
           </div>
         )}
       </div>
