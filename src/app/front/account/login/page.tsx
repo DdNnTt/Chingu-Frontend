@@ -8,7 +8,7 @@ import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import axios from '@/libs/axios';
+import axios from 'axios';
 import { getCookieValue } from '@/utils/cookie';
 
 // Zod 스키마 정의
