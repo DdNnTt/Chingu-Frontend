@@ -8,7 +8,8 @@ import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import axios from '@/libs/axios';
+import { getCookieValue } from '@/utils/cookie';
 
 // Zod 스키마 정의
 const LoginSchema = z.object({
@@ -36,12 +37,6 @@ export default function Login() {
   const [showAlert, setShowAlert] = useState(false);
   const [hideAlert, setHideAlert] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-
-  // 쿠키 값 읽는 함수
-  const getCookieValue = (name: string) => {
-    const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-    return match ? decodeURIComponent(match[2]) : null;
-  };
 
   // 로그인 상태 체크 및 토큰 콘솔 출력
   useEffect(() => {
@@ -97,14 +92,13 @@ export default function Login() {
         },
       });
 
-      const { accessToken, tokenType, nickname } = response.data;
+      const { accessToken } = response.data;
 
       // 쿠키로 저장 (secure, SameSite는 필요 시 조정)
       document.cookie = `accessToken=${accessToken}; path=/; secure; SameSite=Lax`;
 
-      // localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('tokenType', tokenType);
-      localStorage.setItem('nickname', nickname);
+      // localStorage.setItem('tokenType', tokenType);
+      // localStorage.setItem('nickname', nickname);
 
       router.push('/front/my-home');
     } catch (error: unknown) {

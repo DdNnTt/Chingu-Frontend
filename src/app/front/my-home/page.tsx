@@ -7,6 +7,7 @@ import ScheduleModal from '@/components/my-home/ScheduleModal';
 import ScheduleEditModal from '@/components/my-home/ScheduleEditModal';
 import { useState, useEffect } from 'react';
 import axios from '@/libs/axios';
+import { getCookieValue } from '@/utils/cookie';
 
 interface Schedule {
   id: number;
@@ -35,6 +36,12 @@ interface Friend {
   name: string;
   score: number;
   friendSince: string;
+}
+
+interface JwtPayload {
+  nickname?: string;
+  sub?: string;
+  [key: string]: unknown; // 다른 필드가 있어도 에러 방지
 }
 
 export default function MyHome() {
@@ -108,27 +115,31 @@ export default function MyHome() {
   };
 
   // 로그인 후 닉네임 노출
-  function parseJwt(token: string) {
+  function decodeJwtPayload(token: string): JwtPayload | null {
     try {
-      return JSON.parse(atob(token.split('.')[1]));
-    } catch {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
+          .join('')
+      );
+
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error('[토큰 파싱 오류]', e);
       return null;
     }
   }
 
   useEffect(() => {
-    // 1순위: localStorage의 nickname 사용
-    const storedNickname = localStorage.getItem('nickname');
-    if (storedNickname) {
-      setNickname(storedNickname);
-      return;
-    }
-
-    // 2순위: accessToken payload에서 nickname 추출
-    const token = localStorage.getItem('accessToken');
+    // accessToken payload에서 nickname 추출
+    const token = getCookieValue('accessToken');
     if (!token) return;
 
-    const payload = parseJwt(token);
+    const payload = decodeJwtPayload(token);
     if (payload?.nickname) {
       setNickname(payload.nickname);
     } else if (payload?.sub) {
