@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function DELETE(
-  req: NextRequest,
-  context: { params: { groupId: string } }
-) {
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const groupId = searchParams.get('groupId');
   const token = req.headers.get('authorization');
-  const { groupId } = context.params;
+
+  if (!groupId) {
+    return NextResponse.json({ message: 'groupId 누락' }, { status: 400 });
+  }
 
   try {
     const res = await fetch(
@@ -13,7 +15,7 @@ export async function DELETE(
       {
         method: 'DELETE',
         headers: {
-          Authorization: token || '',
+          Authorization: token ?? '',
         },
       }
     );
@@ -21,10 +23,7 @@ export async function DELETE(
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch (error) {
-    console.error('[그룹 삭제 API 프록시 오류]', error);
-    return NextResponse.json(
-      { message: '그룹 삭제 중 서버 오류 발생' },
-      { status: 500 }
-    );
+    console.error('[그룹 삭제 실패]', error);
+    return NextResponse.json({ message: '서버 오류' }, { status: 500 });
   }
 }
