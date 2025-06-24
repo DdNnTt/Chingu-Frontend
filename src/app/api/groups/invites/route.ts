@@ -4,7 +4,7 @@ export async function GET(req: NextRequest) {
   const token = req.headers.get('authorization');
 
   try {
-    const res = await fetch('http://localhost:8080/api/groups/invites', {
+    const res = await fetch(`${process.env.API_BASE_URL}/api/groups/invites`, {
       method: 'GET',
       headers: {
         Authorization: token || '',
