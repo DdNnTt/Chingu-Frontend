@@ -1,95 +1,118 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-type Friend = {
+type Group = {
+  groupId: number;
+  groupName: string;
+  description: string;
+  createdAt: string;
+};
+
+type InviteGroup = {
+  requestId: number;
+  groupId: number;
   friendUserId: number;
   nickname: string;
   name: string;
-  score: number;
-  friendSince: string;
+  requestStatus: string;
+  createdAt: string;
 };
 
-const FRIENDS_DATA: Friend[] = [
-  {
-    friendUserId: 1,
-    nickname: '그룹리스트에용',
-    name: '친구이름1',
-    score: 85,
-    friendSince: '2025-01-22T10:30:00',
-  },
-  {
-    friendUserId: 2,
-    nickname: '친구닉네임2',
-    name: '친구이름2',
-    score: 90,
-    friendSince: '2025-01-21T15:00:00',
-  },
-  {
-    friendUserId: 3,
-    nickname: '친구닉네임3',
-    name: '친구이름3',
-    score: 70,
-    friendSince: '2025-01-20T09:15:00',
-  },
-  {
-    friendUserId: 4,
-    nickname: '친구닉네임4',
-    name: '친구이름4',
-    score: 75,
-    friendSince: '2025-01-19T14:20:00',
-  },
-  {
-    friendUserId: 5,
-    nickname: '친구닉네임5',
-    name: '친구이름5',
-    score: 95,
-    friendSince: '2025-01-18T11:45:00',
-  },
-  {
-    friendUserId: 6,
-    nickname: '친구닉네임6',
-    name: '친구이름6',
-    score: 80,
-    friendSince: '2025-01-17T16:30:00',
-  },
-  {
-    friendUserId: 7,
-    nickname: '친구닉네임7',
-    name: '친구이름7',
-    score: 65,
-    friendSince: '2025-01-16T13:10:00',
-  },
-  {
-    friendUserId: 8,
-    nickname: '친구닉네임8',
-    name: '친구이름8',
-    score: 65,
-    friendSince: '2025-01-16T13:10:00',
-  },
-  {
-    friendUserId: 9,
-    nickname: '친구닉네임9',
-    name: '친구이름9',
-    score: 65,
-    friendSince: '2025-01-16T13:10:00',
-  },
-  {
-    friendUserId: 10,
-    nickname: '친구닉네임10',
-    name: '친구이름10',
-    score: 65,
-    friendSince: '2025-01-16T13:10:00',
-  },
-];
-
 export default function GroupList() {
-  const [friends] = useState<Friend[]>(FRIENDS_DATA);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [invites, setInvites] = useState<InviteGroup[]>([]);
+  const [visibleGroups, setVisibleGroups] = useState(3);
+  const [visibleInvites, setVisibleInvites] = useState(3);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  useEffect(() => {
+    const getCookieValue = (name: string) => {
+      const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+      return match ? decodeURIComponent(match[2]) : null;
+    };
+
+    const token = getCookieValue('accessToken');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      router.push('/front/account/login');
+      return;
+    }
+
+    // 내 그룹 목록 조회
+    fetch(`/api/groups/mygroups`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('그룹 목록 조회 실패');
+        const data = await res.json();
+        setGroups(data);
+      })
+      .catch((err) => {
+        console.error('[그룹 목록 조회 오류]', err);
+        setError('그룹 목록을 불러오지 못했습니다.');
+      })
+      .finally(() => setIsLoading(false));
+
+    // 초대 목록 조회
+    fetch('/api/groups/invites', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('초대 목록 조회 실패');
+        const data = await res.json();
+        setInvites(data);
+      })
+      .catch((err) => {
+        console.error('[초대 목록 조회 오류]', err);
+      });
+  }, [router]);
+
+  const handleGroupDelete = async (groupId: number) => {
+    const confirmDelete = confirm('정말로 이 그룹을 탈퇴하시겠습니까?');
+    if (!confirmDelete) return;
+
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('accessToken='))
+      ?.split('=')[1];
+
+    if (!token) {
+      alert('인증 토큰이 없습니다.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/groups/${groupId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('그룹 삭제 실패');
+
+      alert('그룹이 성공적으로 삭제되었습니다.');
+      // 그룹 목록에서 해당 그룹 제거
+      setGroups((prev) => prev.filter((group) => group.groupId !== groupId));
+    } catch (err) {
+      console.error('[그룹 삭제 실패]', err);
+      alert('그룹 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
   return (
-    <div className="friend-list-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="group-list-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
       <div className="flex items-center mb-6">
         <button
           onClick={() => router.back()}
@@ -115,20 +138,111 @@ export default function GroupList() {
         </h2>
       </div>
 
-      <div className="friend-list bg-white rounded-lg shadow-sm p-4 max-h-[calc(100vh-300px)] overflow-y-auto space-y-3">
-        {friends.map((friend) => (
-          <div
-            key={friend.friendUserId}
-            className="friend-item flex items-center justify-between bg-gray-50 p-3 rounded-md"
-          >
-            <div className="flex items-center gap-3">
-              <span className="font-medium text-gray-800">
-                {friend.nickname}
-              </span>
-            </div>
-            <div className="text-sm text-gray-500">우정도 {friend.score}%</div>
+      <div className="flex justify-end mb-4">
+        <Link
+          href="/front/my-home/group/add"
+          className="text-sm px-3 py-1 bg-[#9477ff] hover:bg-[#6845f5] text-white rounded"
+        >
+          그룹 생성
+        </Link>
+      </div>
+
+      {/* 그룹 목록 */}
+      <div
+        className="group-list bg-white rounded-lg shadow-sm p-4 pr-1 space-y-3 max-h-[calc(90px*3)] overflow-y-auto scroll-overlay"
+        style={{ scrollbarGutter: 'stable' }}
+      >
+        {isLoading ? (
+          <div className="text-center text-gray-400 text-sm">
+            불러오는 중...
           </div>
-        ))}
+        ) : error ? (
+          <div className="text-red-500">{error}</div>
+        ) : groups.length === 0 ? (
+          <div className="text-center text-gray-400 text-sm">
+            그룹 목록이 없습니다. 그룹을 생성해주세요!
+          </div>
+        ) : (
+          groups.slice(0, visibleGroups).map((group) => (
+            <div
+              key={group.groupId}
+              className="group-item flex items-center justify-between bg-white py-2 px-3 rounded-md shadow-sm cursor-pointer hover:bg-gray-50"
+              onClick={() =>
+                router.push(
+                  `/front/my-home/group/detail?groupId=${group.groupId}`
+                )
+              }
+            >
+              <div>
+                <div className="font-semibold text-gray-800">
+                  {group.groupName}
+                </div>
+                <div className="text-sm text-gray-500">{group.description}</div>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation(); // 버튼 클릭 시 부모 div의 클릭 이벤트 방지
+                  handleGroupDelete(group.groupId);
+                }}
+                className="text-sm px-2 py-1 bg-point2-color text-white rounded hover:bg-red-400"
+              >
+                그룹 탈퇴
+              </button>
+            </div>
+          ))
+        )}
+
+        {visibleGroups < groups.length && (
+          <div className="text-center mt-2">
+            <button
+              onClick={() => setVisibleGroups((prev) => prev + 3)}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              더보기
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 초대 목록 */}
+      <div className="group-vite-list bg-white rounded-lg shadow-sm p-4 mt-10 space-y-3 max-h-[calc(90px*3)] overflow-y-auto scroll-overlay">
+        {isLoading ? (
+          <p className="text-center text-gray-400 text-sm">불러오는 중...</p>
+        ) : invites.length === 0 ? (
+          <p className="text-center text-gray-400 text-sm">
+            초대된 그룹이 없습니다.
+          </p>
+        ) : (
+          invites.slice(0, visibleInvites).map((invite) => (
+            <div
+              key={invite.requestId}
+              className="flex items-center justify-between bg-white p-3 rounded-md shadow-sm"
+            >
+              <div className="font-medium text-gray-800">
+                {invite.nickname}님의 그룹
+              </div>
+              <div className="space-x-2">
+                <button className="text-xs px-2 py-1 bg-gray-300 rounded hover:bg-gray-400">
+                  거절
+                </button>
+                <button className="text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                  승인
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+
+        {visibleInvites < invites.length && (
+          <div className="text-center mt-2">
+            <button
+              onClick={() => setVisibleInvites((prev) => prev + 3)}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              더보기
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,69 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import 'react-calendar/dist/Calendar.css';
+
+/* ============================================
+  Calendar Style
+============================================ */
+.react-calendar {
+  border: none;
+}
+
+.react-calendar__navigation {
+  margin: 0;
+}
+
+.react-calendar__tile {
+  padding: 0;
+}
+
+.react-calendar__tile--active,
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus,
+.react-calendar__tile--now {
+  background-color: #fff;
+}
+
+.react-calendar__tile--now .color-round {
+  background-color: #ffffa9;
+}
+
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus.animate-slideUp,
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background: #fff;
+}
+
+.react-calendar__tile:enabled:hover .color-round {
+  background-color: #e6e6e6;
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: #d10000 !important;
+}
+
+.react-calendar__tile--active .color-round {
+  background-color: #baa8ff;
+}
+/* ============================================
+  Scroll Style
+============================================ */
+/* scroll-overlay 클래스용 스크롤바 커스텀 */
+.scroll-overlay::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-overlay::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.scroll-overlay {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
 
 /* ============================================
   Common Style
@@ -24,6 +87,31 @@
 }
 .cont-alert.hide {
   opacity: 0;
+}
+
+input[type='checkbox'] {
+  appearance: none; /* 브라우저 기본 체크박스 제거 */
+  width: 16px;
+  height: 16px;
+  border: 1px solid #bba8ff;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type='checkbox']:checked {
+  background-color: #6845f5;
+  border-color: #6845f5;
+}
+
+input[type='checkbox']:checked::after {
+  content: '✔';
+  color: white;
+  font-size: 10px;
+  position: absolute;
+  top: 0;
+  left: 3px;
 }
 
 /* ============================================
@@ -133,7 +221,8 @@ body {
 }
 main,
 main > div {
-  height: 100%;
+  height: inherit;
+  overflow: hidden;
   border-radius: 20px;
 }
 a {
