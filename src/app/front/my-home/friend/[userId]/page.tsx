@@ -57,7 +57,7 @@ export default function FriendHomePage() {
 
   if (loading) {
     return (
-      <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+      <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto pb-[5rem]">
         <div className="text-center">로딩 중...</div>
       </div>
     );
@@ -65,7 +65,7 @@ export default function FriendHomePage() {
 
   if (error || !userInfo) {
     return (
-      <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+      <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto pb-[5rem]">
         <div className="text-center text-red-500 mb-4">
           {error || '유저 정보를 찾을 수 없습니다.'}
         </div>
@@ -81,7 +81,7 @@ export default function FriendHomePage() {
   }
 
   return (
-    <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto pb-[5rem]">
       <h2 className="text-2xl font-semibold mb-6 text-center">
         {userInfo.nickname}님의 마이 홈
       </h2>
