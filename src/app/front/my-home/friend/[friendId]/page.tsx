@@ -37,9 +37,7 @@ export default function FriendDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [friendRequestLoading, setFriendRequestLoading] = useState(false);
-  const [friendStatus, setFriendStatus] = useState<
-    'none' | 'requested' | 'friend'
-  >('none');
+  const [friendSince, setFriendSince] = useState<string>('');
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -54,6 +52,7 @@ export default function FriendDetailPage() {
 
         const userData: User = response.data;
         setUser(userData);
+        setFriendSince(userData.friendSince);
 
         // 친구 관계 확인
         await checkFriendStatus(userData.id);
@@ -95,42 +94,38 @@ export default function FriendDetailPage() {
 
       if (isFriend) {
         console.log('[친구 관계 확인] 이미 친구 관계임');
-        setFriendStatus('friend');
-        return;
-      }
+        setFriendSince(
+          friendsList.find((f: Friend) => f.friendUserId === targetUserId)
+            ?.friendSince || ''
+        );
+      } else {
+        // 친구가 아니라면 친구 신청 API를 호출하여 이미 요청을 보냈는지 확인
+        try {
+          await axiosInstance.post('/api/friends/request', {
+            friendId: targetUserId,
+          });
 
-      // 친구가 아니라면 친구 신청 API를 호출하여 이미 요청을 보냈는지 확인
-      try {
-        await axiosInstance.post('/api/friends/request', {
-          friendId: targetUserId,
-        });
-
-        // 성공적으로 친구 신청이 되었다면 아직 요청을 보내지 않음
-        console.log('[친구 관계 확인] 아직 친구 요청을 보내지 않음');
-        setFriendStatus('none');
-      } catch (requestErr) {
-        if (isAxiosError(requestErr)) {
-          if (requestErr.response?.status === 400) {
-            if (
-              requestErr.response.data?.message ===
-              '이미 친구 요청을 보냈습니다.'
-            ) {
-              console.log('[친구 관계 확인] 이미 친구 요청을 보냄');
-              setFriendStatus('requested');
-              return;
-            } else if (
-              requestErr.response.data?.message === '이미 친구입니다.'
-            ) {
-              console.log('[친구 관계 확인] 이미 친구 관계임');
-              setFriendStatus('friend');
-              return;
+          // 성공적으로 친구 신청이 되었다면 아직 요청을 보내지 않음
+          console.log('[친구 관계 확인] 아직 친구 요청을 보내지 않음');
+        } catch (requestErr) {
+          if (isAxiosError(requestErr)) {
+            if (requestErr.response?.status === 400) {
+              if (
+                requestErr.response.data?.message ===
+                '이미 친구 요청을 보냈습니다.'
+              ) {
+                console.log('[친구 관계 확인] 이미 친구 요청을 보냄');
+              } else if (
+                requestErr.response.data?.message === '이미 친구입니다.'
+              ) {
+                console.log('[친구 관계 확인] 이미 친구 관계임');
+              }
             }
           }
-        }
 
-        // 기타 에러는 none으로 처리
-        console.log('[친구 관계 확인] 기타 에러:', requestErr);
-        setFriendStatus('none');
+          // 기타 에러는 none으로 처리
+          console.log('[친구 관계 확인] 기타 에러:', requestErr);
+        }
       }
     } catch (err) {
       console.error('[친구 관계 확인 에러]', err);
@@ -138,7 +133,7 @@ export default function FriendDetailPage() {
         console.log('[친구 관계 확인] API 에러:', err.response?.data);
       }
       // 에러 발생 시 기본값으로 설정
-      setFriendStatus('none');
+      setFriendSince('');
     }
   };
 
@@ -157,7 +152,7 @@ export default function FriendDetailPage() {
     console.log('[친구 신청] friendId:', user.id, '타입:', typeof user.id);
 
     // 이미 친구인 경우 친구 끊기 처리
-    if (friendStatus === 'friend') {
+    if (friendSince) {
       const confirmUnfriend = confirm('정말로 이 친구와 끊으시겠습니까?');
       if (!confirmUnfriend) return;
 
@@ -167,7 +162,7 @@ export default function FriendDetailPage() {
         const response = await axiosInstance.delete(`/api/friends/${user.id}`);
         console.log('[친구 끊기 성공]', response.data);
 
-        setFriendStatus('none');
+        setFriendSince('');
         alert('친구 관계가 해제되었습니다.');
       } catch (err) {
         console.error('[친구 끊기 에러]', err);
@@ -191,7 +186,7 @@ export default function FriendDetailPage() {
       });
 
       console.log('[친구 신청 성공]', response.data);
-      setFriendStatus('requested');
+      setFriendSince(response.data.friendSince);
       alert('친구 신청이 전송되었습니다!');
     } catch (err) {
       console.error('[친구 신청 에러 전체]', err);
@@ -210,7 +205,7 @@ export default function FriendDetailPage() {
           err.response.data?.message === '이미 친구입니다.'
         ) {
           console.log('[친구 신청] 이미 친구 관계임');
-          setFriendStatus('friend');
+          setFriendSince(response.data.friendSince);
           return;
         }
 
@@ -220,7 +215,7 @@ export default function FriendDetailPage() {
           err.response.data?.message === '이미 친구 요청을 보냈습니다.'
         ) {
           console.log('[친구 신청] 이미 친구 요청을 보냄');
-          setFriendStatus('requested');
+          setFriendSince(response.data.friendSince);
           return;
         }
 
@@ -296,7 +291,7 @@ export default function FriendDetailPage() {
           ← 뒤로
         </Button>
         <h2 className="text-2xl font-semibold text-center w-full">
-          사용자 마이 홈
+          친구 마이 홈
         </h2>
       </div>
 
@@ -310,7 +305,14 @@ export default function FriendDetailPage() {
             className="object-cover rounded-full border border-gray-300"
           />
           <div className="profile-info">
-            <h3 className="text-lg font-semibold">{user.nickname}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold">{user.nickname}</h3>
+              {friendSince && (
+                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                  친구
+                </span>
+              )}
+            </div>
             <p className="text-sm text-gray-500">이름: {user.name}</p>
             <p className="text-sm text-gray-500">ID: {user.userId}</p>
           </div>
@@ -335,22 +337,16 @@ export default function FriendDetailPage() {
           <Button
             type="button"
             className={`w-full text-white ${
-              friendStatus === 'friend'
-                ? 'bg-red-600 hover:bg-red-700'
-                : friendStatus === 'requested'
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600'
+              friendSince ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600'
             }`}
             onClick={handleFriendRequest}
-            disabled={friendRequestLoading || friendStatus === 'requested'}
+            disabled={friendRequestLoading || !!friendSince}
           >
             {friendRequestLoading
               ? '신청 중...'
-              : friendStatus === 'friend'
+              : friendSince
                 ? '친구 끊기'
-                : friendStatus === 'requested'
-                  ? '신청 완료'
-                  : '친구 맺기'}
+                : '친구 맺기'}
           </Button>
         </div>
         <Button
