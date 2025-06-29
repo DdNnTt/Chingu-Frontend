@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
 import { useRouter, useParams } from 'next/navigation';
+import axios, { isAxiosError } from 'axios';
+import axiosInstance from '@/libs/axios';
 
 interface User {
   id: number;
@@ -18,6 +20,14 @@ interface User {
   socialType: string;
 }
 
+interface Friend {
+  friendUserId: number;
+  nickname: string;
+  name: string;
+  score: number;
+  friendSince: string;
+}
+
 export default function FriendDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -26,26 +36,37 @@ export default function FriendDetailPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [friendRequestLoading, setFriendRequestLoading] = useState(false);
+  const [friendStatus, setFriendStatus] = useState<
+    'none' | 'requested' | 'friend'
+  >('none');
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/users/${friendId}`);
+        const response = await axiosInstance.get(`/api/users/${friendId}`);
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('해당 사용자를 찾을 수 없습니다.');
-          } else {
-            throw new Error('사용자 정보를 불러오는데 실패했습니다.');
-          }
+        if (response.status === 404) {
+          setError('해당 사용자를 찾을 수 없습니다.');
           return;
         }
 
-        const userData: User = await response.json();
+        const userData: User = response.data;
         setUser(userData);
+
+        // 친구 관계 확인
+        await checkFriendStatus(userData.id);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 404) {
+            setError('해당 사용자를 찾을 수 없습니다.');
+          } else {
+            setError('사용자 정보를 불러오는데 실패했습니다.');
+          }
+        } else {
+          setError('오류가 발생했습니다.');
+        }
       } finally {
         setLoading(false);
       }
@@ -56,12 +77,166 @@ export default function FriendDetailPage() {
     }
   }, [friendId]);
 
+  // 친구 관계 확인 함수
+  const checkFriendStatus = async (targetUserId: number) => {
+    try {
+      console.log('[친구 관계 확인] targetUserId:', targetUserId);
+
+      // 친구 목록을 조회하여 이미 친구인지 확인
+      const response = await axiosInstance.get('/api/friends');
+      const friendsList = response.data;
+
+      console.log('[친구 관계 확인] 친구 목록:', friendsList);
+
+      // 친구 목록에서 해당 사용자가 있는지 확인
+      const isFriend = friendsList.some(
+        (friend: Friend) => friend.friendUserId === targetUserId
+      );
+
+      if (isFriend) {
+        console.log('[친구 관계 확인] 이미 친구 관계임');
+        setFriendStatus('friend');
+        return;
+      }
+
+      // 친구가 아니라면 친구 신청 API를 호출하여 이미 요청을 보냈는지 확인
+      try {
+        await axiosInstance.post('/api/friends/request', {
+          friendId: targetUserId,
+        });
+
+        // 성공적으로 친구 신청이 되었다면 아직 요청을 보내지 않음
+        console.log('[친구 관계 확인] 아직 친구 요청을 보내지 않음');
+        setFriendStatus('none');
+      } catch (requestErr) {
+        if (isAxiosError(requestErr)) {
+          if (requestErr.response?.status === 400) {
+            if (
+              requestErr.response.data?.message ===
+              '이미 친구 요청을 보냈습니다.'
+            ) {
+              console.log('[친구 관계 확인] 이미 친구 요청을 보냄');
+              setFriendStatus('requested');
+              return;
+            } else if (
+              requestErr.response.data?.message === '이미 친구입니다.'
+            ) {
+              console.log('[친구 관계 확인] 이미 친구 관계임');
+              setFriendStatus('friend');
+              return;
+            }
+          }
+        }
+
+        // 기타 에러는 none으로 처리
+        console.log('[친구 관계 확인] 기타 에러:', requestErr);
+        setFriendStatus('none');
+      }
+    } catch (err) {
+      console.error('[친구 관계 확인 에러]', err);
+      if (isAxiosError(err)) {
+        console.log('[친구 관계 확인] API 에러:', err.response?.data);
+      }
+      // 에러 발생 시 기본값으로 설정
+      setFriendStatus('none');
+    }
+  };
+
   const handleSendMessage = () => {
     router.push('/front/message/write');
   };
 
   const handleGoBack = () => {
     router.back();
+  };
+
+  const handleFriendRequest = async () => {
+    if (!user) return;
+
+    console.log('[친구 신청] 사용자 정보:', user);
+    console.log('[친구 신청] friendId:', user.id, '타입:', typeof user.id);
+
+    // 이미 친구인 경우 친구 끊기 처리
+    if (friendStatus === 'friend') {
+      const confirmUnfriend = confirm('정말로 이 친구와 끊으시겠습니까?');
+      if (!confirmUnfriend) return;
+
+      try {
+        setFriendRequestLoading(true);
+
+        const response = await axiosInstance.delete(`/api/friends/${user.id}`);
+        console.log('[친구 끊기 성공]', response.data);
+
+        setFriendStatus('none');
+        alert('친구 관계가 해제되었습니다.');
+      } catch (err) {
+        console.error('[친구 끊기 에러]', err);
+        if (isAxiosError(err)) {
+          alert(err.response?.data?.error || '친구 끊기에 실패했습니다.');
+        } else {
+          alert('친구 끊기에 실패했습니다.');
+        }
+      } finally {
+        setFriendRequestLoading(false);
+      }
+      return;
+    }
+
+    // 친구 신청 처리
+    try {
+      setFriendRequestLoading(true);
+
+      const response = await axiosInstance.post('/api/friends/request', {
+        friendId: user.id,
+      });
+
+      console.log('[친구 신청 성공]', response.data);
+      setFriendStatus('requested');
+      alert('친구 신청이 전송되었습니다!');
+    } catch (err) {
+      console.error('[친구 신청 에러 전체]', err);
+
+      if (isAxiosError(err)) {
+        console.error('[친구 신청 Axios 에러]', {
+          status: err.response?.status,
+          statusText: err.response?.statusText,
+          data: err.response?.data,
+          headers: err.response?.headers,
+        });
+
+        // 이미 친구인 경우는 성공으로 처리
+        if (
+          err.response?.status === 400 &&
+          err.response.data?.message === '이미 친구입니다.'
+        ) {
+          console.log('[친구 신청] 이미 친구 관계임');
+          setFriendStatus('friend');
+          return;
+        }
+
+        // 이미 친구 요청을 보낸 경우는 requested 상태로 처리
+        if (
+          err.response?.status === 400 &&
+          err.response.data?.message === '이미 친구 요청을 보냈습니다.'
+        ) {
+          console.log('[친구 신청] 이미 친구 요청을 보냄');
+          setFriendStatus('requested');
+          return;
+        }
+
+        const errorMessage =
+          err.response?.data?.error ||
+          err.response?.data?.details ||
+          '친구 신청에 실패했습니다.';
+        console.error('[친구 신청] 에러 메시지:', errorMessage);
+        alert(errorMessage);
+      } else {
+        console.error('[친구 신청] 알 수 없는 에러:', err);
+        alert('친구 신청에 실패했습니다.');
+      }
+    } finally {
+      setFriendRequestLoading(false);
+    }
   };
 
   if (loading) {
@@ -156,9 +331,28 @@ export default function FriendDetailPage() {
       </div>
 
       <div className="flex gap-2 mb-4">
-        <Button type="button" className="flex-1 text-white bg-red-600">
-          친구 끊기
-        </Button>
+        <div className="flex-1 relative">
+          <Button
+            type="button"
+            className={`w-full text-white ${
+              friendStatus === 'friend'
+                ? 'bg-red-600 hover:bg-red-700'
+                : friendStatus === 'requested'
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600'
+            }`}
+            onClick={handleFriendRequest}
+            disabled={friendRequestLoading || friendStatus === 'requested'}
+          >
+            {friendRequestLoading
+              ? '신청 중...'
+              : friendStatus === 'friend'
+                ? '친구 끊기'
+                : friendStatus === 'requested'
+                  ? '신청 완료'
+                  : '친구 맺기'}
+          </Button>
+        </div>
         <Button
           type="button"
           className="flex-1 text-white bg-blue-600"
