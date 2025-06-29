@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import axiosInstance from '@/libs/axios';
 import Link from 'next/link';
 import Button from '@/components/common/Button';
+import { AxiosError } from 'axios';
 
 interface FriendRequest {
   fromUserId: number;
@@ -34,7 +35,7 @@ export default function FriendRequestsPage() {
 
   const handleRespond = async (
     friendId: number,
-    status: 'accept' | 'reject'
+    status: 'accepted' | 'rejected'
   ) => {
     try {
       const response = await axiosInstance.put('/api/friends/respond', {
@@ -50,13 +51,26 @@ export default function FriendRequestsPage() {
       );
 
       alert(
-        status === 'accept'
+        status === 'accepted'
           ? '친구 요청을 수락했습니다!'
           : '친구 요청을 거절했습니다.'
       );
     } catch (err) {
       console.error('친구 요청 응답 실패:', err);
-      alert('요청 처리에 실패했습니다.');
+
+      if (err instanceof AxiosError) {
+        console.error('에러 응답 데이터:', err.response?.data);
+        console.error('에러 상태 코드:', err.response?.status);
+
+        // 에러 메시지 표시
+        const errorMessage =
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          '요청 처리에 실패했습니다.';
+        alert(`에러: ${errorMessage}`);
+      } else {
+        alert('요청 처리에 실패했습니다.');
+      }
     }
   };
 
@@ -106,14 +120,14 @@ export default function FriendRequestsPage() {
               <div className="flex gap-2">
                 <Button
                   type="button"
-                  onClick={() => handleRespond(request.fromUserId, 'accept')}
+                  onClick={() => handleRespond(request.fromUserId, 'accepted')}
                   className="bg-green-600 text-white text-sm px-3 py-1"
                 >
                   수락
                 </Button>
                 <Button
                   type="button"
-                  onClick={() => handleRespond(request.fromUserId, 'reject')}
+                  onClick={() => handleRespond(request.fromUserId, 'rejected')}
                   className="bg-red-600 text-white text-sm px-3 py-1"
                 >
                   거절
