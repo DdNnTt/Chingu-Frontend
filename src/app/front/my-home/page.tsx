@@ -72,10 +72,14 @@ export default function MyHome() {
   // 친구 목록 조회
   const fetchFriends = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.get('/api/friends');
       setFriends(response.data);
     } catch (err) {
-      console.error('친구 목록 조회 실패:', err);
+      console.error(err);
+      setError('친구 목록을 불러오지 못했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
