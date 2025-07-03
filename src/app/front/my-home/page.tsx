@@ -57,6 +57,7 @@ export default function MyHome() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [receivedMessagesCount, setReceivedMessagesCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
@@ -95,6 +96,16 @@ export default function MyHome() {
     }
   };
 
+  // 받은 쪽지 개수 조회
+  const fetchReceivedMessagesCount = async () => {
+    try {
+      const response = await axiosInstance.get('/api/messages/read/all');
+      setReceivedMessagesCount(response.data.length);
+    } catch (err) {
+      console.error('받은 쪽지 개수 조회 실패:', err);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -104,6 +115,7 @@ export default function MyHome() {
           fetchSchedules(),
           fetchFriends(),
           fetchFriendRequests(),
+          fetchReceivedMessagesCount(),
         ]);
       } catch {
         setError('데이터를 불러오는데 실패했습니다.');
@@ -230,7 +242,7 @@ export default function MyHome() {
         >
           <span>나의 쪽지함</span>
           <span className="ml-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-            5
+            {receivedMessagesCount}
           </span>
         </Link>
 
