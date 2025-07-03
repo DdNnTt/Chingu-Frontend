@@ -1,31 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function GET(req: NextRequest, context: any) {
-  const userId = context?.params?.userId;
+export async function DELETE(req: NextRequest, context: any) {
+  const friendId = context?.params?.friendId;
 
-  if (typeof userId !== 'string') {
+  if (typeof friendId !== 'string') {
     return NextResponse.json(
-      { error: '유효하지 않은 userId' },
+      { error: '유효하지 않은 friendId' },
       { status: 400 }
     );
   }
 
   const API_BASE = process.env.API_BASE_URL;
+  const token = req.headers.get('authorization');
 
   if (!API_BASE) {
     return NextResponse.json({ error: 'API_BASE_URL 누락됨' }, { status: 500 });
   }
 
+  if (!token) {
+    return NextResponse.json(
+      { error: '인증 토큰이 필요합니다' },
+      { status: 401 }
+    );
+  }
+
   try {
-    const res = await fetch(`${API_BASE}/api/users/${userId}`, {
-      method: 'GET',
+    const res = await fetch(`${API_BASE}/api/friends/${friendId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: token,
+      },
     });
 
     if (!res.ok) {
       const errorText = await res.text();
       return NextResponse.json(
-        { error: '유저 조회 실패', details: errorText },
+        { error: '친구 삭제 실패', details: errorText },
         { status: res.status }
       );
     }
@@ -33,7 +44,7 @@ export async function GET(req: NextRequest, context: any) {
     const data = await res.json();
     return NextResponse.json(data);
   } catch (err) {
-    console.error('[유저 조회 오류]', err);
+    console.error('[친구 삭제 오류]', err);
     return NextResponse.json({ error: '서버 오류' }, { status: 500 });
   }
 }
