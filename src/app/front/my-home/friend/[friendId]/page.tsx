@@ -18,6 +18,7 @@ interface User {
   joinDate: string;
   lastLoginDate: string;
   socialType: string;
+  friendSince?: string;
 }
 
 interface Friend {
@@ -52,7 +53,7 @@ export default function FriendDetailPage() {
 
         const userData: User = response.data;
         setUser(userData);
-        setFriendSince(userData.friendSince);
+        setFriendSince(userData.friendSince ?? '');
 
         // 친구 관계 확인
         await checkFriendStatus(userData.id);
@@ -205,7 +206,7 @@ export default function FriendDetailPage() {
           err.response.data?.message === '이미 친구입니다.'
         ) {
           console.log('[친구 신청] 이미 친구 관계임');
-          setFriendSince(response.data.friendSince);
+          setFriendSince(''); // response 없음
           return;
         }
 
@@ -215,7 +216,7 @@ export default function FriendDetailPage() {
           err.response.data?.message === '이미 친구 요청을 보냈습니다.'
         ) {
           console.log('[친구 신청] 이미 친구 요청을 보냄');
-          setFriendSince(response.data.friendSince);
+          setFriendSince(''); // response 없음
           return;
         }
 
