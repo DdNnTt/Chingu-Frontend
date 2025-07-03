@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
+import MessageModal from '@/components/common/MessageModal';
 import { useRouter, useParams } from 'next/navigation';
 import axios, { isAxiosError } from 'axios';
 import axiosInstance from '@/libs/axios';
@@ -39,6 +40,7 @@ export default function FriendDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [friendRequestLoading, setFriendRequestLoading] = useState(false);
   const [friendSince, setFriendSince] = useState<string>('');
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -139,7 +141,7 @@ export default function FriendDetailPage() {
   };
 
   const handleSendMessage = () => {
-    router.push('/front/message/write');
+    setIsMessageModalOpen(true);
   };
 
   const handleGoBack = () => {
@@ -338,7 +340,7 @@ export default function FriendDetailPage() {
           <Button
             type="button"
             className={`w-full text-white ${
-              friendSince ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600'
+              friendSince ? 'bg-red-600' : 'bg-blue-600'
             }`}
             onClick={handleFriendRequest}
             disabled={friendRequestLoading || !!friendSince}
@@ -352,8 +354,11 @@ export default function FriendDetailPage() {
         </div>
         <Button
           type="button"
-          className="flex-1 text-white bg-blue-600"
+          className={`flex-1 text-white ${
+            friendSince ? 'bg-blue-600' : 'bg-gray-400 cursor-not-allowed'
+          }`}
           onClick={handleSendMessage}
+          disabled={!friendSince}
         >
           쪽지 보내기
         </Button>
@@ -376,6 +381,17 @@ export default function FriendDetailPage() {
           더보기
         </Button>
       </div>
+
+      {/* 쪽지 보내기 모달 */}
+      {user && (
+        <MessageModal
+          isOpen={isMessageModalOpen}
+          onClose={() => setIsMessageModalOpen(false)}
+          receiver={user.userId}
+          receiverName={user.nickname}
+          isFriend={!!friendSince}
+        />
+      )}
     </div>
   );
 }
