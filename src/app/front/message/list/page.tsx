@@ -17,7 +17,7 @@ interface Message {
 
 export default function MessageList() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'sent' | 'received'>('sent');
+  const [activeTab, setActiveTab] = useState<'sent' | 'received'>('received');
   const [sentMessages, setSentMessages] = useState<Message[]>([]);
   const [receivedMessages, setReceivedMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,19 +51,19 @@ export default function MessageList() {
       <div className="flex mb-4 gap-2">
         <button
           className={`flex-1 py-2 text-center rounded-lg ${
-            activeTab === 'sent' ? 'bg-main-color text-white' : 'bg-white'
-          }`}
-          onClick={() => setActiveTab('sent')}
-        >
-          보낸 쪽지
-        </button>
-        <button
-          className={`flex-1 py-2 text-center rounded-lg ${
             activeTab === 'received' ? 'bg-main-color text-white' : 'bg-white'
           }`}
           onClick={() => setActiveTab('received')}
         >
           받은 쪽지
+        </button>
+        <button
+          className={`flex-1 py-2 text-center rounded-lg ${
+            activeTab === 'sent' ? 'bg-main-color text-white' : 'bg-white'
+          }`}
+          onClick={() => setActiveTab('sent')}
+        >
+          보낸 쪽지
         </button>
       </div>
 
