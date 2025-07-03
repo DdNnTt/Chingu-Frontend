@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { userId: string } }
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function GET(req: NextRequest, context: any) {
+  const userId = context?.params?.userId;
+
+  if (typeof userId !== 'string') {
+    return NextResponse.json(
+      { error: '유효하지 않은 userId' },
+      { status: 400 }
+    );
+  }
+
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');
-  const { userId } = params;
 
   if (!API_BASE) {
     return NextResponse.json({ error: 'API_BASE_URL 누락됨' }, { status: 500 });
