@@ -6,7 +6,7 @@ import Button from '@/components/common/Button';
 import ScheduleModal from '@/components/my-home/ScheduleModal';
 import ScheduleEditModal from '@/components/my-home/ScheduleEditModal';
 import { useState, useEffect } from 'react';
-import axios from '@/libs/axios';
+import axiosInstance from '@/libs/axios';
 import { useRouter } from 'next/navigation';
 import { getCookieValue } from '@/utils/cookie';
 
@@ -45,13 +45,20 @@ interface Friend {
   friendSince: string;
 }
 
+interface FriendRequest {
+  fromUserId: number;
+  nickname: string;
+  requestedAt: string;
+}
+
 export default function MyHome() {
-  const [nickname, setNickname] = useState('');
+  const [nickname, setNickname] = useState<string>('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
     null
   );
@@ -62,7 +69,7 @@ export default function MyHome() {
   // 일정 목록 조회
   const fetchSchedules = async () => {
     try {
-      const response = await axios.get('/api/schedules');
+      const response = await axiosInstance.get('/api/schedules');
       setSchedules(response.data);
     } catch (err) {
       console.error('일정 조회 실패:', err);
@@ -72,10 +79,19 @@ export default function MyHome() {
   // 친구 목록 조회
   const fetchFriends = async () => {
     try {
-      const response = await axios.get('/api/friends');
+      const response = await axiosInstance.get('/api/friends');
       setFriends(response.data);
     } catch (err) {
       console.error('친구 목록 조회 실패:', err);
+    }
+  };
+
+  const fetchFriendRequests = async () => {
+    try {
+      const response = await axiosInstance.get('/api/friends/requests');
+      setFriendRequests(response.data);
+    } catch (err) {
+      console.error('받은 친구 요청 조회 실패:', err);
     }
   };
 
@@ -84,7 +100,11 @@ export default function MyHome() {
       setIsLoading(true);
       setError('');
       try {
-        await Promise.all([fetchSchedules(), fetchFriends()]);
+        await Promise.all([
+          fetchSchedules(),
+          fetchFriends(),
+          fetchFriendRequests(),
+        ]);
       } catch {
         setError('데이터를 불러오는데 실패했습니다.');
       } finally {
@@ -182,12 +202,20 @@ export default function MyHome() {
         <div className="profile-info">
           {/* <h3 className="text-lg font-semibold">닉네임</h3> */}
           <h3 className="text-lg font-semibold">{nickname || '닉네임'}</h3>
-          <Link
-            href="/front/my-home/friend-list"
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            친구 수 <span>{friends.length}</span>
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              href="/front/my-home/friend-list"
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              친구 수 <span>{friends.length}</span>
+            </Link>
+            <Link
+              href="/front/my-home/friend-requests"
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              받은 친구 요청 <span>{friendRequests.length}</span>
+            </Link>
+          </div>
         </div>
       </div>
 
