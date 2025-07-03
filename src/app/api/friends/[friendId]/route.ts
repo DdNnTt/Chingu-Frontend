@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { friendId: string } }
+  context: { params: { friendId: string } }
 ) {
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');
-  const { friendId } = params;
+  const { friendId } = context.params;
 
   console.log('[친구 삭제 API] friendUserId:', friendId);
 

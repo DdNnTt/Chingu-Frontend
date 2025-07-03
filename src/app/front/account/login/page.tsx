@@ -52,7 +52,7 @@ export default function Login() {
         console.error('[토큰 파싱 오류]', err);
       }
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (loginError) {
