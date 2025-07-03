@@ -50,13 +50,17 @@ export default function MessageList() {
 
       <div className="flex mb-4 gap-2">
         <button
-          className={`flex-1 py-2 text-center rounded-lg ${activeTab === 'sent' ? 'bg-main-color text-white' : 'bg-white'}`}
+          className={`flex-1 py-2 text-center rounded-lg ${
+            activeTab === 'sent' ? 'bg-main-color text-white' : 'bg-white'
+          }`}
           onClick={() => setActiveTab('sent')}
         >
           보낸 쪽지
         </button>
         <button
-          className={`flex-1 py-2 text-center rounded-lg ${activeTab === 'received' ? 'bg-main-color text-white' : 'bg-white'}`}
+          className={`flex-1 py-2 text-center rounded-lg ${
+            activeTab === 'received' ? 'bg-main-color text-white' : 'bg-white'
+          }`}
           onClick={() => setActiveTab('received')}
         >
           받은 쪽지
@@ -77,15 +81,34 @@ export default function MessageList() {
                 router.push(`/front/message/detail?id=${message.messageId}`)
               }
             >
-              <div className="text-gray-600 text-sm">
-                {activeTab === 'sent'
-                  ? `받는 사람 ${message.receiver}`
-                  : `보낸 사람 ${message.sender}`}
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-gray-600 text-sm">
+                  {activeTab === 'sent'
+                    ? `받는 사람: ${message.receiver}`
+                    : `보낸 사람: ${message.sender}`}
+                </div>
+                <div className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                  {new Date(message.sendTime).toLocaleString()}
+                </div>
               </div>
-              <div className="text-gray-600">{message.content}</div>
-              <div className="text-sm text-gray-400">
-                {new Date(message.sendTime).toLocaleString()}
+              <div className="text-gray-800 mb-2 font-medium">
+                {message.content.length > 80
+                  ? `${message.content.substring(0, 80)}...`
+                  : message.content}
               </div>
+              {activeTab === 'received' && (
+                <div className="text-xs">
+                  {message.readStatus ? (
+                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                      읽음
+                    </span>
+                  ) : (
+                    <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                      읽지 않음
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           ))
         )}
