@@ -116,7 +116,31 @@ export default function GroupAdd() {
 
   return (
     <div className="group-add-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
-      <h2 className="text-2xl font-semibold mb-6 text-center">내 그룹 목록</h2>
+      <div className="flex items-center mb-6">
+        <button
+          onClick={() => router.back()}
+          className="text-gray-600 hover:text-gray-800"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-6 h-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+            />
+          </svg>
+        </button>
+        <h2 className="text-2xl font-semibold text-center flex-1">
+          내 그룹 생성
+        </h2>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* 그룹명 입력 */}
         <div className="mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">

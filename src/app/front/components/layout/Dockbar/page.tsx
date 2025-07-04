@@ -7,12 +7,17 @@ import { Home, Users, UserCircle, Mail } from 'lucide-react';
 export default function Dockbar() {
   const pathname = usePathname();
 
+  console.log('📍 current pathname:', pathname); // ← 확인용
+
   const items = [
     { href: '/front/my-home', label: '마이홈', icon: <Home size={20} /> },
     {
       href: '/front/my-home/group-list',
       label: '그룹',
       icon: <Users size={20} />,
+      isActive:
+        pathname.includes('/front/my-home/group') ||
+        pathname.includes('/front/my-home/member'),
     },
     {
       href: '/front/my-page',
@@ -29,7 +34,9 @@ export default function Dockbar() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex flex-col items-center gap-1 ${pathname === item.href ? 'text-[#aa96fc]' : ''}`}
+            className={`flex flex-col items-center gap-1 ${
+              item.isActive || pathname === item.href ? 'text-[#aa96fc]' : ''
+            }`}
           >
             {item.icon}
             <span className="text-xs">{item.label}</span>
