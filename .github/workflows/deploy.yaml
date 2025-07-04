@@ -8,8 +8,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    container: pandoc/latex
-
     steps:
       - uses: actions/checkout@v2
 
