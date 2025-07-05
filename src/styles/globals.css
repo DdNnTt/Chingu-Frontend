@@ -157,6 +157,18 @@ a.small-ver {
   .delay-1200 {
     animation-delay: 1.2s;
   }
+  .delay-1400 {
+    animation-delay: 1.4s;
+  }
+  .delay-300 {
+    animation-delay: 0.3s;
+  }
+  .delay-900 {
+    animation-delay: 0.9s;
+  }
+  .delay-1500 {
+    animation-delay: 1.5s;
+  }
 }
 
 /* ============================================
