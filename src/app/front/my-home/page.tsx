@@ -51,11 +51,19 @@ interface FriendRequest {
   requestedAt: string;
 }
 
+interface Group {
+  groupId: number;
+  groupName: string;
+  description: string;
+  createdAt: string;
+}
+
 export default function MyHome() {
   const [nickname, setNickname] = useState<string>('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [receivedMessagesCount, setReceivedMessagesCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -116,6 +124,7 @@ export default function MyHome() {
           fetchFriends(),
           fetchFriendRequests(),
           fetchReceivedMessagesCount(),
+          fetchGroups(),
         ]);
       } catch {
         setError('데이터를 불러오는데 실패했습니다.');
@@ -198,6 +207,21 @@ export default function MyHome() {
 
   // 현재 표시할 일정 목록
   const displaySchedules = showAllSchedules ? allSchedules : recentSchedules;
+
+  // 그룹 조회
+  const fetchGroups = async () => {
+    try {
+      const token = getCookieValue('accessToken');
+      const response = await axiosInstance.get('/api/groups/mygroups', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setGroups(response.data);
+    } catch (err) {
+      console.error('그룹 목록 조회 실패:', err);
+    }
+  };
 
   return (
     <div className="my-home-page py-4 px-4 pt-20 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
@@ -296,9 +320,24 @@ export default function MyHome() {
 
       <div className="my-groups bg-white p-4 rounded-lg shadow-sm">
         <h3 className="text-lg font-semibold mb-2">내 그룹 목록</h3>
-        <div className="group-item bg-gray-200 p-3 rounded mb-2">그룹1</div>
-        <div className="group-item bg-gray-200 p-3 rounded mb-2">그룹2</div>
-        <div className="group-item bg-gray-200 p-3 rounded">그룹3</div>
+        {groups.length === 0 ? (
+          <p className="text-gray-500">가입된 그룹이 없습니다.</p>
+        ) : (
+          groups.slice(0, 3).map((group) => (
+            <div
+              key={group.groupId}
+              className="group-item bg-gray-200 p-3 rounded mb-2 cursor-pointer hover:bg-gray-300 transition-colors"
+              onClick={() =>
+                router.push(
+                  `/front/my-home/group/detail?groupId=${group.groupId}`
+                )
+              }
+            >
+              <div className="font-medium text-gray-800">{group.groupName}</div>
+              {/* <div className="text-sm text-gray-600">{group.description}</div> */}
+            </div>
+          ))
+        )}
 
         <Button
           type="button"
