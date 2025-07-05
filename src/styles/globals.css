@@ -157,18 +157,6 @@ a.small-ver {
   .delay-1200 {
     animation-delay: 1.2s;
   }
-  .delay-1400 {
-    animation-delay: 1.4s;
-  }
-  .delay-300 {
-    animation-delay: 0.3s;
-  }
-  .delay-900 {
-    animation-delay: 0.9s;
-  }
-  .delay-1500 {
-    animation-delay: 1.5s;
-  }
 }
 
 /* ============================================
@@ -327,12 +315,4 @@ Custom Fonts
   src: url('/fonts/Hakgyoansim-Puzzle-Outline.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-16px); }
-}
-.animate-float {
-  animation: float 2.5s ease-in-out infinite;
 }
