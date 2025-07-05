@@ -7,7 +7,7 @@ import { Home, Users, UserCircle, Mail } from 'lucide-react';
 export default function Dockbar() {
   const pathname = usePathname();
 
-  console.log('📍 current pathname:', pathname); // ← 확인용
+  // console.log('📍 current pathname:', pathname); // ← 확인용
 
   const items = [
     { href: '/front/my-home', label: '마이홈', icon: <Home size={20} /> },
