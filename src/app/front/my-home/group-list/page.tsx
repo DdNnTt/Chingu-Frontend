@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Button from '@/components/common/Button';
 import Link from 'next/link';
 
 type Group = {
@@ -194,12 +195,13 @@ export default function GroupList() {
 
         {visibleGroups < groups.length && (
           <div className="text-center mt-2">
-            <button
+            <Button
+              type="button"
               onClick={() => setVisibleGroups((prev) => prev + 3)}
-              className="text-sm text-blue-600 hover:underline"
+              className="flex-1 w-full bg-blue-600 text-white mt-4"
             >
               더보기
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -235,12 +237,13 @@ export default function GroupList() {
 
         {visibleInvites < invites.length && (
           <div className="text-center mt-2">
-            <button
+            <Button
+              type="button"
               onClick={() => setVisibleInvites((prev) => prev + 3)}
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-blue-600"
             >
               더보기
-            </button>
+            </Button>
           </div>
         )}
       </div>
