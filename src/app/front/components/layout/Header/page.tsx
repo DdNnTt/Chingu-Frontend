@@ -18,7 +18,6 @@ export default function Header() {
   const handleLogout = () => {
     document.cookie =
       'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-
     alert('다음에 또 만나요 👋');
     router.replace('/front/account/login');
   };
@@ -26,8 +25,13 @@ export default function Header() {
   // 유저 검색
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
-    // 실제 검색 로직은 props로 전달하거나 페이지 내부에서 처리
     router.push(`/front/search?keyword=${encodeURIComponent(searchQuery)}`);
+  };
+
+  // 폼 제출 핸들러
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleSearch();
   };
 
   return (
@@ -45,25 +49,22 @@ export default function Header() {
 
       <div className="flex items-center gap-2">
         {isSearchPage ? (
-          <>
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
             <Input
               type="text"
               placeholder="검색어 입력"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-40 py-1 text-sm" // 기본 padding 유지하면서 사이즈 조절
+              className="w-40 py-1 text-sm"
             />
-            {/* 검색 버튼 */}
             <button
-              type="button"
-              onClick={handleSearch}
+              type="submit"
               className="text-main-color hover:text-blue-600"
             >
               <Search size={20} />
             </button>
-          </>
+          </form>
         ) : (
-          // 검색 아이콘
           <button
             type="button"
             className="hover:text-main-color text-gray-700"
