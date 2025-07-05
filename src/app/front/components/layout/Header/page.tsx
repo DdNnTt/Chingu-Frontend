@@ -1,22 +1,37 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import Input from '@/components/common/Input';
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
+  const isSearchPage = pathname === '/front/search';
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // 로그아웃
   const handleLogout = () => {
-    // localStorage.removeItem('nickname');
-
-    // 쿠키 삭제 (accessToken)
     document.cookie =
       'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-
     alert('다음에 또 만나요 👋');
     router.replace('/front/account/login');
+  };
+
+  // 유저 검색
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return;
+    router.push(`/front/search?keyword=${encodeURIComponent(searchQuery)}`);
+  };
+
+  // 폼 제출 핸들러
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleSearch();
   };
 
   return (
@@ -32,23 +47,34 @@ export default function Header() {
         />
       </Link>
 
-      {/* 프로필 / 검색 / 로그아웃 */}
-      <div className="flex items-center gap-3">
-        {/* {(nickname || userId) && (
-          <span className="text-sm text-gray-700">
-            👋 {nickname} ({userId})님
-          </span>
-        )} */}
+      <div className="flex items-center gap-2">
+        {isSearchPage ? (
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <Input
+              type="text"
+              placeholder="검색어 입력"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-40 py-1 text-sm"
+            />
+            <button
+              type="submit"
+              className="text-main-color hover:text-blue-600"
+            >
+              <Search size={20} />
+            </button>
+          </form>
+        ) : (
+          <button
+            type="button"
+            className="hover:text-main-color text-gray-700"
+            onClick={() => router.push('/front/search')}
+          >
+            <Search size={20} />
+          </button>
+        )}
 
-        {/* 검색 아이콘 */}
-        <button
-          type="button"
-          className="hover:text-main-color text-gray-700"
-          onClick={() => router.push('/front/search')}
-        >
-          <Search size={20} />
-        </button>
-
+        {/* 로그아웃 */}
         <button
           onClick={handleLogout}
           className="text-sm text-white bg-point1-color px-3 py-1 rounded-md hover:bg-[#f7bf65]"

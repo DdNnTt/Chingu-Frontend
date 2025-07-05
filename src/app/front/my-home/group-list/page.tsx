@@ -32,12 +32,11 @@ export default function GroupList() {
   const router = useRouter();
 
   useEffect(() => {
-    const getCookieValue = (name: string) => {
-      const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-      return match ? decodeURIComponent(match[2]) : null;
-    };
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('accessToken='))
+      ?.split('=')[1];
 
-    const token = getCookieValue('accessToken');
     if (!token) {
       alert('로그인이 필요합니다.');
       router.push('/front/account/login');
@@ -79,6 +78,7 @@ export default function GroupList() {
       });
   }, [router]);
 
+  // 그룹 탈퇴
   const handleGroupDelete = async (groupId: number) => {
     const confirmDelete = confirm('정말로 이 그룹을 탈퇴하시겠습니까?');
     if (!confirmDelete) return;
