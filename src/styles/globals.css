@@ -114,6 +114,11 @@ input[type='checkbox']:checked::after {
   left: 3px;
 }
 
+button.small-ver,
+a.small-ver {
+  padding: 0.25rem 0.75rem;
+}
+
 /* ============================================
   Animation
 ============================================ */
