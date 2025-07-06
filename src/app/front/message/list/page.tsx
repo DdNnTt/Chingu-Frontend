@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from '@/libs/axios';
+import axiosInstance from '@/libs/axios';
 
 interface Message {
   messageId: number;
@@ -27,10 +27,10 @@ export default function MessageList() {
       setIsLoading(true);
       try {
         if (activeTab === 'sent') {
-          const res = await axios.get('/api/messages/sent');
+          const res = await axiosInstance.get('/api/messages/sent');
           setSentMessages(res.data);
         } else {
-          const res = await axios.get('/api/messages/read/all');
+          const res = await axiosInstance.get('/api/messages/read/all');
           setReceivedMessages(res.data);
         }
       } catch {
