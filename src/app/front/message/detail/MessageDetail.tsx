@@ -2,6 +2,8 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import axios from '@/libs/axios';
+import { isAxiosError } from 'axios';
 
 interface Message {
   messageId: number;
@@ -31,68 +33,33 @@ export default function MessageDetail() {
       }
 
       try {
-        console.log('쪽지 조회 시작:', messageId);
+        const response = await axios.get(`/api/messages/read/${messageId}`);
+        setMessage(response.data);
 
-        // 토큰 확인
-        const token = document.cookie
-          .split('; ')
-          .find((row) => row.startsWith('accessToken='))
-          ?.split('=')[1];
-
-        console.log('토큰 존재:', !!token);
-
-        // 직접 fetch 사용 (axios 대신)
-
-        const response = await fetch(`/api/messages/read/${messageId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error('API 에러:', errorData);
-
-          if (
-            response.status === 500 &&
-            errorData.message === '해당 쪽지에 대한 접근 권한이 없습니다.'
-          ) {
-            throw new Error('이 쪽지에 대한 접근 권한이 없습니다.');
-          } else {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-        }
-
-        const data = await response.json();
-        console.log('쪽지 조회 성공:', data);
-        setMessage(data);
-
-        // 읽음 처리 (별도 try-catch로 분리)
         try {
-          console.log('읽음 처리 시작');
-          const readResponse = await fetch(`/api/messages/read/${messageId}`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token && { Authorization: `Bearer ${token}` }),
-            },
-          });
-
-          if (readResponse.ok) {
-            console.log('읽음 처리 성공');
-          } else {
-            console.error('읽음 처리 실패:', readResponse.status);
-          }
-        } catch (readErr: unknown) {
-          console.error('읽음 처리 실패:', readErr);
+          await axios.patch(`/api/messages/read/${messageId}`);
+        } catch {
           // 읽음 처리 실패는 사용자에게 알리지 않음
         }
       } catch (err: unknown) {
-        console.error('쪽지 조회 실패:', err);
-        const errorMessage =
-          err instanceof Error ? err.message : '쪽지를 불러오지 못했습니다.';
+        let errorMessage = '쪽지를 불러오지 못했습니다.';
+
+        if (isAxiosError(err)) {
+          if (
+            err.response?.status === 500 &&
+            err.response?.data?.message ===
+              '해당 쪽지에 대한 접근 권한이 없습니다.'
+          ) {
+            errorMessage = '이 쪽지에 대한 접근 권한이 없습니다.';
+          } else {
+            errorMessage =
+              (err.response?.data as { message?: string })?.message ||
+              errorMessage;
+          }
+        } else if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+
         setError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -109,27 +76,10 @@ export default function MessageDetail() {
 
     if (isConfirmed) {
       try {
-        const token = document.cookie
-          .split('; ')
-          .find((row) => row.startsWith('accessToken='))
-          ?.split('=')[1];
-
-        const response = await fetch(`/api/messages/${messageId}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        });
-
-        if (response.ok) {
-          alert('쪽지가 삭제되었습니다.');
-          router.push('/front/message/list');
-        } else {
-          throw new Error(`삭제 실패: ${response.status}`);
-        }
-      } catch (err) {
-        console.error('쪽지 삭제 실패:', err);
+        await axios.delete(`/api/messages/${messageId}`);
+        alert('쪽지가 삭제되었습니다.');
+        router.push('/front/message/list');
+      } catch {
         alert('쪽지 삭제에 실패했습니다.');
       }
     }
