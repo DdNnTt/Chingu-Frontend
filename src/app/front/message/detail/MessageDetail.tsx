@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import axios from '@/libs/axios';
 import { isAxiosError } from 'axios';
+import Button from '@/components/common/Button';
 
 interface Message {
   messageId: number;
@@ -200,20 +201,16 @@ export default function MessageDetail() {
       </div>
 
       <div className="bg-white p-4 flex gap-2 border-t">
-        <button
-          type="button"
-          className="flex-1 bg-gray-500 text-white py-3 px-4 rounded-lg font-medium"
+        <Button
+          variant="secondary"
+          className="flex-1"
           onClick={() => router.push('/front/message/list')}
         >
           목록
-        </button>
-        <button
-          type="button"
-          className="flex-1 bg-main-color text-white py-3 px-4 rounded-lg font-medium"
-          onClick={handleDelete}
-        >
+        </Button>
+        <Button variant="primary" className="flex-1" onClick={handleDelete}>
           삭제
-        </button>
+        </Button>
       </div>
     </div>
   );
