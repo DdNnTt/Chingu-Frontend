@@ -24,7 +24,7 @@ export default function Dockbar() {
       label: '마이페이지',
       icon: <UserCircle size={20} />,
     },
-    { href: '/front/message', label: '쪽지', icon: <Mail size={20} /> },
+    { href: '/front/message/list', label: '쪽지', icon: <Mail size={20} /> },
   ];
 
   return (
