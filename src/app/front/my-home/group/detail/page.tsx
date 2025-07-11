@@ -11,9 +11,10 @@ type Member = {
 };
 
 type Album = {
-  id: number;
-  title: string;
+  memoryId: number;
+  description: string;
   imageUrl: string;
+  createdAt: string;
 };
 
 type ValuePiece = Date | null;
@@ -25,26 +26,68 @@ export default function GroupDetail() {
   const [members, setMembers] = useState<Member[]>([]);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [value, setValue] = useState<Value>(new Date());
+  const [groupId, setGroupId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const handleDateChange = (val: Value) => {
     setValue(val);
   };
 
   useEffect(() => {
-    // 샘플 데이터 (추후 API 연동)
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('groupId');
+    setGroupId(id);
+
+    if (!id) {
+      setError('groupId가 없습니다.');
+      setLoading(false);
+      return;
+    }
+
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('accessToken='))
+      ?.split('=')[1];
+
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      router.replace('/front/account/login');
+      return;
+    }
+
+    // 프록시 API 호출
+    fetch(`/api/groups/${id}/albums`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        try {
+          const data = JSON.parse(text);
+          if (!res.ok) throw new Error(data.message || '앨범 조회 실패');
+          if (!Array.isArray(data))
+            throw new Error('응답 데이터가 배열이 아닙니다.');
+          setAlbums(data);
+        } catch (err) {
+          console.error('[앨범 조회 오류]', err);
+          setError('앨범 정보를 불러오는 데 실패했습니다.');
+        }
+      })
+      .catch((err) => {
+        console.error('[앨범 조회 오류]', err);
+        setError('앨범 정보를 불러오는 데 실패했습니다.');
+      })
+      .finally(() => setLoading(false));
+
+    // 임시 멤버
     setMembers([
       { userId: 1, nickname: '철수' },
       { userId: 2, nickname: '영희' },
     ]);
-
-    setAlbums([
-      {
-        id: 1,
-        title: '그룹 추억 앨범 리스트',
-        imageUrl: '', // 실제 이미지가 있다면 대체
-      },
-    ]);
-  }, []);
+  }, [router]);
 
   return (
     <div className="group-detail-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
@@ -87,26 +130,49 @@ export default function GroupDetail() {
         <div className="flex justify-between items-center mb-2">
           <h2 className="font-semibold">그룹 추억 앨범</h2>
           <button
-            onClick={() => router.push('/front/my-home/group/album/add')}
+            onClick={() =>
+              router.push(
+                `/front/my-home/group/album/albumList?groupId=${groupId}`
+              )
+            }
             className="text-sm px-2 py-1 rounded text-white bg-[#9477ff] hover:bg-[#6845f5]"
           >
-            앨범 추가
+            추억 앨범 보기
           </button>
         </div>
-        {albums.length === 0 ? (
-          <div className="text-sm text-gray-500">앨범이 없습니다.</div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {albums.map((album) => (
-              <div
-                key={album.id}
-                className="bg-gray-200 h-28 rounded flex items-center justify-center text-sm text-gray-600"
-              >
-                {album.title}
-              </div>
-            ))}
-          </div>
-        )}
+
+        <div className="bg-gray-100 h-28 overflow-hidden p-3">
+          {loading ? (
+            <div className="text-sm text-gray-400">불러오는 중...</div>
+          ) : error ? (
+            <div className="flex justify-center items-center h-full text-center text-sm text-red-500">
+              {error}
+            </div>
+          ) : albums.length === 0 ? (
+            <div className="text-sm text-gray-500">앨범이 없습니다.</div>
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              {albums.map((album) => (
+                <div
+                  key={album.memoryId}
+                  className="relative bg-gray-100 h-28 rounded overflow-hidden shadow"
+                >
+                  {album.imageUrl ? (
+                    <img
+                      src={album.imageUrl}
+                      alt={album.description}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-sm text-gray-500">
+                      {album.description}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 그룹 일정 */}
@@ -118,32 +184,30 @@ export default function GroupDetail() {
           </button>
         </div>
 
-        {/* 달력 영역 (예시: 그냥 static 달력 구조) */}
+        {/* 달력 */}
         <div className="bg-gray-100 rounded p-4">
-          <div className="bg-gray-100 rounded">
-            <Calendar
-              value={value}
-              onChange={handleDateChange}
-              calendarType="iso8601"
-              locale="ko-KR"
-              formatDay={() => ''} // 날짜 숨기기
-              tileContent={({ date, view }) =>
-                view === 'month' ? (
-                  <div
-                    className={`color-round flex items-center justify-center mx-auto rounded-full w-[30px] h-[30px] ${
-                      (Array.isArray(value)
-                        ? value[0]?.toDateString()
-                        : value?.toDateString()) === date.toDateString()
-                        ? 'bg-[#baa8ff]'
-                        : ''
-                    }`}
-                  >
-                    {date.getDate()}
-                  </div>
-                ) : null
-              }
-            />
-          </div>
+          <Calendar
+            value={value}
+            onChange={handleDateChange}
+            calendarType="iso8601"
+            locale="ko-KR"
+            formatDay={() => ''}
+            tileContent={({ date, view }) =>
+              view === 'month' ? (
+                <div
+                  className={`color-round flex items-center justify-center mx-auto rounded-full w-[30px] h-[30px] ${
+                    (Array.isArray(value)
+                      ? value[0]?.toDateString()
+                      : value?.toDateString()) === date.toDateString()
+                      ? 'bg-[#baa8ff]'
+                      : ''
+                  }`}
+                >
+                  {date.getDate()}
+                </div>
+              ) : null
+            }
+          />
         </div>
       </div>
     </div>
