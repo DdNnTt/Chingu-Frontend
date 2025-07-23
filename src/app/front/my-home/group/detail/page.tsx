@@ -4,6 +4,7 @@ import Calendar from 'react-calendar';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ScheduleModal from '@/components/common/ScheduleModal';
 
 type Member = {
   userId: number;
@@ -15,6 +16,11 @@ type Album = {
   description: string;
   imageUrl: string;
   createdAt: string;
+};
+
+type ScheduleItem = {
+  scheduleId: number;
+  scheduleDate: string;
 };
 
 type ValuePiece = Date | null;
@@ -30,6 +36,11 @@ export default function GroupDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // 일정 팝업 상태
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
+    null
+  );
   const handleDateChange = (val: Value) => {
     setValue(val);
   };
@@ -82,12 +93,25 @@ export default function GroupDetail() {
       })
       .finally(() => setLoading(false));
 
+    // 일정 불러오기
+    fetch(`/api/groups/${id}/schedules`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(async (res) => {
+      const text = await res.text();
+      const data = JSON.parse(text);
+      setSchedules(data); // scheduleId 포함 배열 저장
+    });
+
     // 임시 멤버
     setMembers([
       { userId: 1, nickname: '철수' },
       { userId: 2, nickname: '영희' },
     ]);
   }, [router]);
+
+  // 헬퍼 함수 추가
+  const getLocalDateString = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
   return (
     <div className="group-detail-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
@@ -179,9 +203,12 @@ export default function GroupDetail() {
       <div className="bg-white p-4 rounded-md shadow">
         <div className="flex justify-between items-center mb-2">
           <h2 className="font-semibold">그룹 일정</h2>
-          <button className="text-sm px-2 py-1 rounded text-white bg-[#9477ff] hover:bg-[#6845f5]">
+          <Link
+            href={`/front/my-home/group/schedule?groupId=${groupId}`}
+            className="text-sm px-2 py-1 rounded text-white bg-[#9477ff] hover:bg-[#6845f5]"
+          >
             일정 추가
-          </button>
+          </Link>
         </div>
 
         {/* 달력 */}
@@ -192,23 +219,68 @@ export default function GroupDetail() {
             calendarType="iso8601"
             locale="ko-KR"
             formatDay={() => ''}
+            onClickDay={(date: Date) => {
+              const dateStr = getLocalDateString(date);
+              const matched = schedules.find((s) =>
+                s.scheduleDate.startsWith(dateStr)
+              );
+              if (matched) {
+                setSelectedScheduleId(matched.scheduleId);
+              }
+            }}
+            tileClassName={({ date, view }) => {
+              if (view !== 'month') return '';
+
+              const day = date.getDay();
+              if (day === 6) return 'weekday-saturday'; // 토요일
+              return '';
+            }}
             tileContent={({ date, view }) =>
               view === 'month' ? (
-                <div
-                  className={`color-round flex items-center justify-center mx-auto rounded-full w-[30px] h-[30px] ${
-                    (Array.isArray(value)
-                      ? value[0]?.toDateString()
-                      : value?.toDateString()) === date.toDateString()
-                      ? 'bg-[#baa8ff]'
-                      : ''
-                  }`}
-                >
-                  {date.getDate()}
+                <div className="relative flex items-center justify-center mx-auto w-[30px] h-[30px]">
+                  {/* 일정 있는 날짜: 빨간 배경 */}
+                  {schedules.some((s) =>
+                    s.scheduleDate.startsWith(getLocalDateString(date))
+                  ) && (
+                    <div className="absolute inset-0 rounded-full bg-[#ff9d9d] z-0" />
+                  )}
+
+                  {/* 날짜 텍스트 */}
+                  <div
+                    className={`
+            rounded-full w-full h-full flex items-center justify-center z-10
+            ${
+              (Array.isArray(value)
+                ? value[0]?.toDateString()
+                : value?.toDateString()) === date.toDateString()
+                ? 'bg-[#baa8ff]'
+                : ''
+            }
+            ${
+              schedules.some((s) =>
+                s.scheduleDate.startsWith(getLocalDateString(date))
+              )
+                ? 'text-white'
+                : ''
+            }
+          `}
+                  >
+                    {date.getDate()}
+                  </div>
                 </div>
               ) : null
             }
           />
         </div>
+
+        {/* 팝업 */}
+        {selectedScheduleId && groupId && (
+          <ScheduleModal
+            scheduleId={selectedScheduleId}
+            groupId={groupId}
+            onClose={() => setSelectedScheduleId(null)}
+          />
+        )}
       </div>
     </div>
   );
