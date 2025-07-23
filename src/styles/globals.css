@@ -4,6 +4,29 @@
 @import 'react-calendar/dist/Calendar.css';
 
 /* ============================================
+  Select Style
+============================================ */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #f8f9fd;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  font-size: 0.875rem;
+  text-align: center;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  color: #333;
+}
+select:focus {
+  outline: none;
+  border-color: #6845f5;
+  box-shadow: 0 0 0 2px rgba(104, 69, 245, 0.4) !important;
+  --tw-ring-shadow: none;
+}
+/* ============================================
   Calendar Style
 ============================================ */
 .react-calendar {
@@ -42,6 +65,10 @@
 
 .react-calendar__month-view__days__day--weekend {
   color: #d10000 !important;
+}
+
+.react-calendar__month-view__days__day--weekend.weekday-saturday {
+  color: #2364dd !important;
 }
 
 .react-calendar__tile--active .color-round {
