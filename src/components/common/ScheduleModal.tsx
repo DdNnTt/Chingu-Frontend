@@ -6,7 +6,7 @@ interface ScheduleDetail {
   nickname: string;
   title: string;
   description: string;
-  scheduleDate: string; // ISO format
+  scheduleDate: string;
   createdAt: string;
 }
 
@@ -14,16 +14,19 @@ interface ScheduleModalProps {
   scheduleId: number;
   groupId: string;
   onClose: () => void;
+  onDeleteSuccess: () => void;
 }
 
 export default function ScheduleModal({
   scheduleId,
   groupId,
   onClose,
+  onDeleteSuccess,
 }: ScheduleModalProps) {
   const [detail, setDetail] = useState<ScheduleDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const token = document.cookie
@@ -56,6 +59,48 @@ export default function ScheduleModal({
       .catch(() => setError('네트워크 오류'))
       .finally(() => setLoading(false));
   }, [groupId, scheduleId]);
+
+  const handleDelete = async () => {
+    if (!confirm('정말 이 일정을 삭제하시겠습니까?')) return;
+
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('accessToken='))
+      ?.split('=')[1];
+
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    setDeleting(true);
+
+    try {
+      const res = await fetch(
+        `/api/groups/${groupId}/schedules/${scheduleId}/delete`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || '삭제 실패');
+      }
+
+      alert('일정이 삭제되었습니다.');
+      onClose(); // 모달 닫기
+      onDeleteSuccess();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '삭제 중 오류 발생');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-40 p-4">
@@ -120,6 +165,17 @@ export default function ScheduleModal({
               <div className="bg-gray-100 px-3 py-2 rounded text-base mt-1">
                 {new Date(detail.scheduleDate).toLocaleString()}
               </div>
+            </div>
+
+            {/* 🗑 삭제 버튼 */}
+            <div className="pt-4 flex justify-center">
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
+              >
+                {deleting ? '삭제 중...' : '삭제'}
+              </button>
             </div>
           </div>
         ) : (

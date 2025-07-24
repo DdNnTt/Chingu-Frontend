@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ✅ 일정 조회용 GET 메서드 추가
+// 일정 조회용 GET 메서드 추가
 export async function GET(
   req: NextRequest,
   { params }: { params: { groupId: string } }
