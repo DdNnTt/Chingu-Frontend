@@ -113,6 +113,28 @@ export default function GroupDetail() {
   const getLocalDateString = (date: Date) =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
+  const fetchSchedules = async () => {
+    if (!groupId) return;
+
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('accessToken='))
+      ?.split('=')[1];
+
+    if (!token) return;
+
+    try {
+      const res = await fetch(`/api/groups/${groupId}/schedules`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const text = await res.text();
+      const data = JSON.parse(text);
+      setSchedules(data); // ✅ 일정 다시 설정
+    } catch (err) {
+      console.error('일정 다시 불러오기 실패', err);
+    }
+  };
+
   return (
     <div className="group-detail-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
       <div className="flex items-center mb-6">
@@ -279,6 +301,10 @@ export default function GroupDetail() {
             scheduleId={selectedScheduleId}
             groupId={groupId}
             onClose={() => setSelectedScheduleId(null)}
+            onDeleteSuccess={() => {
+              setSelectedScheduleId(null);
+              fetchSchedules();
+            }}
           />
         )}
       </div>
