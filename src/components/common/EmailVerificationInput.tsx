@@ -154,13 +154,13 @@ export default function EmailVerificationInput<T extends FieldValues>({
           type="email"
           placeholder="이메일을 입력하세요"
           {...register(emailField)}
-          className="flex-1 px-3 py-2 border rounded-md"
+          className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
         />
         <button
           type="button"
           onClick={handleSendVerificationCode}
           disabled={isSending || step === 'verified'}
-          className="px-3 py-2 bg-gray-200 rounded-md text-sm"
+          className="px-4 py-3 bg-gray-200 rounded-xl text-sm hover:bg-gray-300 transition-all duration-200"
         >
           {isSending
             ? '발송 중...'
@@ -176,13 +176,13 @@ export default function EmailVerificationInput<T extends FieldValues>({
           type="text"
           placeholder="인증번호를 입력하세요"
           {...register(codeField)}
-          className="flex-1 px-3 py-2 border rounded-md"
+          className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
         />
         <button
           type="button"
           onClick={handleConfirmCode}
           disabled={isVerifying || step === 'verified'}
-          className="px-3 py-2 bg-gray-200 rounded-md text-sm"
+          className="px-4 py-3 bg-gray-200 rounded-xl text-sm hover:bg-gray-300 transition-all duration-200"
         >
           {isVerifying
             ? '확인 중...'

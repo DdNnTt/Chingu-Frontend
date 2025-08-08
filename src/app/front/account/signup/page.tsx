@@ -141,132 +141,169 @@ export default function Signup() {
   }, [errors, isSubmitted]);
 
   return (
-    <div className="signup-page py-4 px-4 mt-20">
-      <h2 className="text-2xl font-semibold mb-14 text-center">회원가입</h2>
+    <div
+      className="signup-page relative h-full flex flex-col items-center justify-center overflow-y-auto tracking-tight py-4 px-4"
+      style={{ letterSpacing: '-0.5px' }}
+    >
+      {/* 배경 그라데이션 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100"></div>
 
-      {/* 알럿 배너 */}
-      {showErrorBanner && (
-        <div
-          className={`cont-alert ${hideBanner ? 'hide' : ''} text-sm text-center mb-6`}
-        >
-          모든 필수 정보를 입력해주세요.
-        </div>
-      )}
+      {/* 애니메이션 배경 요소들 */}
+      <div className="absolute top-10 left-6 w-32 h-32 bg-purple-200 rounded-full opacity-30 animate-pulse"></div>
+      <div className="absolute bottom-10 right-8 w-24 h-24 bg-blue-200 rounded-full opacity-40 animate-pulse delay-1000"></div>
+      <div className="absolute top-1/3 right-0 w-16 h-16 bg-pink-200 rounded-full opacity-30 animate-pulse delay-700"></div>
+      <div className="absolute bottom-1/4 left-0 w-20 h-20 bg-indigo-200 rounded-full opacity-20 animate-pulse delay-500"></div>
+      <div
+        className="absolute top-1/2 left-1/2 w-12 h-12 bg-yellow-100 rounded-full opacity-20 animate-pulse delay-300"
+        style={{ transform: 'translate(-50%, -50%)' }}
+      ></div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {/* 이름 입력 (선택) */}
-        <div className="relative mb-6">
-          <Input
-            type="text"
-            placeholder="이름을 입력하세요"
-            {...register('name')}
-          />
-          {errors.name?.message ? (
-            <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs text-red-500">
-              {errors.name.message}
-            </p>
-          ) : typeof name === 'string' && name.trim().length > 0 ? (
-            <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs main-color">
-              이름이 확인되었습니다.
-            </p>
-          ) : null}
-        </div>
-
-        {/* 아이디 입력 - 중복 확인 api */}
-        <CheckableInput<SignUpFormValues>
-          name="userId"
-          placeholder="아이디를 입력하세요"
-          checkUrl="/api/users/check-userId"
-          queryKey="userId"
-          successMessage="사용 가능한 아이디입니다."
-          failureMessage="이미 사용 중인 아이디입니다."
-          register={register}
-          getValues={getValues}
-          setValue={setValue}
-          flagField="isUserIdChecked"
-        />
-
-        {/* 비밀번호 입력 */}
-        <div className="relative mb-6">
-          <Input
-            type="password"
-            placeholder="비밀번호를 입력하세요"
-            {...register('password')}
-          />
-          {/* 오류 메시지 */}
-          {errors.password ? (
-            <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs text-red-500 transition-opacity duration-200 opacity-100">
-              {errors.password.message}
-            </p>
-          ) : password?.length >= 6 ? (
-            // 성공 메시지
-            <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs main-color transition-opacity duration-200 opacity-100">
-              사용 가능한 비밀번호입니다
-            </p>
-          ) : null}
-        </div>
-
-        {/* 비밀번호 확인 입력 */}
-        <div className="relative mb-6">
-          <Input
-            type="password"
-            placeholder="비밀번호를 다시 입력하세요"
-            {...register('confirmPassword')}
-          />
-          {/* 오류 메시지 */}
-          {errors.confirmPassword && (
-            <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs text-red-500 transition-opacity duration-200 opacity-100">
-              {errors.confirmPassword.message}
-            </p>
-          )}
-          {/* 성공 메시지 */}
-          {!errors.confirmPassword && isPasswordMatch && (
-            <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs main-color transition-opacity duration-200 opacity-100">
-              비밀번호가 일치합니다
-            </p>
-          )}
-        </div>
-
-        {/* 이메일 입력 및 인증 */}
-        <EmailVerificationInput<SignUpFormValues>
-          emailField="email"
-          codeField="confirmCode" // 폼에 추가해야 함
-          register={register}
-          getValues={getValues}
-          setValue={setValue}
-          flagField="emailVerified"
-        />
-
-        {/* 닉네임 입력 */}
-        <CheckableInput<SignUpFormValues>
-          name="userNickname"
-          placeholder="닉네임을 입력하세요"
-          checkUrl="/api/users/check-nickname"
-          queryKey="nickname"
-          successMessage="사용 가능한 닉네임입니다."
-          failureMessage="이미 사용 중인 닉네임입니다."
-          register={register}
-          getValues={getValues}
-          setValue={setValue}
-          flagField="isNicknameChecked"
-        />
-
-        {/* 취소 버튼 / 회원가입 */}
-        <div className="flex items-center justify-center gap-1.5 mt-10">
-          <Link
-            href="/front/account/login"
-            className="flex-1 bg-main-color text-white px-4 py-3 rounded-md w-full text-center"
-          >
-            취소
-          </Link>
-          <Button
-            type="submit"
-            className="flex-1 w-full bg-blue-600 text-white"
-          >
+      {/* 메인 컨텐츠 */}
+      <div className="relative z-10 w-full max-w-md mx-auto">
+        {/* 헤더 */}
+        <div className="text-center space-y-4 mb-8 animate-slideUp opacity-0">
+          <h2 className="text-5xl text-black drop-shadow-sm font-bold">
             회원가입
-          </Button>
+          </h2>
         </div>
-      </form>
+
+        {/* 알럿 배너 */}
+        {showErrorBanner && (
+          <div
+            className={`cont-alert ${hideBanner ? 'hide' : ''} text-sm text-center mb-6`}
+          >
+            모든 필수 정보를 입력해주세요.
+          </div>
+        )}
+
+        {/* 회원가입 폼 */}
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="animate-slideUp delay-300 opacity-0"
+        >
+          {/* 이름 입력 (선택) */}
+          <div className="relative mb-8">
+            <Input
+              type="text"
+              placeholder="이름을 입력하세요"
+              {...register('name')}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+            />
+            {errors.name?.message ? (
+              <p className="absolute top-[38px] left-0 text-xs text-red-500">
+                {errors.name.message}
+              </p>
+            ) : typeof name === 'string' && name.trim().length > 0 ? (
+              <p className="absolute top-[38px] left-0 text-xs main-color">
+                이름이 확인되었습니다.
+              </p>
+            ) : null}
+          </div>
+
+          {/* 아이디 입력 - 중복 확인 api */}
+          <div className="relative mb-8">
+            <CheckableInput<SignUpFormValues>
+              name="userId"
+              placeholder="아이디를 입력하세요"
+              checkUrl="/api/users/check-userId"
+              queryKey="userId"
+              successMessage="사용 가능한 아이디입니다."
+              failureMessage="이미 사용 중인 아이디입니다."
+              register={register}
+              getValues={getValues}
+              setValue={setValue}
+              flagField="isUserIdChecked"
+            />
+          </div>
+
+          {/* 비밀번호 입력 */}
+          <div className="relative mb-8">
+            <Input
+              type="password"
+              placeholder="비밀번호를 입력하세요"
+              {...register('password')}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+            />
+            {/* 오류 메시지 */}
+            {errors.password ? (
+              <p className="absolute top-[38px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200 opacity-100">
+                {errors.password.message}
+              </p>
+            ) : password?.length >= 6 ? (
+              // 성공 메시지
+              <p className="absolute top-[38px] left-0 mt-1 text-xs main-color transition-opacity duration-200 opacity-100">
+                사용 가능한 비밀번호입니다
+              </p>
+            ) : null}
+          </div>
+
+          {/* 비밀번호 확인 입력 */}
+          <div className="relative mb-8">
+            <Input
+              type="password"
+              placeholder="비밀번호를 다시 입력하세요"
+              {...register('confirmPassword')}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+            />
+            {/* 오류 메시지 */}
+            {errors.confirmPassword && (
+              <p className="absolute top-[38px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200 opacity-100">
+                {errors.confirmPassword.message}
+              </p>
+            )}
+            {/* 성공 메시지 */}
+            {!errors.confirmPassword && isPasswordMatch && (
+              <p className="absolute top-[38px] left-0 mt-1 text-xs main-color transition-opacity duration-200 opacity-100">
+                비밀번호가 일치합니다
+              </p>
+            )}
+          </div>
+
+          {/* 이메일 입력 및 인증 */}
+          <div className="relative mb-8">
+            <EmailVerificationInput<SignUpFormValues>
+              emailField="email"
+              codeField="confirmCode" // 폼에 추가해야 함
+              register={register}
+              getValues={getValues}
+              setValue={setValue}
+              flagField="emailVerified"
+            />
+          </div>
+
+          {/* 닉네임 입력 */}
+          <div className="relative mb-8">
+            <CheckableInput<SignUpFormValues>
+              name="userNickname"
+              placeholder="닉네임을 입력하세요"
+              checkUrl="/api/users/check-nickname"
+              queryKey="nickname"
+              successMessage="사용 가능한 닉네임입니다."
+              failureMessage="이미 사용 중인 닉네임입니다."
+              register={register}
+              getValues={getValues}
+              setValue={setValue}
+              flagField="isNicknameChecked"
+            />
+          </div>
+
+          {/* 취소 버튼 / 회원가입 */}
+          <div className="flex items-center justify-center gap-3 mt-8 animate-slideUp delay-900 opacity-0">
+            <Link
+              href="/front/account/login"
+              className="flex-1 bg-gray-500 text-white px-4 py-3 rounded-xl text-center font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              취소
+            </Link>
+            <Button
+              type="submit"
+              className="flex-1 w-full bg-main-color text-white px-4 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              회원가입
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
