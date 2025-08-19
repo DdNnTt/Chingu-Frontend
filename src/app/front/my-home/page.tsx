@@ -58,6 +58,24 @@ interface Group {
   createdAt: string;
 }
 
+// 퀴즈 관련 타입 추가
+interface Quiz {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: string;
+  totalQuestions: number;
+  solvedCount: number;
+  averageScore: number;
+}
+
+interface QuizStats {
+  totalQuizzes: number;
+  totalSolved: number;
+  averageScore: number;
+  totalFriendshipScore: number;
+}
+
 export default function MyHome() {
   const [nickname, setNickname] = useState<string>('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -73,6 +91,17 @@ export default function MyHome() {
   );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showAllSchedules, setShowAllSchedules] = useState(false);
+  
+  // 퀴즈 관련 상태 추가
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [quizStats, setQuizStats] = useState<QuizStats>({
+    totalQuizzes: 0,
+    totalSolved: 0,
+    averageScore: 0,
+    totalFriendshipScore: 0
+  });
+  const [isQuizLoading, setIsQuizLoading] = useState(false);
+  
   const router = useRouter();
 
   // 일정 목록 조회
@@ -104,6 +133,54 @@ export default function MyHome() {
     }
   };
 
+  // 내가 만든 퀴즈 목록 조회
+  const fetchMyQuizzes = async () => {
+    try {
+      setIsQuizLoading(true);
+      // 내가 만든 퀴즈 목록 조회
+      const response = await axiosInstance.get('/api/quizzes/my-quizzes');
+      setQuizzes(response.data.quizzes || []);
+      setQuizStats(response.data.stats || {
+        totalQuizzes: 0,
+        totalSolved: 0,
+        averageScore: 0,
+        totalFriendshipScore: 0
+      });
+    } catch (err) {
+      console.error('내 퀴즈 조회 실패:', err);
+      // 에러가 발생해도 기본값으로 설정
+      setQuizzes([]);
+      setQuizStats({
+        totalQuizzes: 0,
+        totalSolved: 0,
+        averageScore: 0,
+        totalFriendshipScore: 0
+      });
+    } finally {
+      setIsQuizLoading(false);
+    }
+  };
+
+  // 우정 점수 총합 조회
+  const fetchTotalFriendshipScore = async () => {
+    try {
+      const response = await axiosInstance.get('/api/quizzes/scores');
+      if (response.data.totalScore !== undefined) {
+        setQuizStats(prev => ({
+          ...prev,
+          totalFriendshipScore: response.data.totalScore
+        }));
+      }
+    } catch (err) {
+      console.error('우정 점수 총합 조회 실패:', err);
+    }
+  };
+
+  // 퀴즈 만들기 페이지로 이동
+  const handleCreateQuiz = () => {
+    router.push('/front/game/guess-me/make-quiz');
+  };
+
   // 받은 쪽지 개수 조회
   const fetchReceivedMessagesCount = async () => {
     try {
@@ -125,6 +202,8 @@ export default function MyHome() {
           fetchFriendRequests(),
           fetchReceivedMessagesCount(),
           fetchGroups(),
+          fetchMyQuizzes(),
+          fetchTotalFriendshipScore(),
         ]);
       } catch {
         setError('데이터를 불러오는데 실패했습니다.');
@@ -314,6 +393,82 @@ export default function MyHome() {
             >
               {showAllSchedules ? '최신 3개만 보기' : '전체 일정 보기'}
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* 퀴즈 섹션 */}
+      <div className="quiz-section bg-white p-6 rounded-lg shadow-sm mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">🧩 나의 퀴즈</h2>
+          <Button
+            type="button"
+            onClick={handleCreateQuiz}
+            className="bg-purple-600 text-white text-sm px-4 py-2"
+          >
+            퀴즈 만들기
+          </Button>
+        </div>
+
+        {/* 퀴즈 통계 */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="text-center p-3 bg-purple-50 rounded-lg">
+            <div className="text-2xl font-bold text-purple-600">{quizStats.totalQuizzes}</div>
+            <div className="text-sm text-gray-600">만든 퀴즈</div>
+          </div>
+          <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="text-2xl font-bold text-green-600">{quizStats.totalFriendshipScore}</div>
+            <div className="text-sm text-gray-600">총 우정 점수</div>
+          </div>
+        </div>
+
+        {/* 퀴즈 목록 */}
+        {isQuizLoading ? (
+          <div className="text-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto"></div>
+            <p className="mt-2 text-gray-500 text-sm">퀴즈를 불러오는 중...</p>
+          </div>
+        ) : quizzes.length === 0 ? (
+          <div className="text-center py-6 text-gray-500">
+            <p>아직 만든 퀴즈가 없어요 😢</p>
+            <p className="text-sm mt-1">친구들과 우정을 쌓을 퀴즈를 만들어보세요!</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {quizzes.map((quiz) => (
+              <div
+                key={quiz.id}
+                className="p-3 bg-gray-50 rounded-lg border border-gray-200"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-800">{quiz.title}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{quiz.description}</p>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <span>문제 수: {quiz.totalQuestions}개</span>
+                      <span>생성일: {new Date(quiz.createdAt).toLocaleDateString()}</span>
+                      <span>푼 사람: {quiz.solvedCount}명</span>
+                    </div>
+                    {quiz.averageScore > 0 && (
+                      <div className="mt-2">
+                        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                          평균 점수: {quiz.averageScore}점
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="ml-3">
+                    <Button
+                      type="button"
+                      onClick={() => router.push(`/front/game/guess-me/make-quiz?edit=${quiz.id}`)}
+                      className="bg-blue-600 text-white text-sm px-3 py-1"
+                    >
+                      수정
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
