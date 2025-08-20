@@ -9,7 +9,10 @@ export async function GET(req: NextRequest) {
   }
 
   if (!token) {
-    return NextResponse.json({ error: '인증 토큰이 필요합니다' }, { status: 401 });
+    return NextResponse.json(
+      { error: '인증 토큰이 필요합니다' },
+      { status: 401 }
+    );
   }
 
   try {
