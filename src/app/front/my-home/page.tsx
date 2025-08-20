@@ -150,24 +150,22 @@ export default function MyHome() {
         averageScore: 0,
         totalFriendshipScore: 0
       });
-    } catch (err: unknown) {
+    } catch (err) {
       console.error('내 퀴즈 조회 실패:', err);
       
-      // 더 자세한 에러 정보 로깅
       if (err && typeof err === 'object' && 'response' in err) {
-        const axiosErr = err as { response: { status: number; statusText: string; data: unknown } };
+        const axiosError = err as { response: { status: number; statusText: string; data: unknown } };
         console.error('에러 응답:', {
-          status: axiosErr.response.status,
-          statusText: axiosErr.response.statusText,
-          data: axiosErr.response.data
+          status: axiosError.response.status,
+          statusText: axiosError.response.statusText,
+          data: axiosError.response.data
         });
       } else if (err && typeof err === 'object' && 'request' in err) {
-        console.error('요청 에러:', (err as { request: unknown }).request);
-      } else if (err instanceof Error) {
-        console.error('에러 메시지:', err.message);
+        console.error('요청 에러:', err);
+      } else {
+        console.error('에러 메시지:', err instanceof Error ? err.message : String(err));
       }
       
-      // 에러가 발생해도 기본값으로 설정
       setQuizzes([]);
       setQuizStats({
         totalQuizzes: 0,
@@ -419,7 +417,7 @@ export default function MyHome() {
       {/* 퀴즈 섹션 */}
       <div className="quiz-section bg-white p-6 rounded-lg shadow-sm mb-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">나의 퀴즈</h2>
+          <h2 className="text-lg font-semibold">🧩 나의 퀴즈</h2>
           <Button
             type="button"
             onClick={handleCreateQuiz}

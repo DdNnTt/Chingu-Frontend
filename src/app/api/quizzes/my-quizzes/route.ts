@@ -8,11 +8,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'API_BASE_URL 누락됨' }, { status: 500 });
   }
 
+  if (!token) {
+    return NextResponse.json({ error: '인증 토큰이 필요합니다' }, { status: 401 });
+  }
+
   try {
     const res = await fetch(`${API_BASE}/api/quizzes/my-quizzes`, {
       method: 'GET',
       headers: {
-        Authorization: token || '',
+        'Content-Type': 'application/json',
+        Authorization: token,
       },
     });
 
