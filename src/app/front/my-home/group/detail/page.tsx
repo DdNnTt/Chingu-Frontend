@@ -29,6 +29,7 @@ type Value = ValuePiece | [ValuePiece, ValuePiece];
 export default function GroupDetail() {
   const router = useRouter();
   const [groupName, setGroupName] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [members, setMembers] = useState<Member[]>([]);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [value, setValue] = useState<Value>(new Date());
@@ -224,6 +225,7 @@ export default function GroupDetail() {
                     className="relative flex-shrink-0 w-28 h-28 bg-gray-100 rounded overflow-hidden shadow"
                   >
                     {album.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={album.imageUrl}
                         alt={album.description}

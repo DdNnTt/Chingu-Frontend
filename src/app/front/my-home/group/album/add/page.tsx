@@ -19,17 +19,16 @@ export default function AlbumAdd() {
   // 토큰 상태 확인
   const accessToken = getCookieValue('accessToken');
 
-  // 사용자 정보 확인
-  let tokenPayload: any = null;
+  // 사용자 정보 확인 (현재 미사용)
+  let tokenPayload: Record<string, unknown> | null = null;
   if (accessToken) {
     try {
       tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
-
     } catch (e) {
       console.error('[앨범 추가 페이지] 토큰 디코딩 실패:', e);
     }
   }
-  
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [value, setValue] = useState<Value>(new Date());
@@ -40,17 +39,18 @@ export default function AlbumAdd() {
   // 그룹 멤버십 확인
   const checkGroupMembership = async () => {
     if (!groupId || !accessToken) return;
-    
+
     try {
       // 그룹 상세 정보 조회
       const groupResponse = await fetch(`/api/groups/${groupId}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
-      
+
       if (groupResponse.ok) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const groupData = await groupResponse.json();
         return;
       }
@@ -58,23 +58,27 @@ export default function AlbumAdd() {
       const myGroupsResponse = await fetch('/api/groups/mygroups', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
-      
+
       if (myGroupsResponse.ok) {
         const myGroups = await myGroupsResponse.json();
-        
+
         // 현재 그룹이 내 그룹 목록에 있는지 확인
-        const isGroupMember = myGroups.some((group: any) => 
-          String(group.groupId) === String(groupId)
+        const isGroupMember = myGroups.some(
+          (group: { groupId: number }) =>
+            String(group.groupId) === String(groupId)
         );
-        
+
         if (!isGroupMember) {
-          console.warn('[경고] 현재 사용자는 그룹 ID', groupId, '의 멤버가 아닙니다.');
+          console.warn(
+            '[경고] 현재 사용자는 그룹 ID',
+            groupId,
+            '의 멤버가 아닙니다.'
+          );
         }
       }
-      
     } catch (error) {
       console.error('[그룹 멤버십 확인 오류]', error);
     }
@@ -85,7 +89,7 @@ export default function AlbumAdd() {
     if (groupId && accessToken) {
       checkGroupMembership();
     }
-  }, [groupId, accessToken]);
+  }, [groupId, accessToken, checkGroupMembership]);
 
   const handleDateChange = (val: Value) => {
     setValue(val);
@@ -101,7 +105,7 @@ export default function AlbumAdd() {
       files.forEach((file) => {
         const reader = new FileReader();
         reader.onload = () => {
-          setImagePreviews(prev => [...prev, reader.result as string]);
+          setImagePreviews((prev) => [...prev, reader.result as string]);
         };
         reader.readAsDataURL(file);
       });
@@ -109,8 +113,8 @@ export default function AlbumAdd() {
   };
 
   const removeImage = (index: number) => {
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const formatDate = (date: Date) => {
@@ -125,7 +129,9 @@ export default function AlbumAdd() {
 
     // 입력값 확인
     if (!groupId) {
-      console.error('[앨범 추가 오류] groupId가 없습니다. URL 파라미터를 확인하세요.');
+      console.error(
+        '[앨범 추가 오류] groupId가 없습니다. URL 파라미터를 확인하세요.'
+      );
       alert('그룹 ID가 없습니다. 그룹 페이지에서 다시 접근해주세요.');
       router.back();
       return;
@@ -156,9 +162,7 @@ export default function AlbumAdd() {
       return;
     }
 
-    const memoryDate = formatDate(
-      Array.isArray(value) ? value[0]! : value!
-    );
+    const memoryDate = formatDate(Array.isArray(value) ? value[0]! : value!);
 
     const uploadedImageUrls: string[] = [];
 
@@ -174,7 +178,7 @@ export default function AlbumAdd() {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`,
+                Authorization: `Bearer ${accessToken}`,
               },
             }
           );
@@ -183,10 +187,18 @@ export default function AlbumAdd() {
             const responseData = await presignRes.json();
 
             // 앨범 presigned URL 응답 구조에 따라 URL 추출
-            const uploadUrl = responseData.uploadUrl || responseData.presignedUrl || responseData.url || 
-                              responseData.additionalProp1 || Object.values(responseData)[0];
-            const fileUrl = responseData.fileUrl || responseData.publicUrl || responseData.downloadUrl ||
-                            responseData.additionalProp2 || Object.values(responseData)[1];
+            const uploadUrl =
+              responseData.uploadUrl ||
+              responseData.presignedUrl ||
+              responseData.url ||
+              responseData.additionalProp1 ||
+              Object.values(responseData)[0];
+            const fileUrl =
+              responseData.fileUrl ||
+              responseData.publicUrl ||
+              responseData.downloadUrl ||
+              responseData.additionalProp2 ||
+              Object.values(responseData)[1];
 
             if (uploadUrl) {
               // S3로 이미지 업로드
@@ -203,13 +215,22 @@ export default function AlbumAdd() {
                 const finalUrl = fileUrl || uploadUrl.split('?')[0];
                 uploadedImageUrls.push(finalUrl);
               } else {
-                console.error('[앨범 이미지 업로드 실패]', file.name, uploadResponse.status, uploadResponse.statusText);
+                console.error(
+                  '[앨범 이미지 업로드 실패]',
+                  file.name,
+                  uploadResponse.status,
+                  uploadResponse.statusText
+                );
               }
             } else {
               console.error('[앨범 Presign URL 없음]', responseData);
             }
           } else {
-            console.warn(`[앨범 Presign URL 요청 실패] ${file.name}:`, presignRes.status, presignRes.statusText);
+            console.warn(
+              `[앨범 Presign URL 요청 실패] ${file.name}:`,
+              presignRes.status,
+              presignRes.statusText
+            );
           }
         }
       }
@@ -221,7 +242,7 @@ export default function AlbumAdd() {
       }
 
       // 앨범 생성 API 호출
-      const albumData: any = {
+      const albumData: Record<string, unknown> = {
         title,
         content: description,
         location,
@@ -244,12 +265,13 @@ export default function AlbumAdd() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(albumData),
       });
 
       if (createRes.ok) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const result = await createRes.json();
         alert('앨범이 성공적으로 추가되었습니다!');
         router.back();
@@ -257,72 +279,88 @@ export default function AlbumAdd() {
         let errorData;
         try {
           errorData = await createRes.json();
-        } catch (e) {
+        } catch {
           const errorText = await createRes.text();
           console.error('[앨범 생성 실패 - 텍스트 응답]', {
             status: createRes.status,
             statusText: createRes.statusText,
             text: errorText,
           });
-          alert(`앨범 생성에 실패했습니다: ${createRes.status} ${createRes.statusText} - ${errorText}`);
+          alert(
+            `앨범 생성에 실패했습니다: ${createRes.status} ${createRes.statusText} - ${errorText}`
+          );
           return;
         }
-        
+
         console.error('[앨범 생성 실패 - JSON 응답]', {
           status: createRes.status,
           statusText: createRes.statusText,
           data: errorData,
         });
-        
+
         // 401 에러
         if (createRes.status === 401) {
           alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
           // 만료된 토큰 쿠키 제거
-          document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          document.cookie =
+            'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           router.push('/front/account/login');
           return;
         }
-        
+
         // 403 에러
         if (createRes.status === 403) {
           // 그룹 멤버십 재확인
           console.log('[403 오류 발생] 그룹 멤버십 재확인 중...');
-          
+
           try {
             const myGroupsRes = await fetch('/api/groups/mygroups', {
-              headers: { 'Authorization': `Bearer ${accessToken}` }
+              headers: { Authorization: `Bearer ${accessToken}` },
             });
-            
+
             if (myGroupsRes.ok) {
               const myGroups = await myGroupsRes.json();
-              const isGroupMember = myGroups.some((group: any) => 
-                String(group.groupId) === String(groupId)
+              const isGroupMember = myGroups.some(
+                (group: any) => String(group.groupId) === String(groupId)
               );
-              
+
               console.log('[403 오류 시 멤버십 확인]', {
                 groupId,
                 isGroupMember,
-                myGroups: myGroups.map((g: any) => ({ id: g.groupId, name: g.groupName }))
+                myGroups: myGroups.map((g: any) => ({
+                  id: g.groupId,
+                  name: g.groupName,
+                })),
               });
-              
+
               if (!isGroupMember) {
-                alert(`그룹 ID ${groupId}의 멤버가 아닙니다.\n\n내가 속한 그룹:\n${myGroups.map((g: any) => `- ${g.groupName} (ID: ${g.groupId})`).join('\n')}`);
+                alert(
+                  `그룹 ID ${groupId}의 멤버가 아닙니다.\n\n내가 속한 그룹:\n${myGroups.map((g: any) => `- ${g.groupName} (ID: ${g.groupId})`).join('\n')}`
+                );
               } else {
-                alert('그룹 멤버이지만 앨범 작성 권한이 없습니다.\n관리자에게 문의해주세요.');
+                alert(
+                  '그룹 멤버이지만 앨범 작성 권한이 없습니다.\n관리자에게 문의해주세요.'
+                );
               }
             } else {
-              alert('해당 그룹에 속한 사용자만 앨범을 작성할 수 있습니다.\n그룹 멤버십을 확인해주세요.');
+              alert(
+                '해당 그룹에 속한 사용자만 앨범을 작성할 수 있습니다.\n그룹 멤버십을 확인해주세요.'
+              );
             }
           } catch (e) {
             console.error('[403 오류 시 멤버십 확인 실패]', e);
-            alert('해당 그룹에 속한 사용자만 앨범을 작성할 수 있습니다.\n그룹 멤버십을 확인해주세요.');
+            alert(
+              '해당 그룹에 속한 사용자만 앨범을 작성할 수 있습니다.\n그룹 멤버십을 확인해주세요.'
+            );
           }
-          
+
           router.back();
           return;
         }
-        
-        alert(`앨범 생성에 실패했습니다: ${errorData.message || errorData.error || `${createRes.status} ${createRes.statusText}`}`);
+
+        alert(
+          `앨범 생성에 실패했습니다: ${errorData.message || errorData.error || `${createRes.status} ${createRes.statusText}`}`
+        );
       }
     } catch (error) {
       console.error('[앨범 추가 오류]', error);
@@ -358,7 +396,7 @@ export default function AlbumAdd() {
             앨범 추가
           </h2>
         </div>
-        
+
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="text-6xl mb-4">⚠️</div>
@@ -400,9 +438,7 @@ export default function AlbumAdd() {
             />
           </svg>
         </button>
-        <h2 className="text-2xl font-semibold text-center flex-1">
-          앨범 추가
-        </h2>
+        <h2 className="text-2xl font-semibold text-center flex-1">앨범 추가</h2>
       </div>
 
       <form
@@ -433,15 +469,23 @@ export default function AlbumAdd() {
 
         {/* 이미지 첨부 */}
         <div className="mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
-          <label className="block mb-1 font-medium">이미지 첨부 ({imagePreviews.length}장)</label>
+          <label className="block mb-1 font-medium">
+            이미지 첨부 ({imagePreviews.length}장)
+          </label>
           <div className="flex flex-col items-center gap-4">
             {/* 이미지 미리보기 슬라이더 */}
             {imagePreviews.length > 0 ? (
               <div className="w-full max-w-md">
                 <div className="overflow-x-auto">
-                  <div className="flex gap-2 py-2 " style={{ width: `${imagePreviews.length * 120}px` }}>
+                  <div
+                    className="flex gap-2 py-2 "
+                    style={{ width: `${imagePreviews.length * 120}px` }}
+                  >
                     {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative flex-shrink-0 w-28 h-28">
+                      <div
+                        key={index}
+                        className="relative flex-shrink-0 w-28 h-28"
+                      >
                         <Image
                           src={preview}
                           alt={`미리보기 ${index + 1}`}
@@ -478,11 +522,13 @@ export default function AlbumAdd() {
                     />
                   </svg>
                   <p className="text-gray-500 text-sm">이미지를 선택해주세요</p>
-                  <p className="text-gray-400 text-xs mt-1">여러 장 선택 가능</p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    여러 장 선택 가능
+                  </p>
                 </div>
               </div>
             )}
-            
+
             {/* 파일 선택 버튼 */}
             <div className="w-full max-w-md">
               <input
