@@ -126,8 +126,8 @@ export default function GroupSchedule() {
   };
 
   return (
-    <div className="member-list-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 min-h-screen">
-      <div className="flex items-center mb-6">
+    <div className="member-list-page h-screen flex flex-col py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+      <div className="flex items-center mb-6 flex-shrink-0">
         <button
           onClick={() => router.back()}
           className="text-gray-600 hover:text-gray-800"
@@ -154,7 +154,7 @@ export default function GroupSchedule() {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 md:max-h-[74%] md:overflow-y-auto scroll-overlay"
+        className="space-y-4 flex-1 overflow-y-auto scroll-overlay pb-20"
       >
         {/* (필수/자동 입력) 작성자 닉네임 */}
         <div className="mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">

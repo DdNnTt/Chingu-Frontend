@@ -28,7 +28,7 @@ type Value = ValuePiece | [ValuePiece, ValuePiece];
 
 export default function GroupDetail() {
   const router = useRouter();
-  const [groupName] = useState('그룹1');
+  const [groupName, setGroupName] = useState<string>('');
   const [members, setMembers] = useState<Member[]>([]);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [value, setValue] = useState<Value>(new Date());
@@ -67,7 +67,26 @@ export default function GroupDetail() {
       return;
     }
 
-    // 프록시 API 호출
+    // 그룹 상세 정보 가져오기
+    fetch(`/api/groups/${id}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          const groupData = await res.json();
+          setGroupName(groupData.groupName || '그룹명 없음');
+        } else {
+          console.error('[그룹 상세 조회 오류] 상태 코드:', res.status);
+        }
+      })
+      .catch((err) => {
+        console.error('[그룹 상세 조회 오류]', err);
+      });
+
+    // 앨범 정보 가져오기
     fetch(`/api/groups/${id}/albums`, {
       method: 'GET',
       headers: {
@@ -164,10 +183,10 @@ export default function GroupDetail() {
       <div className="bg-white p-4 rounded-md shadow mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">{groupName}</h1>
         <Link
-          href="/front/my-home/member/list"
+          href={`/front/my-home/member/list?groupId=${groupId}`}
           className="text-sm px-2 py-1 rounded text-white bg-[#9477ff] hover:bg-[#6845f5]"
         >
-          멤버 {members.length}명
+          멤버 보기
         </Link>
       </div>
 
@@ -187,7 +206,7 @@ export default function GroupDetail() {
           </button>
         </div>
 
-        <div className="bg-gray-100 h-28 overflow-hidden p-3">
+        <div className="bg-gray-100 overflow-hidden p-3">
           {loading ? (
             <div className="text-sm text-gray-400">불러오는 중...</div>
           ) : error ? (
@@ -197,25 +216,27 @@ export default function GroupDetail() {
           ) : albums.length === 0 ? (
             <div className="text-sm text-gray-500">앨범이 없습니다.</div>
           ) : (
-            <div className="grid grid-cols-3 gap-3">
-              {albums.map((album) => (
-                <div
-                  key={album.memoryId}
-                  className="relative bg-gray-100 h-28 rounded overflow-hidden shadow"
-                >
-                  {album.imageUrl ? (
-                    <img
-                      src={album.imageUrl}
-                      alt={album.description}
-                      className="object-cover w-full h-full"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-sm text-gray-500">
-                      {album.description}
-                    </div>
-                  )}
-                </div>
-              ))}
+            <div className="overflow-x-auto h-full">
+              <div className="flex gap-3 py-1" style={{ width: `${albums.length * 120}px` }}>
+                {albums.map((album) => (
+                  <div
+                    key={album.memoryId}
+                    className="relative flex-shrink-0 w-28 h-28 bg-gray-100 rounded overflow-hidden shadow"
+                  >
+                    {album.imageUrl ? (
+                      <img
+                        src={album.imageUrl}
+                        alt={album.description}
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-xs text-gray-500 p-1 text-center">
+                        {album.description}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

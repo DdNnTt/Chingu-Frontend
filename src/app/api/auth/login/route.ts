@@ -1,17 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  console.log('[env 확인]', process.env.API_BASE_URL);
   const API_BASE = process.env.API_BASE_URL;
-  console.log('[API_BASE]', API_BASE);
-
-  if (!API_BASE) {
-    console.error('[환경변수 오류] API_BASE_URL이 설정되지 않았습니다.');
-    return NextResponse.json(
-      { message: 'API 주소가 설정되지 않았습니다.' },
-      { status: 500 }
-    );
-  }
 
   try {
     const body = await req.json();
