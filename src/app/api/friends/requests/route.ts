@@ -11,16 +11,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const API_BASE = process.env.API_BASE_URL;
+    if (!API_BASE) {
+      return NextResponse.json(
+        { error: 'API_BASE_URL 누락됨' },
+        { status: 500 }
+      );
+    }
+
     // 백엔드 API 호출
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/friends/requests`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${API_BASE}/api/friends/requests`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     const data = await response.json();
 

@@ -4,11 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
+import { getCookieValue } from '@/utils/cookie';
 
 type Friend = {
   friendUserId: number;
   nickname: string;
   name: string;
+  score?: number;
+  friendSince?: string;
 };
 
 export default function GroupAdd() {
@@ -17,57 +20,46 @@ export default function GroupAdd() {
   const [description, setDescription] = useState('');
   const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriendIds, setSelectedFriendIds] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('accessToken='))
-      ?.split('=')[1];
+    const fetchFriends = async () => {
+      const token = getCookieValue('accessToken');
 
-    if (!token) {
-      alert('로그인이 필요합니다.');
-      router.push('/front/account/login');
-      return;
-    }
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        router.push('/front/account/login');
+        return;
+      }
 
-    // 친구 목록 불러오기
-    fetch('/api/friends', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data: Friend[]) => {
-        if (data.length === 0) {
-          // 친구가 없을 경우 테스트용 친구 추가
-          setFriends([
-            {
-              friendUserId: 1,
-              nickname: 'UI 확인용 친구1',
-              name: '테스트 유저',
-            },
-            {
-              friendUserId: 2,
-              nickname: 'UI 확인용 친구2',
-              name: '테스트 유저',
-            },
-          ]);
-        } else {
-          setFriends(data);
-        }
-      })
-      .catch((err) => {
-        console.error('[친구 목록 조회 오류]', err);
-        alert('친구 목록을 불러오지 못했습니다.');
-        // 에러 발생 시에도 테스트용 친구 추가
-        setFriends([
-          {
-            friendUserId: 1,
-            nickname: '친구1',
-            name: '테스트 유저',
+      try {
+        setLoading(true);
+        setError('');
+
+        const response = await fetch('/api/friends', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        ]);
-      });
+        });
+
+        if (!response.ok) {
+          throw new Error('친구 목록 조회 실패');
+        }
+
+        const data: Friend[] = await response.json();
+        console.log('[친구 목록 조회 성공]', data);
+        setFriends(data);
+      } catch (err) {
+        console.error('[친구 목록 조회 오류]', err);
+        setError('친구 목록을 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFriends();
   }, [router]);
 
   const handleCheck = (userId: number) => {
@@ -81,12 +73,13 @@ export default function GroupAdd() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('accessToken='))
-      ?.split('=')[1];
+    const token = getCookieValue('accessToken');
 
-    if (!token) return;
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      router.push('/front/account/login');
+      return;
+    }
 
     try {
       const res = await fetch('/api/groups/create', {
@@ -168,26 +161,43 @@ export default function GroupAdd() {
         <div className="mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
           <p className="mb-1 font-medium">그룹으로 초대할 친구 선택</p>
           <div className="border p-3 rounded max-h-40 overflow-y-auto space-y-1">
-            {friends.length === 0 ? (
-              <p className="text-gray-400 text-sm">
+            {loading ? (
+              <p className="text-gray-400 text-sm text-center">
+                친구 목록을 불러오는 중...
+              </p>
+            ) : error ? (
+              <p className="text-red-500 text-sm text-center">
+                {error}
+              </p>
+            ) : friends.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center">
                 초대 가능한 친구가 없습니다.
               </p>
             ) : (
               friends.map((friend) => (
                 <label
                   key={friend.friendUserId}
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
                 >
                   <input
                     type="checkbox"
                     checked={selectedFriendIds.includes(friend.friendUserId)}
                     onChange={() => handleCheck(friend.friendUserId)}
+                    className="w-4 h-4"
                   />
-                  <span>{friend.nickname}</span>
+                  <div className="flex-1">
+                    <span className="font-medium">{friend.nickname}</span>
+                    <span className="ml-2 text-gray-500 text-sm">({friend.name})</span>
+                  </div>
                 </label>
               ))
             )}
           </div>
+          {selectedFriendIds.length > 0 && (
+            <p className="text-sm text-blue-600 mt-2">
+              {selectedFriendIds.length}명의 친구를 선택했습니다.
+            </p>
+          )}
         </div>
 
         {/* 그룹 추가 버튼 */}

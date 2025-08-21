@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import Button from '@/components/common/Button';
+import { getCookieValue } from '@/utils/cookie';
 
 type User = {
   id: number;
@@ -22,12 +23,9 @@ export default function SearchUser() {
   const [users, setUsers] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [requestingFriends, setRequestingFriends] = useState<Set<number>>(new Set());
 
-  const getToken = () =>
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('accessToken='))
-      ?.split('=')[1];
+  const getToken = () => getCookieValue('accessToken');
 
   useEffect(() => {
     const token = getToken();
@@ -82,6 +80,58 @@ export default function SearchUser() {
     search();
   }, [keyword, router]);
 
+  const handleFriendRequest = async (friendId: number) => {
+    const token = getToken();
+    
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      router.replace('/front/account/login');
+      return;
+    }
+
+    // 이미 요청 중인 친구인지 확인
+    if (requestingFriends.has(friendId)) {
+      return;
+    }
+
+    try {
+      // 요청 중 상태로 설정
+      setRequestingFriends(prev => new Set(prev).add(friendId));
+
+      const response = await fetch('/api/friends/request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          friendId: friendId
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('친구 신청이 완료되었습니다!');
+        // 성공 시 해당 유저의 상태를 업데이트할 수 있지만, 
+        // 현재 API 응답에 isFriend 상태 변경 정보가 없으므로 
+        // 단순히 성공 메시지만 표시
+      } else {
+        alert(data.message || '친구 신청에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('[친구 신청 오류]', error);
+      alert('친구 신청 중 오류가 발생했습니다.');
+    } finally {
+      // 요청 완료 후 상태 제거
+      setRequestingFriends(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(friendId);
+        return newSet;
+      });
+    }
+  };
+
   return (
     <div className="search-user-page py-4 px-4 pt-20 bg-gray-100 min-h-screen">
       <h2 className="text-2xl font-semibold mb-6 text-center">유저 찾기</h2>
@@ -126,10 +176,15 @@ export default function SearchUser() {
                 <>
                   <Button
                     type="button"
-                    className="small-ver bg-gray-300 text-sm"
-                    onClick={() => alert('친구 신청 기능은 추후 구현 예정')}
+                    className={`small-ver text-sm ${
+                      requestingFriends.has(user.id)
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                    }`}
+                    onClick={() => handleFriendRequest(user.id)}
+                    disabled={requestingFriends.has(user.id)}
                   >
-                    친구 신청
+                    {requestingFriends.has(user.id) ? '신청 중...' : '친구 신청'}
                   </Button>
                 </>
               )}

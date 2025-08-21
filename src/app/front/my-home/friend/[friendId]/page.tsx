@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
 import MessageModal from '@/components/common/MessageModal';
@@ -59,61 +59,53 @@ export default function FriendDetailPage() {
   const [friendRequestLoading, setFriendRequestLoading] = useState(false);
   const [friendSince, setFriendSince] = useState<string>('');
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
-  
+
   // 퀴즈 관련 상태 추가
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [quizStats, setQuizStats] = useState<QuizStats>({
     totalQuizzes: 0,
     solvedQuizzes: 0,
     averageScore: 0,
-    friendshipScore: 0
+    friendshipScore: 0,
   });
   const [isQuizLoading, setIsQuizLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        setLoading(true);
-        const response = await axiosInstance.get(`/api/users/${friendId}`);
+  const fetchUserInfo = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get(`/api/users/${friendId}`);
 
-        if (response.status === 404) {
-          setError('해당 사용자를 찾을 수 없습니다.');
-          return;
-        }
-
-        const userData: User = response.data;
-        setUser(userData);
-        setFriendSince(userData.friendSince ?? '');
-
-        // 친구 관계 확인
-        await checkFriendStatus(userData.id);
-        
-        // 친구인 경우에만 퀴즈 데이터 조회
-        if (userData.friendSince) {
-          await Promise.all([
-            fetchFriendQuizzes(),
-            fetchFriendshipScore()
-          ]);
-        }
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-          if (err.response?.status === 404) {
-            setError('해당 사용자를 찾을 수 없습니다.');
-          } else {
-            setError('사용자 정보를 불러오는데 실패했습니다.');
-          }
-        } else {
-          setError('오류가 발생했습니다.');
-        }
-      } finally {
-        setLoading(false);
+      if (response.status === 404) {
+        setError('해당 사용자를 찾을 수 없습니다.');
+        return;
       }
-    };
 
+      const userData: User = response.data;
+      setUser(userData);
+      setFriendSince(userData.friendSince ?? '');
+
+      // 친구 관계 확인
+      await checkFriendStatus(userData.id);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 404) {
+          setError('해당 사용자를 찾을 수 없습니다.');
+        } else {
+          setError('사용자 정보를 불러오는데 실패했습니다.');
+        }
+      } else {
+        setError('오류가 발생했습니다.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [friendId]);
+
+  useEffect(() => {
     if (friendId) {
       fetchUserInfo();
     }
-  }, [friendId]);
+  }, [friendId, fetchUserInfo]);
 
   // 친구 관계가 변경될 때마다 퀴즈 데이터 새로고침
   useEffect(() => {
@@ -185,20 +177,22 @@ export default function FriendDetailPage() {
   };
 
   // 친구가 만든 퀴즈 목록 조회
-  const fetchFriendQuizzes = async () => {
+  const fetchFriendQuizzes = useCallback(async () => {
     if (!user || !friendSince) return;
-    
+
     try {
       setIsQuizLoading(true);
       // 친구가 만든 퀴즈 목록 조회 (API 엔드포인트는 백엔드에 맞게 수정 필요)
       const response = await axiosInstance.get(`/api/quizzes/user/${user.id}`);
       setQuizzes(response.data.quizzes || []);
-      setQuizStats(response.data.stats || {
-        totalQuizzes: 0,
-        solvedQuizzes: 0,
-        averageScore: 0,
-        friendshipScore: 0
-      });
+      setQuizStats(
+        response.data.stats || {
+          totalQuizzes: 0,
+          solvedQuizzes: 0,
+          averageScore: 0,
+          friendshipScore: 0,
+        }
+      );
     } catch (err) {
       console.error('친구 퀴즈 조회 실패:', err);
       // 에러가 발생해도 기본값으로 설정
@@ -207,12 +201,12 @@ export default function FriendDetailPage() {
         totalQuizzes: 0,
         solvedQuizzes: 0,
         averageScore: 0,
-        friendshipScore: 0
+        friendshipScore: 0,
       });
     } finally {
       setIsQuizLoading(false);
     }
-  };
+  }, [user, friendSince]);
 
   // 퀴즈 풀기
   const handleSolveQuiz = (quizId: number) => {
@@ -220,21 +214,23 @@ export default function FriendDetailPage() {
   };
 
   // 우정 점수 조회
-  const fetchFriendshipScore = async () => {
+  const fetchFriendshipScore = useCallback(async () => {
     if (!user || !friendSince) return;
-    
+
     try {
-      const response = await axiosInstance.get(`/api/quizzes/scores?friendId=${user.id}`);
+      const response = await axiosInstance.get(
+        `/api/quizzes/scores?friendId=${user.id}`
+      );
       if (response.data.score !== undefined) {
-        setQuizStats(prev => ({
+        setQuizStats((prev) => ({
           ...prev,
-          friendshipScore: response.data.score
+          friendshipScore: response.data.score,
         }));
       }
     } catch (err) {
       console.error('우정 점수 조회 실패:', err);
     }
-  };
+  }, [user, friendSince]);
 
   const handleSendMessage = () => {
     setIsMessageModalOpen(true);
@@ -472,34 +468,46 @@ export default function FriendDetailPage() {
             <h3 className="text-lg font-semibold mb-3">🏆 우정 점수 현황</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">{quizStats.friendshipScore}</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {quizStats.friendshipScore}
+                </div>
                 <div className="text-sm text-gray-600">우정 점수</div>
               </div>
               <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{quizStats.solvedQuizzes}/{quizStats.totalQuizzes}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {quizStats.solvedQuizzes}/{quizStats.totalQuizzes}
+                </div>
                 <div className="text-sm text-gray-600">퀴즈 완료</div>
               </div>
             </div>
             {quizStats.averageScore > 0 && (
               <div className="text-center mt-3 p-2 bg-yellow-50 rounded">
                 <span className="text-sm text-gray-600">평균 점수: </span>
-                <span className="font-semibold text-yellow-600">{quizStats.averageScore}점</span>
+                <span className="font-semibold text-yellow-600">
+                  {quizStats.averageScore}점
+                </span>
               </div>
             )}
           </div>
 
           {/* 친구가 만든 퀴즈 목록 */}
           <div className="friend-quizzes bg-white p-4 rounded-lg shadow-sm mb-4">
-            <h3 className="text-lg font-semibold mb-3">🧩 {user.nickname}님이 만든 퀴즈</h3>
+            <h3 className="text-lg font-semibold mb-3">
+              🧩 {user.nickname}님이 만든 퀴즈
+            </h3>
             {isQuizLoading ? (
               <div className="text-center py-4">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-2 text-gray-500 text-sm">퀴즈를 불러오는 중...</p>
+                <p className="mt-2 text-gray-500 text-sm">
+                  퀴즈를 불러오는 중...
+                </p>
               </div>
             ) : quizzes.length === 0 ? (
               <div className="text-center py-6 text-gray-500">
                 <p>아직 만든 퀴즈가 없어요 😢</p>
-                <p className="text-sm mt-1">퀴즈를 만들어달라고 요청해보세요!</p>
+                <p className="text-sm mt-1">
+                  퀴즈를 만들어달라고 요청해보세요!
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -507,18 +515,25 @@ export default function FriendDetailPage() {
                   <div
                     key={quiz.id}
                     className={`p-3 rounded-lg border ${
-                      quiz.isSolved 
-                        ? 'bg-green-50 border-green-200' 
+                      quiz.isSolved
+                        ? 'bg-green-50 border-green-200'
                         : 'bg-blue-50 border-blue-200'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-800">{quiz.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{quiz.description}</p>
+                        <h4 className="font-medium text-gray-800">
+                          {quiz.title}
+                        </h4>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {quiz.description}
+                        </p>
                         <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                           <span>문제 수: {quiz.totalQuestions}개</span>
-                          <span>생성일: {new Date(quiz.createdAt).toLocaleDateString()}</span>
+                          <span>
+                            생성일:{' '}
+                            {new Date(quiz.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
                         {quiz.isSolved && quiz.myScore !== undefined && (
                           <div className="mt-2">

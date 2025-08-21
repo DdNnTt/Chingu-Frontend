@@ -13,6 +13,10 @@ export default {
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
+        'custom-purple': 'rgb(104 69 245)',
+      },
+      maxHeight: {
+        'calc-100-minus-100': 'calc(100% - 100px)',
       },
     },
   },

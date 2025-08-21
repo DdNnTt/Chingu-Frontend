@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { groupId: string; scheduleId: string } }
+  { params }: { params: Promise<{ groupId: string; scheduleId: string }> }
 ) {
-  const { groupId, scheduleId } = params;
+  const { groupId, scheduleId } = await params;
   const token = req.headers.get('authorization');
 
   if (!token) {
