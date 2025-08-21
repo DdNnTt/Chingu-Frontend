@@ -1,8 +1,8 @@
 'use client';
 
 import Calendar from 'react-calendar';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import ScheduleModal from '@/components/common/ScheduleModal';
@@ -22,13 +22,13 @@ type ScheduleItem = {
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
-export default function GroupDetail() {
+function GroupDetailContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [groupName, setGroupName] = useState<string>('');
 
   const [albums, setAlbums] = useState<Album[]>([]);
   const [value, setValue] = useState<Value>(new Date());
-  const [groupId, setGroupId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -41,12 +41,10 @@ export default function GroupDetail() {
     setValue(val);
   };
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('groupId');
-    setGroupId(id);
+  const groupId = searchParams.get('groupId');
 
-    if (!id) {
+  useEffect(() => {
+    if (!groupId) {
       setError('groupId가 없습니다.');
       setLoading(false);
       return;
@@ -64,7 +62,7 @@ export default function GroupDetail() {
     }
 
     // 그룹 상세 정보 가져오기
-    fetch(`/api/groups/${id}`, {
+    fetch(`/api/groups/${groupId}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -83,7 +81,7 @@ export default function GroupDetail() {
       });
 
     // 앨범 정보 가져오기
-    fetch(`/api/groups/${id}/albums`, {
+    fetch(`/api/groups/${groupId}/albums`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -109,14 +107,14 @@ export default function GroupDetail() {
       .finally(() => setLoading(false));
 
     // 일정 불러오기
-    fetch(`/api/groups/${id}/schedules`, {
+    fetch(`/api/groups/${groupId}/schedules`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(async (res) => {
       const text = await res.text();
       const data = JSON.parse(text);
       setSchedules(data); // scheduleId 포함 배열 저장
     });
-  }, [router]);
+  }, [router, groupId]);
 
   // 헬퍼 함수 추가
   const getLocalDateString = (date: Date) =>
@@ -324,5 +322,13 @@ export default function GroupDetail() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function GroupDetail() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <GroupDetailContent />
+    </Suspense>
   );
 }
