@@ -180,7 +180,18 @@ export default function Login() {
               type="text"
               placeholder="아이디를 입력하세요"
               {...register('id')}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
+              style={
+                {
+                  '--focus-ring-color': '#6845f5',
+                } as React.CSSProperties
+              }
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 0 2px #6845f5';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = '';
+              }}
             />
             <p
               className={`absolute top-[38px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200 ${
@@ -197,7 +208,18 @@ export default function Login() {
               type="password"
               placeholder="비밀번호를 입력하세요"
               {...register('password')}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
+              style={
+                {
+                  '--focus-ring-color': '#6845f5',
+                } as React.CSSProperties
+              }
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 0 2px #6845f5';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = '';
+              }}
             />
             <p
               className={`absolute top-[38px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200 ${
