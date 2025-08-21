@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { groupId: string } }
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   const token = req.headers.get('authorization');
   if (!token) {
@@ -16,7 +16,7 @@ export async function POST(
 
   try {
     const body = await req.json();
-    const { groupId } = params;
+    const { groupId } = await params;
 
     const res = await fetch(`${API_BASE}/api/groups/${groupId}/schedules`, {
       method: 'POST',

@@ -17,14 +17,13 @@ export default function MemberDetail() {
   const [visibleMembers, setVisibleMembers] = useState(10);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [groupId, setGroupId] = useState<string | null>(null);
+
   const router = useRouter();
 
   useEffect(() => {
     // URL에서 groupId 가져오기
     const params = new URLSearchParams(window.location.search);
     const id = params.get('groupId');
-    setGroupId(id);
 
     if (!id) {
       setError('groupId가 없습니다.');
@@ -49,7 +48,9 @@ export default function MemberDetail() {
     })
       .then(async (res) => {
         if (!res.ok) {
-          const errorData = await res.json().catch(() => ({ message: '멤버 목록 조회 실패' }));
+          const errorData = await res
+            .json()
+            .catch(() => ({ message: '멤버 목록 조회 실패' }));
           throw new Error(errorData.message || '멤버 목록 조회 실패');
         }
         const data = await res.json();
@@ -93,11 +94,11 @@ export default function MemberDetail() {
           {isLoading ? (
             <p className="text-center text-gray-500 text-sm">불러오는 중...</p>
           ) : error ? (
-            <div className="text-center text-red-500 text-sm">
-              {error}
-            </div>
+            <div className="text-center text-red-500 text-sm">{error}</div>
           ) : members.length === 0 ? (
-            <p className="text-center text-gray-500 text-sm">멤버가 없습니다.</p>
+            <p className="text-center text-gray-500 text-sm">
+              멤버가 없습니다.
+            </p>
           ) : (
             members.slice(0, visibleMembers).map((member) => (
               <div
@@ -106,7 +107,9 @@ export default function MemberDetail() {
               >
                 <div className="font-medium text-gray-800">
                   {member.nickname}
-                  <span className="text-sm text-gray-600 font-normal">({member.name})</span>
+                  <span className="text-sm text-gray-600 font-normal">
+                    ({member.name})
+                  </span>
                 </div>
               </div>
             ))

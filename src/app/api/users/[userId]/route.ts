@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function GET(req: NextRequest, context: any) {
-  const userId = context?.params?.userId;
-
-  if (typeof userId !== 'string') {
-    return NextResponse.json(
-      { error: '유효하지 않은 userId' },
-      { status: 400 }
-    );
-  }
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ userId: string }> }
+) {
+  const { userId } = await context.params;
 
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { getCookieValue } from '@/utils/cookie';
 import Image from 'next/image';
@@ -12,7 +12,7 @@ type Album = {
   imageUrl?: string;
 };
 
-export default function AlbumList() {
+function AlbumListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const groupId = searchParams.get('groupId');
@@ -105,9 +105,7 @@ export default function AlbumList() {
             불러오는 중...
           </div>
         ) : error ? (
-          <div className="text-center text-red-500 text-sm py-8">
-            {error}
-          </div>
+          <div className="text-center text-red-500 text-sm py-8">{error}</div>
         ) : albums.length === 0 ? (
           <div className="text-center text-gray-500 text-sm py-8">
             앨범이 없습니다.
@@ -151,7 +149,7 @@ export default function AlbumList() {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* 앨범 정보 */}
                   <div className="p-3">
                     <p className="text-sm text-gray-800 mb-2 line-clamp-2">
@@ -165,5 +163,13 @@ export default function AlbumList() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AlbumList() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AlbumListContent />
+    </Suspense>
   );
 }

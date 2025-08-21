@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 // 일정 조회용 GET 메서드 추가
 export async function GET(
   req: NextRequest,
-  { params }: { params: { groupId: string } }
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const token = req.headers.get('authorization');
-    const { groupId } = params;
+    const { groupId } = await params;
 
     const res = await fetch(
       `${process.env.API_BASE_URL}/api/groups/${groupId}/schedules`,
@@ -33,12 +33,12 @@ export async function GET(
 // 기존 POST 그대로 유지
 export async function POST(
   req: NextRequest,
-  { params }: { params: { groupId: string } }
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const token = req.headers.get('authorization');
     const body = await req.json();
-    const { groupId } = params;
+    const { groupId } = await params;
 
     const res = await fetch(
       `${process.env.API_BASE_URL}/api/groups/${groupId}/schedules`,

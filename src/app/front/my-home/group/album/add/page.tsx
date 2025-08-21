@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
@@ -11,23 +11,13 @@ import { getCookieValue } from '@/utils/cookie';
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
-export default function AlbumAdd() {
+function AlbumAddContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const groupId = searchParams.get('groupId');
 
   // 토큰 상태 확인
   const accessToken = getCookieValue('accessToken');
-
-  // 사용자 정보 확인 (현재 미사용)
-  let tokenPayload: Record<string, unknown> | null = null;
-  if (accessToken) {
-    try {
-      tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
-    } catch (e) {
-      console.error('[앨범 추가 페이지] 토큰 디코딩 실패:', e);
-    }
-  }
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -37,7 +27,7 @@ export default function AlbumAdd() {
   const [location, setLocation] = useState('');
 
   // 그룹 멤버십 확인
-  const checkGroupMembership = async () => {
+  const checkGroupMembership = useCallback(async () => {
     if (!groupId || !accessToken) return;
 
     try {
@@ -50,8 +40,7 @@ export default function AlbumAdd() {
       });
 
       if (groupResponse.ok) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const groupData = await groupResponse.json();
+        await groupResponse.json(); // 응답 소비
         return;
       }
 
@@ -82,7 +71,7 @@ export default function AlbumAdd() {
     } catch (error) {
       console.error('[그룹 멤버십 확인 오류]', error);
     }
-  };
+  }, [groupId, accessToken]);
 
   // 페이지 로드 시 그룹 멤버십 확인
   React.useEffect(() => {
@@ -271,8 +260,7 @@ export default function AlbumAdd() {
       });
 
       if (createRes.ok) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const result = await createRes.json();
+        await createRes.json(); // 응답 소비
         alert('앨범이 성공적으로 추가되었습니다!');
         router.back();
       } else {
@@ -321,21 +309,24 @@ export default function AlbumAdd() {
             if (myGroupsRes.ok) {
               const myGroups = await myGroupsRes.json();
               const isGroupMember = myGroups.some(
-                (group: any) => String(group.groupId) === String(groupId)
+                (group: { groupId: number }) =>
+                  String(group.groupId) === String(groupId)
               );
 
               console.log('[403 오류 시 멤버십 확인]', {
                 groupId,
                 isGroupMember,
-                myGroups: myGroups.map((g: any) => ({
-                  id: g.groupId,
-                  name: g.groupName,
-                })),
+                myGroups: myGroups.map(
+                  (g: { groupId: number; groupName: string }) => ({
+                    id: g.groupId,
+                    name: g.groupName,
+                  })
+                ),
               });
 
               if (!isGroupMember) {
                 alert(
-                  `그룹 ID ${groupId}의 멤버가 아닙니다.\n\n내가 속한 그룹:\n${myGroups.map((g: any) => `- ${g.groupName} (ID: ${g.groupId})`).join('\n')}`
+                  `그룹 ID ${groupId}의 멤버가 아닙니다.\n\n내가 속한 그룹:\n${myGroups.map((g: { groupId: number; groupName: string }) => `- ${g.groupName} (ID: ${g.groupId})`).join('\n')}`
                 );
               } else {
                 alert(
@@ -608,5 +599,13 @@ export default function AlbumAdd() {
         </Button>
       </form>
     </div>
+  );
+}
+
+export default function AlbumAdd() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AlbumAddContent />
+    </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
@@ -34,7 +34,7 @@ function parseJwt(token: string) {
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
-export default function GroupSchedule() {
+function GroupScheduleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const groupId = searchParams.get('groupId');
@@ -311,5 +311,13 @@ export default function GroupSchedule() {
         </Button>
       </form>
     </div>
+  );
+}
+
+export default function GroupSchedule() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <GroupScheduleContent />
+    </Suspense>
   );
 }

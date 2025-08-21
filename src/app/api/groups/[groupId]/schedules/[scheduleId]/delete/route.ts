@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { groupId: string; scheduleId: string } }
+  context: { params: Promise<{ groupId: string; scheduleId: string }> }
 ) {
   try {
     const token = req.headers.get('authorization');
-    const { groupId, scheduleId } = context.params;
+    const { groupId, scheduleId } = await context.params;
 
     if (!token) {
       return NextResponse.json({ message: '권한 없음' }, { status: 401 });

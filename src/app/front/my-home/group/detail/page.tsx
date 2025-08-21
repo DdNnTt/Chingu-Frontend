@@ -4,12 +4,8 @@ import Calendar from 'react-calendar';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import ScheduleModal from '@/components/common/ScheduleModal';
-
-type Member = {
-  userId: number;
-  nickname: string;
-};
 
 type Album = {
   memoryId: number;
@@ -29,8 +25,7 @@ type Value = ValuePiece | [ValuePiece, ValuePiece];
 export default function GroupDetail() {
   const router = useRouter();
   const [groupName, setGroupName] = useState<string>('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [members, setMembers] = useState<Member[]>([]);
+
   const [albums, setAlbums] = useState<Album[]>([]);
   const [value, setValue] = useState<Value>(new Date());
   const [groupId, setGroupId] = useState<string | null>(null);
@@ -121,12 +116,6 @@ export default function GroupDetail() {
       const data = JSON.parse(text);
       setSchedules(data); // scheduleId 포함 배열 저장
     });
-
-    // 임시 멤버
-    setMembers([
-      { userId: 1, nickname: '철수' },
-      { userId: 2, nickname: '영희' },
-    ]);
   }, [router]);
 
   // 헬퍼 함수 추가
@@ -218,18 +207,21 @@ export default function GroupDetail() {
             <div className="text-sm text-gray-500">앨범이 없습니다.</div>
           ) : (
             <div className="overflow-x-auto h-full">
-              <div className="flex gap-3 py-1" style={{ width: `${albums.length * 120}px` }}>
+              <div
+                className="flex gap-3 py-1"
+                style={{ width: `${albums.length * 120}px` }}
+              >
                 {albums.map((album) => (
                   <div
                     key={album.memoryId}
                     className="relative flex-shrink-0 w-28 h-28 bg-gray-100 rounded overflow-hidden shadow"
                   >
                     {album.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={album.imageUrl}
                         alt={album.description}
-                        className="object-cover w-full h-full"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full text-xs text-gray-500 p-1 text-center">
