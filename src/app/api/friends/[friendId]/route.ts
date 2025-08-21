@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function DELETE(req: NextRequest, context: any) {
-  const friendId = context?.params?.friendId;
-
-  if (typeof friendId !== 'string') {
-    return NextResponse.json(
-      { error: '유효하지 않은 friendId' },
-      { status: 400 }
-    );
-  }
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<{ friendId: string }> }
+) {
+  const { friendId } = await context.params;
 
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');

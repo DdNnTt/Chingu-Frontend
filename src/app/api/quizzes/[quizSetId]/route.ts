@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { quizSetId: string } }
+  { params }: { params: Promise<{ quizSetId: string }> }
 ) {
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');
@@ -12,7 +12,8 @@ export async function GET(
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/quizzes/${params.quizSetId}`, {
+    const { quizSetId } = await params;
+    const res = await fetch(`${API_BASE}/api/quizzes/${quizSetId}`, {
       method: 'GET',
       headers: {
         Authorization: token || '',

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Intro() {
   return (
@@ -28,10 +29,12 @@ export default function Intro() {
           </p>
         </div>
         <div className="flex justify-center mb-8 animate-slideUp delay-900 opacity-0">
-          <img
+          <Image
             src="/images/friend.png"
             alt="친구와 대화하는 3D 캐릭터"
-            className="w-70 h-70 object-contain"
+            width={280}
+            height={280}
+            className="object-contain"
           />
         </div>
         <div className="mt-12 animate-slideUp delay-1200 opacity-0">

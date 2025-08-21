@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import axios, { isAxiosError } from 'axios';
 import { getCookieValue } from '@/utils/cookie';
@@ -265,10 +266,11 @@ export default function Login() {
             <span className="text-gray-700 font-medium">Google로 로그인</span>
           </div>
           <div className="border border-gray-300 text-sm px-4 py-3 rounded-xl w-full text-center bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:shadow-md">
-            <img
+            <Image
               src="/images/kakao-logo.png"
               alt="카카오"
-              className="w-5 h-5"
+              width={20}
+              height={20}
             />
             <span className="text-gray-700 font-medium">카카오로 로그인</span>
           </div>

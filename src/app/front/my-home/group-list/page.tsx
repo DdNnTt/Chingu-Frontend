@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/common/Button';
 import Link from 'next/link';
+import { getCookieValue } from '@/utils/cookie';
 
 type Group = {
   groupId: number;
@@ -32,10 +33,7 @@ export default function GroupList() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('accessToken='))
-      ?.split('=')[1];
+    const token = getCookieValue('accessToken');
 
     if (!token) {
       alert('로그인이 필요합니다.');
@@ -83,10 +81,8 @@ export default function GroupList() {
     const confirmDelete = confirm('정말로 이 그룹을 탈퇴하시겠습니까?');
     if (!confirmDelete) return;
 
-    const token = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('accessToken='))
-      ?.split('=')[1];
+    const token = getCookieValue('accessToken');
+    console.log('[그룹 삭제] 쿠키에서 가져온 토큰:', token ? `${token.substring(0, 30)}...` : 'null');
 
     if (!token) {
       alert('인증 토큰이 없습니다.');
@@ -94,21 +90,36 @@ export default function GroupList() {
     }
 
     try {
+      // 토큰에 Bearer가 이미 포함되어 있는지 확인
+      const authHeader = token?.startsWith('Bearer ') ? token : `Bearer ${token}`;
+      console.log('[그룹 삭제] 최종 Authorization 헤더:', authHeader ? `${authHeader.substring(0, 30)}...` : 'null');
+      
       const res = await fetch(`/api/groups/${groupId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: authHeader,
         },
       });
 
-      if (!res.ok) throw new Error('그룹 삭제 실패');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: '그룹 삭제 실패' }));
+        throw new Error(errorData.message || '그룹 삭제 실패');
+      }
 
       alert('그룹이 성공적으로 삭제되었습니다.');
       // 그룹 목록에서 해당 그룹 제거
       setGroups((prev) => prev.filter((group) => group.groupId !== groupId));
     } catch (err) {
       console.error('[그룹 삭제 실패]', err);
-      alert('그룹 삭제 중 오류가 발생했습니다.');
+      
+      const errorMessage = err instanceof Error ? err.message : '그룹 삭제 중 오류가 발생했습니다.';
+      
+      // 외래키 제약조건 오류 처리
+      if (errorMessage.includes('foreign key constraint') || errorMessage.includes('Cannot delete')) {
+        alert('그룹에 연결된 데이터가 있어 삭제할 수 없습니다.\n\n가능한 원인:\n• 그룹 스케줄\n• 그룹 앨범\n• 그룹 멤버 정보\n\n백엔드 관리자에게 문의하거나 잠시 후 다시 시도해주세요.');
+      } else {
+        alert(errorMessage);
+      }
     }
   };
 

@@ -474,14 +474,14 @@ export default function MyHome() {
       </div>
 
       <div className="my-groups bg-white p-4 rounded-lg shadow-sm">
-        <h3 className="text-lg font-semibold mb-2">내 그룹 목록</h3>
+        <h3 className="text-lg font-semibold mb-4">내 그룹 목록</h3>
         {groups.length === 0 ? (
           <p className="text-gray-500">가입된 그룹이 없습니다.</p>
         ) : (
           groups.slice(0, 3).map((group) => (
             <div
               key={group.groupId}
-              className="group-item bg-gray-200 p-3 rounded mb-2 cursor-pointer hover:bg-gray-300 transition-colors"
+              className="group-item bg-purple-50 p-3 rounded mb-2 cursor-pointer hover:bg-purple-100 transition-colors border border-purple-100"
               onClick={() =>
                 router.push(
                   `/front/my-home/group/detail?groupId=${group.groupId}`
