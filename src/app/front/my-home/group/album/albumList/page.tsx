@@ -10,6 +10,18 @@ type Album = {
   memoryId: number;
   description: string;
   imageUrl?: string;
+  title?: string;
+  content?: string;
+  location?: string;
+  createdAt?: string;
+  // 백엔드에서 사용할 가능성이 높은 필드들
+  albumTitle?: string;
+  albumName?: string;
+  memoryTitle?: string;
+  albumContent?: string;
+  memoryContent?: string;
+  albumLocation?: string;
+  memoryLocation?: string;
 };
 
 function AlbumListContent() {
@@ -49,6 +61,21 @@ function AlbumListContent() {
           if (!res.ok) throw new Error(data.message || '앨범 조회 실패');
           if (!Array.isArray(data))
             throw new Error('응답 데이터가 배열이 아닙니다.');
+          console.log('[앨범 목록] API 응답 데이터:', data);
+          console.log('[앨범 목록] 첫 번째 앨범 구조:', data[0]);
+          if (data[0]) {
+            console.log(
+              '[앨범 목록] 첫 번째 앨범의 모든 키:',
+              Object.keys(data[0])
+            );
+            console.log('[앨범 목록] 제목 관련 필드들:', {
+              title: data[0].title,
+              albumTitle: data[0].albumTitle,
+              memoryTitle: data[0].memoryTitle,
+              albumName: data[0].albumName,
+              name: data[0].name,
+            });
+          }
           setAlbums(data);
         } catch (err) {
           console.error('[앨범 조회 오류]', err);
@@ -118,7 +145,9 @@ function AlbumListContent() {
                   key={album.memoryId}
                   className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => {
-                    // TODO: 앨범 상세 페이지로 이동
+                    router.push(
+                      `/front/my-home/group/album/detail?groupId=${groupId}&albumId=${album.memoryId}`
+                    );
                   }}
                 >
                   {/* 이미지 영역 */}
@@ -152,9 +181,55 @@ function AlbumListContent() {
 
                   {/* 앨범 정보 */}
                   <div className="p-3">
-                    <p className="text-sm text-gray-800 mb-2 line-clamp-2">
-                      {album.description || '내용 없음'}
+                    {/* 제목 */}
+                    <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-1">
+                      {album.title ||
+                        album.albumTitle ||
+                        album.memoryTitle ||
+                        album.albumName ||
+                        `앨범 #${album.memoryId}`}
+                    </h3>
+
+                    {/* 설명 */}
+                    <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                      {album.content ||
+                        album.albumContent ||
+                        album.memoryContent ||
+                        album.description ||
+                        '내용 없음'}
                     </p>
+
+                    {/* 위치 */}
+                    {(album.location ||
+                      album.albumLocation ||
+                      album.memoryLocation) && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                        <span className="line-clamp-1">
+                          {album.location ||
+                            album.albumLocation ||
+                            album.memoryLocation}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
