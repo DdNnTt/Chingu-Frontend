@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import { useState } from 'react';
+import React from 'react';
 import axios from 'axios';
 
 const FindIdSchema = z.object({
@@ -54,44 +55,99 @@ export default function FindIdPage() {
   };
 
   return (
-    <div className="find-id-page py-4 px-4 mt-20">
-      <h2 className="text-2xl font-semibold mb-14 text-center">아이디 찾기</h2>
+    <div
+      className="find-id-page relative h-full flex flex-col items-center justify-center overflow-hidden tracking-tight py-4 px-4"
+      style={{ letterSpacing: '-0.5px' }}
+    >
+      {/* 배경 그라데이션 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100"></div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="relative mb-6">
-          <Input
-            type="text"
-            placeholder="이름을 입력하세요"
-            {...register('name')}
-          />
-          <p className="text-xs text-red-500 mt-1">
-            {errors.name?.message ?? ''}
-          </p>
+      {/* 메인 컨텐츠 */}
+      <div className="relative z-10 w-full max-w-sm mx-auto">
+        {/* 헤더 */}
+        <div className="text-center space-y-4 mb-12 animate-slideUp opacity-0">
+          <h2 className="text-3xl text-black drop-shadow-sm font-bold">
+            아이디 찾기
+          </h2>
         </div>
 
-        <div className="relative mb-6">
-          <Input
-            type="email"
-            placeholder="이메일을 입력하세요"
-            {...register('email')}
-          />
-          <p className="text-xs text-red-500 mt-1">
-            {errors.email?.message ?? ''}
-          </p>
-        </div>
+        {/* 아이디 찾기 폼 */}
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="animate-slideUp delay-300 opacity-0"
+        >
+          <div className="relative mb-6">
+            <Input
+              type="text"
+              placeholder="이름을 입력하세요"
+              {...register('name')}
+              className="w-full h-10 px-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
+              style={
+                {
+                  '--focus-ring-color': '#6845f5',
+                } as React.CSSProperties
+              }
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 0 2px #6845f5';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = '';
+              }}
+            />
+            <p className="absolute top-[38px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200">
+              {errors.name?.message ?? ''}
+            </p>
+          </div>
 
-        <Button type="submit" className="w-full bg-blue-600 text-white">
-          아이디 찾기
-        </Button>
-      </form>
+          <div className="relative mb-6">
+            <Input
+              type="email"
+              placeholder="이메일을 입력하세요"
+              {...register('email')}
+              className="w-full h-10 px-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
+              style={
+                {
+                  '--focus-ring-color': '#6845f5',
+                } as React.CSSProperties
+              }
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 0 2px #6845f5';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = '';
+              }}
+            />
+            <p className="absolute top-[38px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200">
+              {errors.email?.message ?? ''}
+            </p>
+          </div>
 
-      {foundId && (
-        <p className="mt-6 text-green-600 text-center font-semibold">
-          회원님의 아이디는 <strong>{foundId}</strong>입니다.
-        </p>
-      )}
+          <div className="animate-slideUp delay-600 opacity-0">
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-300"
+            >
+              아이디 찾기
+            </Button>
+          </div>
+        </form>
 
-      {error && <p className="mt-6 text-red-500 text-center">{error}</p>}
+        {/* 결과 메시지 */}
+        {foundId && (
+          <div className="mt-6 text-center animate-slideUp">
+            <p className="text-green-600 font-semibold">
+              회원님의 아이디는{' '}
+              <strong className="text-main-color">{foundId}</strong>입니다.
+            </p>
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-6 text-center animate-slideUp">
+            <p className="text-red-500">{error}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

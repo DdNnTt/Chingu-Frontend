@@ -15,17 +15,23 @@ export async function PUT(request: NextRequest) {
     }
 
     // 백엔드 API 호출
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/friends/respond`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ friendId, status }),
-      }
-    );
+    const API_BASE = process.env.API_BASE_URL;
+    if (!API_BASE) {
+      console.error('API_BASE_URL 환경변수가 설정되지 않았습니다.');
+      return NextResponse.json(
+        { message: '서버 설정 오류가 발생했습니다.' },
+        { status: 500 }
+      );
+    }
+
+    const response = await fetch(`${API_BASE}/api/friends/respond`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ friendId, status }),
+    });
 
     const data = await response.json();
 
