@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Button from '@/components/common/Button';
 import { useRouter } from 'next/navigation';
+import React from 'react';
 import EmailVerificationInput from '@/components/common/EmailVerificationInput'; // ✅ 컴포넌트 import
 
 // ✅ Zod 스키마 정의
@@ -43,33 +44,54 @@ export default function FindPasswordPage() {
   };
 
   return (
-    <div className="find-password-page py-4 px-4 mt-20">
-      <h2 className="text-2xl font-semibold mb-14 text-center">
-        비밀번호 찾기
-      </h2>
+    <div
+      className="find-password-page relative h-full flex flex-col items-center justify-center overflow-hidden tracking-tight py-4 px-4"
+      style={{ letterSpacing: '-0.5px' }}
+    >
+      {/* 배경 그라데이션 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100"></div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {/* ✅ 이메일 인증 컴포넌트 통합 */}
-        <EmailVerificationInput<FindPwFormValues>
-          emailField="email"
-          codeField="confirmCode"
-          register={register}
-          getValues={getValues}
-          setValue={setValue}
-          flagField="emailVerified"
-        />
+      {/* 메인 컨텐츠 */}
+      <div className="relative z-10 w-full max-w-sm mx-auto">
+        {/* 헤더 */}
+        <div className="text-center space-y-4 mb-12 animate-slideUp opacity-0">
+          <h2 className="text-3xl text-black drop-shadow-sm font-bold">
+            비밀번호 찾기
+          </h2>
+        </div>
 
-        {/* 이메일 인증이 안 되었을 경우 표시 */}
-        {errors.emailVerified && (
-          <p className="text-xs text-red-500 mb-4 text-center">
-            {errors.emailVerified.message}
-          </p>
-        )}
+        {/* 비밀번호 찾기 폼 */}
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="animate-slideUp delay-300 opacity-0"
+        >
+          {/* ✅ 이메일 인증 컴포넌트 통합 */}
+          <EmailVerificationInput<FindPwFormValues>
+            emailField="email"
+            codeField="confirmCode"
+            register={register}
+            getValues={getValues}
+            setValue={setValue}
+            flagField="emailVerified"
+          />
 
-        <Button type="submit" className="w-full bg-blue-600 text-white">
-          확인
-        </Button>
-      </form>
+          {/* 이메일 인증이 안 되었을 경우 표시 */}
+          {errors.emailVerified && (
+            <p className="text-xs text-red-500 mb-4 text-center">
+              {errors.emailVerified.message}
+            </p>
+          )}
+
+          <div className="animate-slideUp delay-600 opacity-0">
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-300"
+            >
+              확인
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

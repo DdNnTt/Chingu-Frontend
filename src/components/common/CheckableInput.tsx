@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import React from 'react';
 import Input from '@/components/common/Input';
 import {
   UseFormRegister,
@@ -49,8 +50,6 @@ export default function CheckableInput<T extends FieldValues>({
       return;
     }
 
-    console.log('중복 확인 요청 URL:', `${checkUrl}?${queryKey}=${value}`);
-
     setIsChecking(true);
     setMessage('');
 
@@ -90,13 +89,24 @@ export default function CheckableInput<T extends FieldValues>({
           placeholder={placeholder}
           autoComplete="off"
           {...register(name as Path<T>)}
-          className="flex-1 px-3 py-2 border rounded-md"
+          className="flex-1 h-10 px-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
+          style={
+            {
+              '--focus-ring-color': '#6845f5',
+            } as React.CSSProperties
+          }
+          onFocus={(e) => {
+            e.currentTarget.style.boxShadow = '0 0 0 2px #6845f5';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = '';
+          }}
         />
         <button
           type="button"
           onClick={handleCheck}
           disabled={isChecking}
-          className="px-3 py-2 bg-gray-200 rounded-md text-sm"
+          className="h-10 px-4 bg-main-color text-white rounded-xl text-sm font-medium shadow-sm hover:shadow-md hover:bg-sub-color transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {/* {isChecking ? '확인 중...' : '중복 확인'} */}
           중복 확인
