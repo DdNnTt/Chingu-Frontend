@@ -33,9 +33,7 @@ export async function GET(
       `${API_BASE}/api/groups/${groupId}/albums/${memoryId}`,
       {
         method: 'GET',
-        headers: {
-          Authorization: token ?? '',
-        },
+        headers: token ? { Authorization: token } : {},
       }
     );
 
@@ -96,7 +94,7 @@ export async function PATCH(
       {
         method: 'PATCH',
         headers: {
-          Authorization: token ?? '',
+          ...(token ? { Authorization: token } : {}),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
@@ -157,9 +155,7 @@ export async function DELETE(
       `${API_BASE}/api/groups/${groupId}/albums/${memoryId}`,
       {
         method: 'DELETE',
-        headers: {
-          Authorization: token ?? '',
-        },
+        headers: token ? { Authorization: token } : {},
       }
     );
 
