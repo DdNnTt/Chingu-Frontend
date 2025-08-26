@@ -7,15 +7,17 @@ import { getCookieValue } from '@/utils/cookie';
 import Image from 'next/image';
 
 type Album = {
-  memoryId: number;
-  description: string;
+  albumId: number;
+  albumTitle: string;
+  albumImage?: string;
+  createdAt: string;
+  // 호환성을 위한 추가 필드들
+  memoryId?: number;
+  description?: string;
   imageUrl?: string;
   title?: string;
   content?: string;
   location?: string;
-  createdAt?: string;
-  // 백엔드에서 사용할 가능성이 높은 필드들
-  albumTitle?: string;
   albumName?: string;
   memoryTitle?: string;
   albumContent?: string;
@@ -62,20 +64,6 @@ function AlbumListContent() {
           if (!Array.isArray(data))
             throw new Error('응답 데이터가 배열이 아닙니다.');
           console.log('[앨범 목록] API 응답 데이터:', data);
-          console.log('[앨범 목록] 첫 번째 앨범 구조:', data[0]);
-          if (data[0]) {
-            console.log(
-              '[앨범 목록] 첫 번째 앨범의 모든 키:',
-              Object.keys(data[0])
-            );
-            console.log('[앨범 목록] 제목 관련 필드들:', {
-              title: data[0].title,
-              albumTitle: data[0].albumTitle,
-              memoryTitle: data[0].memoryTitle,
-              albumName: data[0].albumName,
-              name: data[0].name,
-            });
-          }
           setAlbums(data);
         } catch (err) {
           console.error('[앨범 조회 오류]', err);
@@ -117,6 +105,7 @@ function AlbumListContent() {
       </div>
 
       {/* 추억 앨범 리스트 */}
+
       <div className="bg-white p-4 rounded-md shadow mb-4">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-bold">추억 앨범</h1>
@@ -142,11 +131,11 @@ function AlbumListContent() {
             {albums.map((album) => {
               return (
                 <div
-                  key={album.memoryId}
+                  key={album.albumId || album.memoryId}
                   className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => {
                     router.push(
-                      `/front/my-home/group/album/detail?groupId=${groupId}&albumId=${album.memoryId}`
+                      `/front/my-home/group/album/detail?groupId=${groupId}&albumId=${album.albumId || album.memoryId}`
                     );
                   }}
                 >
@@ -172,7 +161,7 @@ function AlbumListContent() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z"
                           />
                         </svg>
                       </div>
@@ -182,13 +171,9 @@ function AlbumListContent() {
                   {/* 앨범 정보 */}
                   <div className="p-3">
                     {/* 제목 */}
-                    <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-1">
-                      {album.title ||
-                        album.albumTitle ||
-                        album.memoryTitle ||
-                        album.albumName ||
-                        `앨범 #${album.memoryId}`}
-                    </h3>
+                    {/* <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-1">
+                      {album.albumTitle || `앨범 #${album.albumId}`}
+                    </h3> */}
 
                     {/* 설명 */}
                     <p className="text-xs text-gray-600 mb-2 line-clamp-2">

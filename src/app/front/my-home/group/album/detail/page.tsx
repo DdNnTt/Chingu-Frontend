@@ -7,25 +7,28 @@ import { getCookieValue } from '@/utils/cookie';
 
 type AlbumDetail = {
   memoryId: number;
-  description: string;
-  imageUrl?: string;
-  createdAt?: string;
-  // 추가 필드들 (실제 API 응답에 따라)
-  title?: string;
-  albumTitle?: string;
-  content?: string;
-  albumContent?: string;
+  groupId: number;
+  nickname: string;
+  title: string;
+  content: string;
+  imageUrl1?: string;
+  imageUrl2?: string;
+  imageUrl3?: string;
   location?: string;
+  memoryDate: string;
+  createdAt: string;
+  // 호환성을 위한 추가 필드들
+  description?: string;
+  imageUrl?: string;
+  albumTitle?: string;
+  albumContent?: string;
   albumLocation?: string;
-  memoryDate?: string;
   albumImage?: string;
   albumImage2?: string;
   albumImage3?: string;
-  // 기타 가능한 필드들
   name?: string;
   place?: string;
   address?: string;
-  // 백엔드에서 사용할 가능성이 높은 필드들
   albumName?: string;
   memoryTitle?: string;
   memoryContent?: string;
@@ -41,50 +44,43 @@ function AlbumDetailContent() {
   const [albumDetail, setAlbumDetail] = useState<AlbumDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // 토큰 상태 확인
-  const accessToken = getCookieValue('accessToken');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    if (!groupId || !albumId || !accessToken) {
+    if (!groupId || !albumId) {
       setError('필요한 정보가 없습니다.');
+      setLoading(false);
+      return;
+    }
+
+    // 토큰 상태 확인
+    const accessToken = getCookieValue('accessToken');
+    if (!accessToken) {
+      setError('로그인이 필요합니다.');
       setLoading(false);
       return;
     }
 
     const fetchAlbumDetail = async () => {
       try {
-        // 앨범 상세 정보 조회
-        const response = await fetch(`/api/groups/${groupId}/albums`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+        // 앨범 상세 정보 조회 - 새로운 API 엔드포인트 사용
+        const response = await fetch(
+          `/api/groups/${groupId}/albums/${albumId}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
 
         if (response.ok) {
-          const albums = await response.json();
-          console.log('[앨범 상세] API 응답:', albums);
-          console.log('[앨범 상세] 찾는 albumId:', albumId);
-
-          const album = albums.find(
-            (a: AlbumDetail) => String(a.memoryId) === String(albumId)
-          );
-
-          if (album) {
-            console.log('[앨범 상세] 찾은 앨범:', album);
-            setAlbumDetail(album);
-          } else {
-            console.log(
-              '[앨범 상세] 앨범을 찾을 수 없음. 사용 가능한 앨범들:',
-              albums.map((a: AlbumDetail) => ({
-                memoryId: a.memoryId,
-                description: a.description,
-              }))
-            );
-            setError('앨범을 찾을 수 없습니다.');
-          }
+          const album = await response.json();
+          console.log('[앨범 상세] API 응답:', album);
+          setAlbumDetail(album);
         } else {
+          const errorText = await response.text();
+          console.error('[앨범 상세] API 오류:', response.status, errorText);
           setError('앨범 정보를 불러오는데 실패했습니다.');
         }
       } catch (err) {
@@ -96,7 +92,7 @@ function AlbumDetailContent() {
     };
 
     fetchAlbumDetail();
-  }, [groupId, albumId, accessToken]);
+  }, [groupId, albumId]);
 
   // 날짜 포맷팅
   const formatDate = (dateString: string) => {
@@ -111,13 +107,57 @@ function AlbumDetailContent() {
   // 이미지 URL 배열 생성
   const getImageUrls = (album: AlbumDetail) => {
     const urls = [];
-    // 기본 imageUrl 필드 확인
+    // API 스펙에 따른 이미지 필드들 확인
+    if (album.imageUrl1) urls.push(album.imageUrl1);
+    if (album.imageUrl2) urls.push(album.imageUrl2);
+    if (album.imageUrl3) urls.push(album.imageUrl3);
+    // 호환성을 위한 추가 필드들
     if (album.imageUrl) urls.push(album.imageUrl);
-    // 추가 이미지 필드들 확인
     if (album.albumImage) urls.push(album.albumImage);
-    if (album.albumImage2) urls.push(album.albumImage2);
-    if (album.albumImage3) urls.push(album.albumImage3);
     return urls;
+  };
+
+  // 앨범 삭제 함수
+  const handleDeleteAlbum = async () => {
+    if (!confirm('정말로 이 앨범을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const accessToken = getCookieValue('accessToken');
+      if (!accessToken) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      const response = await fetch(`/api/groups/${groupId}/albums/${albumId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (response.ok) {
+        alert('앨범이 삭제되었습니다.');
+        router.back(); // 이전 페이지로 돌아가기
+      } else {
+        const errorText = await response.text();
+        console.error('[앨범 삭제] API 오류:', response.status, errorText);
+
+        if (response.status === 403) {
+          alert('작성자만 삭제할 수 있습니다.');
+        } else {
+          alert('앨범 삭제에 실패했습니다.');
+        }
+      }
+    } catch (err) {
+      console.error('[앨범 삭제 오류]', err);
+      alert('앨범 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   // 로딩 상태
@@ -230,20 +270,64 @@ function AlbumDetailContent() {
           </svg>
         </button>
         <h2 className="text-2xl font-semibold text-center flex-1">앨범 상세</h2>
+        <button
+          onClick={handleDeleteAlbum}
+          disabled={isDeleting}
+          className="text-xs text-white border border-red-200 px-3 py-1.5 rounded-lg font-medium shadow-sm hover:shadow-md hover:border-red-300 transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          style={
+            {
+              backgroundColor: '#f5b2b2',
+              '--hover-bg-color': '#e89999',
+            } as React.CSSProperties
+          }
+          onMouseEnter={(e) => {
+            if (!isDeleting) {
+              e.currentTarget.style.backgroundColor = '#e89999';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isDeleting) {
+              e.currentTarget.style.backgroundColor = '#f5b2b2';
+            }
+          }}
+        >
+          {isDeleting ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <span>삭제 중...</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="white"
+                className="w-4 h-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                />
+              </svg>
+              <span>삭제</span>
+            </div>
+          )}
+        </button>
       </div>
 
       <div className="space-y-4 flex-1 overflow-y-auto scroll-overlay pb-20">
         {/* 제목 */}
         <div className="mb-4 p-4 bg-white rounded-lg shadow-sm">
           <label className="block mb-2 font-medium text-gray-700">제목</label>
-          <div className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900">
             {albumDetail.title ||
               albumDetail.albumTitle ||
               albumDetail.memoryTitle ||
-              albumDetail.albumName ||
-              albumDetail.name ||
               `앨범 #${albumDetail.memoryId}`}
-          </div>
+          </h3>
         </div>
 
         {/* 설명 */}
@@ -350,13 +434,8 @@ function AlbumDetailContent() {
 
         {/* 생성일 */}
         {albumDetail.createdAt && (
-          <div className="mb-4 p-4 bg-white rounded-lg shadow-sm">
-            <label className="block mb-2 font-medium text-gray-700">
-              생성일
-            </label>
-            <div className="text-gray-600 text-sm">
-              {formatDate(albumDetail.createdAt)}
-            </div>
+          <div className="text-gray-600 text-sm" style={{ textAlign: 'right' }}>
+            생성일: {formatDate(albumDetail.createdAt)}
           </div>
         )}
       </div>
