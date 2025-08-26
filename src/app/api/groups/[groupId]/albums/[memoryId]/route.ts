@@ -62,6 +62,70 @@ export async function GET(
   }
 }
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ groupId: string; memoryId: string }> }
+) {
+  const token = req.headers.get('authorization');
+  const API_BASE = process.env.API_BASE_URL;
+  const { groupId, memoryId } = await params;
+
+  if (!API_BASE) {
+    return NextResponse.json({ message: 'API 주소 누락' }, { status: 500 });
+  }
+
+  if (!groupId || !memoryId) {
+    return NextResponse.json(
+      { message: 'groupId 또는 memoryId 누락' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const body = await req.json();
+    console.log('[앨범 수정 프록시] 요청 데이터:', {
+      groupId,
+      memoryId,
+      body,
+      token: token ? `${token.substring(0, 20)}...` : 'null',
+      API_BASE,
+    });
+
+    const res = await fetch(
+      `${API_BASE}/api/groups/${groupId}/albums/${memoryId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: token ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    console.log('[앨범 수정 프록시] 백엔드 응답:', {
+      status: res.status,
+      statusText: res.statusText,
+      headers: Object.fromEntries(res.headers.entries()),
+    });
+
+    const text = await res.text();
+    console.log('[앨범 수정 프록시] 백엔드 응답 텍스트:', text);
+
+    try {
+      const data = JSON.parse(text);
+      console.log('[앨범 수정 프록시] 파싱된 응답 데이터:', data);
+      return NextResponse.json(data, { status: res.status });
+    } catch (parseError) {
+      console.error('[앨범 수정 프록시] JSON 파싱 실패:', parseError);
+      return NextResponse.json({ message: text }, { status: res.status });
+    }
+  } catch (err) {
+    console.error('[앨범 수정 프록시 PATCH 오류]', err);
+    return NextResponse.json({ message: '서버 오류' }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ groupId: string; memoryId: string }> }
