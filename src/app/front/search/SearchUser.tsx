@@ -23,7 +23,9 @@ export default function SearchUser() {
   const [users, setUsers] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [requestingFriends, setRequestingFriends] = useState<Set<number>>(new Set());
+  const [requestingFriends, setRequestingFriends] = useState<Set<number>>(
+    new Set()
+  );
 
   const getToken = () => getCookieValue('accessToken');
 
@@ -58,10 +60,42 @@ export default function SearchUser() {
         const data = await res.json();
 
         if (res.ok) {
+          console.log('[검색 결과] 백엔드 응답:', data);
           const sorted = (data.users ?? []).sort((a: User, b: User) =>
             a.nickname.localeCompare(b.nickname)
           );
-          setUsers(sorted);
+          console.log('[검색 결과] 정렬된 사용자 목록:', sorted);
+
+          // 친구 목록을 가져와서 isFriend 상태를 업데이트
+          try {
+            const friendsResponse = await fetch('/api/friends', {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (friendsResponse.ok) {
+              const friendsData = await friendsResponse.json();
+              console.log('[친구 목록] 현재 친구들:', friendsData);
+
+              // 검색된 사용자들의 isFriend 상태를 업데이트
+              const updatedUsers = sorted.map((user: User) => ({
+                ...user,
+                isFriend: friendsData.some(
+                  (friend: { friendUserId: number }) =>
+                    friend.friendUserId === user.id
+                ),
+              }));
+
+              console.log('[검색 결과] 친구 상태 업데이트 후:', updatedUsers);
+              setUsers(updatedUsers);
+            } else {
+              setUsers(sorted);
+            }
+          } catch (friendsError) {
+            console.error('[친구 목록 조회 실패]', friendsError);
+            setUsers(sorted);
+          }
 
           if (sorted.length === 0) {
             setErrorMsg('찾으시는 친구가 없어요');
@@ -82,7 +116,7 @@ export default function SearchUser() {
 
   const handleFriendRequest = async (friendId: number) => {
     const token = getToken();
-    
+
     if (!token) {
       alert('로그인이 필요합니다.');
       router.replace('/front/account/login');
@@ -96,16 +130,16 @@ export default function SearchUser() {
 
     try {
       // 요청 중 상태로 설정
-      setRequestingFriends(prev => new Set(prev).add(friendId));
+      setRequestingFriends((prev) => new Set(prev).add(friendId));
 
       const response = await fetch('/api/friends/request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          friendId: friendId
+          friendId: friendId,
         }),
       });
 
@@ -113,10 +147,21 @@ export default function SearchUser() {
 
       if (response.ok) {
         alert('친구 신청이 완료되었습니다!');
-        // 성공 시 해당 유저의 상태를 업데이트할 수 있지만, 
-        // 현재 API 응답에 isFriend 상태 변경 정보가 없으므로 
-        // 단순히 성공 메시지만 표시
+        // 성공 시 해당 유저의 isFriend 상태를 true로 업데이트
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === friendId ? { ...user, isFriend: true } : user
+          )
+        );
       } else {
+        // "이미 친구입니다" 에러인 경우 해당 유저의 isFriend 상태를 true로 업데이트
+        if (data.message === '이미 친구입니다.') {
+          setUsers((prevUsers) =>
+            prevUsers.map((user) =>
+              user.id === friendId ? { ...user, isFriend: true } : user
+            )
+          );
+        }
         alert(data.message || '친구 신청에 실패했습니다.');
       }
     } catch (error) {
@@ -124,7 +169,7 @@ export default function SearchUser() {
       alert('친구 신청 중 오류가 발생했습니다.');
     } finally {
       // 요청 완료 후 상태 제거
-      setRequestingFriends(prev => {
+      setRequestingFriends((prev) => {
         const newSet = new Set(prev);
         newSet.delete(friendId);
         return newSet;
@@ -170,7 +215,7 @@ export default function SearchUser() {
                   href={`/front/my-home?userId=${user.id}`}
                   className="px-4 py-3 rounded-lg transition-colors bg-main-color text-white small-ver bg-gray-300 text-sm"
                 >
-                  마이홈 놀러가기
+                  칭구칭구🫶
                 </Link>
               ) : (
                 <>
@@ -184,7 +229,9 @@ export default function SearchUser() {
                     onClick={() => handleFriendRequest(user.id)}
                     disabled={requestingFriends.has(user.id)}
                   >
-                    {requestingFriends.has(user.id) ? '신청 중...' : '친구 신청'}
+                    {requestingFriends.has(user.id)
+                      ? '신청 중...'
+                      : '친구 신청'}
                   </Button>
                 </>
               )}

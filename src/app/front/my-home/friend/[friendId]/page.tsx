@@ -73,10 +73,7 @@ export default function FriendDetailPage() {
   const fetchUserInfo = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('[친구 상세] 사용자 정보 조회 시작:', friendId);
-
       const response = await axiosInstance.get(`/api/users/${friendId}`);
-      console.log('[친구 상세] 사용자 정보 조회 성공:', response.data);
 
       if (response.status === 404) {
         setError('해당 사용자를 찾을 수 없습니다.');
@@ -90,22 +87,11 @@ export default function FriendDetailPage() {
       // 친구 관계 확인
       await checkFriendStatus(userData.id);
     } catch (err) {
-      console.error('[친구 상세] 사용자 정보 조회 실패:', err);
-
       if (axios.isAxiosError(err)) {
-        console.error('[친구 상세] Axios 에러 상세:', {
-          status: err.response?.status,
-          statusText: err.response?.statusText,
-          data: err.response?.data,
-          message: err.message,
-        });
-
         if (err.response?.status === 404) {
           setError('해당 사용자를 찾을 수 없습니다.');
         } else {
-          setError(
-            `사용자 정보를 불러오는데 실패했습니다. (${err.response?.status})`
-          );
+          setError('사용자 정보를 불러오는데 실패했습니다.');
         }
       } else {
         setError('오류가 발생했습니다.');
