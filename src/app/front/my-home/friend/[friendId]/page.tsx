@@ -113,7 +113,7 @@ export default function FriendDetailPage() {
       fetchFriendQuizzes();
       fetchFriendshipScore();
     }
-  }, [friendSince, user]);
+  }, [friendSince, user, fetchFriendQuizzes, fetchFriendshipScore]);
 
   // 친구 관계 확인 함수
   const checkFriendStatus = async (targetUserId: number) => {
