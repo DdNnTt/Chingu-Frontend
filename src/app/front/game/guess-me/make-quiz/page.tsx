@@ -197,7 +197,7 @@ export default function GameMakeQuiz() {
 
             <Button
               onClick={addQuestion}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+              className="w-full bg-blue-600 text-white py-3"
               disabled={
                 !currentQuestion.content ||
                 !currentQuestion.option1 ||
@@ -235,7 +235,7 @@ export default function GameMakeQuiz() {
                     </h3>
                     <button
                       onClick={() => removeQuestion(index)}
-                      className="text-red-500 hover:text-red-700 text-sm font-medium"
+                      className="text-red-500 text-sm font-medium"
                     >
                       삭제
                     </button>
@@ -275,7 +275,7 @@ export default function GameMakeQuiz() {
             <div className="mt-6 space-y-3">
               <Button
                 onClick={saveQuiz}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
+                className="w-full bg-green-600 text-white py-3"
                 disabled={isLoading}
               >
                 {isLoading ? '저장 중...' : '퀴즈 저장하기'}
@@ -283,7 +283,7 @@ export default function GameMakeQuiz() {
 
               <Button
                 onClick={() => router.push('/front/my-home')}
-                className="w-full bg-gray-500 hover:bg-gray-600 text-white py-3"
+                className="w-full bg-gray-500 text-white py-3"
               >
                 마이홈으로 돌아가기
               </Button>
