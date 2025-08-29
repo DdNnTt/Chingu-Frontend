@@ -107,13 +107,7 @@ export default function FriendDetailPage() {
     }
   }, [friendId, fetchUserInfo]);
 
-  // 친구 관계가 변경될 때마다 퀴즈 데이터 새로고침
-  useEffect(() => {
-    if (friendSince && user) {
-      fetchFriendQuizzes();
-      fetchFriendshipScore();
-    }
-  }, [friendSince, user, fetchFriendQuizzes, fetchFriendshipScore]);
+  // 친구 관계가 변경될 때마다 퀴즈 데이터 새로고침 (함수 정의 이후로 이동)
 
   // 친구 관계 확인 함수
   const checkFriendStatus = async (targetUserId: number) => {
@@ -231,6 +225,14 @@ export default function FriendDetailPage() {
       console.error('우정 점수 조회 실패:', err);
     }
   }, [user, friendSince]);
+
+  // 친구 관계가 변경될 때마다 퀴즈 데이터 새로고침
+  useEffect(() => {
+    if (friendSince && user) {
+      fetchFriendQuizzes();
+      fetchFriendshipScore();
+    }
+  }, [friendSince, user, fetchFriendQuizzes, fetchFriendshipScore]);
 
   const handleSendMessage = () => {
     setIsMessageModalOpen(true);

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@/libs/axios';
 
 interface Question {
   content: string;
@@ -63,26 +64,20 @@ export default function GameMakeQuiz() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/quizzes/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          questions: questions.map((q, index) => ({
-            questionId: index + 1,
-            selectedAnswer: q.selectedAnswer,
-          })),
-        }),
+      await axiosInstance.post('/api/quizzes/create', {
+        questions: questions.map((q, index) => ({
+          questionId: index,
+          content: q.content,
+          option1: q.option1,
+          option2: q.option2,
+          option3: q.option3,
+          option4: q.option4,
+          selectedAnswer: q.selectedAnswer,
+        })),
       });
 
-      if (response.ok) {
-        await response.json();
-        alert('퀴즈가 성공적으로 저장되었습니다!');
-        router.push('/front/game/guess-me/make-quiz/complete');
-      } else {
-        alert('퀴즈 저장에 실패했습니다.');
-      }
+      alert('퀴즈가 성공적으로 저장되었습니다!');
+      router.push('/front/game/guess-me/make-quiz/complete');
     } catch (error) {
       console.error('퀴즈 저장 실패:', error);
       alert('퀴즈 저장 중 오류가 발생했습니다.');
