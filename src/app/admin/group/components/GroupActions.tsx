@@ -68,12 +68,12 @@ export default function GroupActions({ group, onDelete }: GroupActionsProps) {
         <>
           {/* 드롭다운 배경 클릭 시 닫기 */}
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-40"
             onClick={() => setShowDropdown(false)}
           />
 
           {/* 드롭다운 메뉴 */}
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200">
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
             <div className="py-1">
               <button
                 onClick={handleViewDetails}

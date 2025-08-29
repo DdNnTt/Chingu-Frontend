@@ -277,7 +277,7 @@ export default function AdminGroup() {
               filteredGroups.map((group, index) => (
                 <div
                   key={`group-${group.id || index}-${index}`}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+                  className="bg-white rounded-lg shadow-sm border border-gray-200"
                 >
                   {/* 그룹 헤더 */}
                   <div className="p-4">
@@ -318,7 +318,7 @@ export default function AdminGroup() {
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 relative">
                         <button
                           onClick={() => toggleGroupExpansion(group.id)}
                           className="text-gray-400 hover:text-gray-600 p-1"
