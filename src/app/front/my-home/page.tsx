@@ -91,17 +91,17 @@ export default function MyHome() {
   );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showAllSchedules, setShowAllSchedules] = useState(false);
-  
+
   // 퀴즈 관련 상태 추가
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [quizStats, setQuizStats] = useState<QuizStats>({
     totalQuizzes: 0,
     totalSolved: 0,
     averageScore: 0,
-    totalFriendshipScore: 0
+    totalFriendshipScore: 0,
   });
   const [isQuizLoading, setIsQuizLoading] = useState(false);
-  
+
   const router = useRouter();
 
   // 일정 목록 조회
@@ -140,12 +140,14 @@ export default function MyHome() {
       // 내가 만든 퀴즈 목록 조회
       const response = await axiosInstance.get('/api/quizzes/my-quizzes');
       setQuizzes(response.data.quizzes || []);
-      setQuizStats(response.data.stats || {
-        totalQuizzes: 0,
-        totalSolved: 0,
-        averageScore: 0,
-        totalFriendshipScore: 0
-      });
+      setQuizStats(
+        response.data.stats || {
+          totalQuizzes: 0,
+          totalSolved: 0,
+          averageScore: 0,
+          totalFriendshipScore: 0,
+        }
+      );
     } catch (err) {
       console.error('내 퀴즈 조회 실패:', err);
       // 에러가 발생해도 기본값으로 설정
@@ -154,7 +156,7 @@ export default function MyHome() {
         totalQuizzes: 0,
         totalSolved: 0,
         averageScore: 0,
-        totalFriendshipScore: 0
+        totalFriendshipScore: 0,
       });
     } finally {
       setIsQuizLoading(false);
@@ -166,9 +168,9 @@ export default function MyHome() {
     try {
       const response = await axiosInstance.get('/api/quizzes/scores');
       if (response.data.totalScore !== undefined) {
-        setQuizStats(prev => ({
+        setQuizStats((prev) => ({
           ...prev,
-          totalFriendshipScore: response.data.totalScore
+          totalFriendshipScore: response.data.totalScore,
         }));
       }
     } catch (err) {
@@ -331,6 +333,15 @@ export default function MyHome() {
               받은 친구 요청 <span>{friendRequests.length}</span>
             </Link>
           </div>
+          {/* 관리자 페이지 링크 - 작게 추가 */}
+          <div className="mt-4">
+            <Link
+              href="/admin/main"
+              className="inline-block px-3 py-1 bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-700 text-xs rounded-md transition-colors border border-gray-200 hover:border-blue-300"
+            >
+              관리자 페이지
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -413,11 +424,15 @@ export default function MyHome() {
         {/* 퀴즈 통계 */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="text-center p-3 bg-purple-50 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600">{quizStats.totalQuizzes}</div>
+            <div className="text-2xl font-bold text-purple-600">
+              {quizStats.totalQuizzes}
+            </div>
             <div className="text-sm text-gray-600">만든 퀴즈</div>
           </div>
           <div className="text-center p-3 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{quizStats.totalFriendshipScore}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {quizStats.totalFriendshipScore}
+            </div>
             <div className="text-sm text-gray-600">총 우정 점수</div>
           </div>
         </div>
@@ -431,7 +446,9 @@ export default function MyHome() {
         ) : quizzes.length === 0 ? (
           <div className="text-center py-6 text-gray-500">
             <p>아직 만든 퀴즈가 없어요 😢</p>
-            <p className="text-sm mt-1">친구들과 우정을 쌓을 퀴즈를 만들어보세요!</p>
+            <p className="text-sm mt-1">
+              친구들과 우정을 쌓을 퀴즈를 만들어보세요!
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -443,10 +460,14 @@ export default function MyHome() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h4 className="font-medium text-gray-800">{quiz.title}</h4>
-                    <p className="text-sm text-gray-600 mt-1">{quiz.description}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {quiz.description}
+                    </p>
                     <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                       <span>문제 수: {quiz.totalQuestions}개</span>
-                      <span>생성일: {new Date(quiz.createdAt).toLocaleDateString()}</span>
+                      <span>
+                        생성일: {new Date(quiz.createdAt).toLocaleDateString()}
+                      </span>
                       <span>푼 사람: {quiz.solvedCount}명</span>
                     </div>
                     {quiz.averageScore > 0 && (
@@ -460,7 +481,11 @@ export default function MyHome() {
                   <div className="ml-3">
                     <Button
                       type="button"
-                      onClick={() => router.push(`/front/game/guess-me/make-quiz?edit=${quiz.id}`)}
+                      onClick={() =>
+                        router.push(
+                          `/front/game/guess-me/make-quiz?edit=${quiz.id}`
+                        )
+                      }
                       className="bg-blue-600 text-white text-sm px-3 py-1"
                     >
                       수정
