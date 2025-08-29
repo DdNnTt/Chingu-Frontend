@@ -53,16 +53,19 @@ export default function AdminMember() {
       setIsLoading(true);
       const response = await axiosInstance.get('/api/admin/users');
       const fetchedMembers = response.data.map(
-        (user: {
-          id: string;
-          email: string;
-          nickname?: string;
-          createdAt: string;
-          lastLoginAt?: string;
-          isActive?: boolean;
-          groups?: { id: string; name: string }[];
-        }) => ({
-          id: user.id,
+        (
+          user: {
+            id: string;
+            email: string;
+            nickname?: string;
+            createdAt: string;
+            lastLoginAt?: string;
+            isActive?: boolean;
+            groups?: { id: string; name: string }[];
+          },
+          index: number
+        ) => ({
+          id: user.id || `user-${index}`,
           email: user.email,
           nickname: user.nickname || '닉네임 없음',
           createdAt: new Date(user.createdAt).toLocaleDateString('ko-KR'),
@@ -216,8 +219,11 @@ export default function AdminMember() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {paginatedMembers.map((member) => (
-                        <tr key={member.id} className="hover:bg-gray-50">
+                      {paginatedMembers.map((member, index) => (
+                        <tr
+                          key={member.id || `member-${index}`}
+                          className="hover:bg-gray-50"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap">
                             <input
                               type="checkbox"
@@ -324,9 +330,9 @@ export default function AdminMember() {
                           {Array.from(
                             { length: totalPages },
                             (_, i) => i + 1
-                          ).map((page) => (
+                          ).map((page, index) => (
                             <button
-                              key={page}
+                              key={`page-${page}-${index}`}
                               onClick={() => setCurrentPage(page)}
                               className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
                                 currentPage === page
