@@ -9,9 +9,6 @@ interface MemberActionsProps {
 export default function MemberActions({ onDelete }: MemberActionsProps) {
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // 현재 백엔드에서 지원하지 않는 기능들은 제거
-  // 상세보기, 상태 토글, 그룹 보기 기능은 백엔드 API가 필요
-
   return (
     <div className="relative">
       <button

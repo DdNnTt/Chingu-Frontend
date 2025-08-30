@@ -110,8 +110,8 @@ export default function AdminMember() {
           lastLoginAt: user.lastLoginDate
             ? new Date(user.lastLoginDate).toLocaleDateString('ko-KR')
             : '로그인 기록 없음',
-          isActive: true, // 백엔드에서 제공하지 않으므로 기본값
-          groupCount: userGroupCounts.get(user.userId) || 0, // 실제 그룹 수 계산
+          isActive: true,
+          groupCount: userGroupCounts.get(user.userId) || 0,
         })
       );
 
@@ -142,9 +142,25 @@ export default function AdminMember() {
       setShowDeleteModal(false);
 
       alert('선택된 회원이 삭제되었습니다.');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('회원 삭제 실패:', error);
-      alert('회원 삭제 중 오류가 발생했습니다.');
+
+      // 500 에러인 경우 외래키 제약 조건 문제일 가능성이 높음
+      if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        error.response &&
+        typeof error.response === 'object' &&
+        'status' in error.response &&
+        error.response.status === 500
+      ) {
+        alert(
+          '회원 삭제 실패: 해당 회원이 만든 퀴즈나 다른 데이터가 있어 삭제할 수 없습니다.\n\n백엔드 개발자에게 문의하세요.'
+        );
+      } else {
+        alert('회원 삭제 중 오류가 발생했습니다.');
+      }
     }
   };
 
