@@ -5,7 +5,6 @@ import AdminGuard from '../components/AdminGuard';
 import AdminLayout from '../components/layout/AdminLayout';
 import axiosInstance from '@/libs/axios';
 import MemberSearch from './components/MemberSearch';
-import MemberActions from './components/MemberActions';
 
 interface Member {
   id: string;
@@ -13,7 +12,6 @@ interface Member {
   nickname: string;
   createdAt: string;
   lastLoginAt?: string;
-  isActive: boolean;
   groupCount: number;
 }
 
@@ -23,11 +21,16 @@ export default function AdminMember() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const ITEMS_PER_PAGE = 10;
+
+  // totalPages를 파생 값으로 계산 (검색 결과에 맞게 동적 갱신)
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredMembers.length / ITEMS_PER_PAGE)
+  );
 
   useEffect(() => {
     fetchMembers();
@@ -110,14 +113,13 @@ export default function AdminMember() {
           lastLoginAt: user.lastLoginDate
             ? new Date(user.lastLoginDate).toLocaleDateString('ko-KR')
             : '로그인 기록 없음',
-          isActive: true,
+
           groupCount: userGroupCounts.get(user.userId) || 0,
         })
       );
 
       setMembers(fetchedMembers);
       setFilteredMembers(fetchedMembers);
-      setTotalPages(Math.ceil(fetchedMembers.length / ITEMS_PER_PAGE));
     } catch (error) {
       console.error('회원 목록 가져오기 실패:', error);
     } finally {
@@ -155,9 +157,7 @@ export default function AdminMember() {
         'status' in error.response &&
         error.response.status === 500
       ) {
-        alert(
-          '회원 삭제 실패: 해당 회원이 만든 퀴즈나 다른 데이터가 있어 삭제할 수 없습니다.\n\n백엔드 개발자에게 문의하세요.'
-        );
+        alert('회원 삭제 실패');
       } else {
         alert('회원 삭제 중 오류가 발생했습니다.');
       }
@@ -264,12 +264,6 @@ export default function AdminMember() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           그룹 수
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          상태
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          액션
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -306,25 +300,6 @@ export default function AdminMember() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {member.groupCount}개
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                member.isActive
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {member.isActive ? '활성' : '비활성'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <MemberActions
-                              onDelete={() => {
-                                setSelectedMembers([member.id]);
-                                setShowDeleteModal(true);
-                              }}
-                            />
                           </td>
                         </tr>
                       ))}

@@ -43,8 +43,21 @@ export async function DELETE(
       );
     }
 
-    const data = await res.json();
-    return NextResponse.json(data);
+    const contentType = res.headers.get('content-type') || '';
+    if (res.status === 204) {
+      return new NextResponse(null, { status: 204 });
+    }
+    const text = await res.text();
+    if (!text) {
+      return NextResponse.json(
+        { message: '그룹 삭제 성공' },
+        { status: res.status }
+      );
+    }
+    if (contentType.includes('application/json')) {
+      return NextResponse.json(JSON.parse(text), { status: res.status });
+    }
+    return NextResponse.json({ message: text }, { status: res.status });
   } catch (err) {
     console.error('[그룹 삭제 프록시 오류]', err);
     return NextResponse.json({ error: '서버 오류' }, { status: 500 });

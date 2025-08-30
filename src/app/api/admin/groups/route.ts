@@ -16,11 +16,13 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/admin/groups`, {
+    const res = await fetch(new URL('/api/admin/groups', API_BASE).toString(), {
       method: 'GET',
       headers: {
         Authorization: token,
       },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!res.ok) {

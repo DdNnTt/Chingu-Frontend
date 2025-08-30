@@ -10,18 +10,13 @@ interface GroupMember {
   id: string;
   email: string;
   nickname: string;
-  role: string;
-  joinedAt: string;
 }
 
 interface Group {
   id: string;
   name: string;
-  description: string;
   createdAt: string;
   memberCount: number;
-  maxMembers: number;
-  isActive: boolean;
   members: GroupMember[];
 }
 
@@ -43,10 +38,8 @@ export default function AdminGroup() {
     if (searchKeyword.trim() === '') {
       setFilteredGroups(groups);
     } else {
-      const filtered = groups.filter(
-        (group) =>
-          group.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          group.description.toLowerCase().includes(searchKeyword.toLowerCase())
+      const filtered = groups.filter((group) =>
+        group.name.toLowerCase().includes(searchKeyword.toLowerCase())
       );
       setFilteredGroups(filtered);
     }
@@ -78,18 +71,13 @@ export default function AdminGroup() {
         }) => ({
           id: group.groupId.toString(),
           name: group.groupName,
-          description: '설명 없음', // 백엔드에 description 필드가 없음
           createdAt: new Date(group.createdDate).toLocaleDateString('ko-KR'),
           memberCount: group.members?.length || 0,
-          maxMembers: 10, // 백엔드에 maxMembers 필드가 없음
-          isActive: true, // 백엔드에 isActive 필드가 없음
           members:
             group.members?.map((member) => ({
               id: member.userId.toString(),
               email: member.email,
               nickname: member.nickname || '닉네임 없음',
-              role: '멤버', // 백엔드에 role 필드가 없음
-              joinedAt: new Date().toLocaleDateString('ko-KR'), // 백엔드에 joinedAt 필드가 없음
             })) || [],
         })
       );
@@ -291,23 +279,10 @@ export default function AdminGroup() {
                             <h3 className="text-lg font-semibold text-gray-900">
                               {group.name}
                             </h3>
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                group.isActive
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {group.isActive ? '활성' : '비활성'}
-                            </span>
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {group.description}
-                          </p>
+
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                            <span>
-                              멤버: {group.memberCount}/{group.maxMembers}
-                            </span>
+                            <span>멤버: {group.memberCount}명</span>
                             <span>생성일: {group.createdAt}</span>
                           </div>
                         </div>
@@ -369,20 +344,6 @@ export default function AdminGroup() {
                                     </p>
                                     <p className="text-xs text-gray-500">
                                       {member.email}
-                                    </p>
-                                  </div>
-                                  <div className="text-right">
-                                    <span
-                                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                        member.role === '리더'
-                                          ? 'bg-blue-100 text-blue-800'
-                                          : 'bg-gray-100 text-gray-800'
-                                      }`}
-                                    >
-                                      {member.role}
-                                    </span>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                      {member.joinedAt}
                                     </p>
                                   </div>
                                 </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface AdminLayoutProps {
@@ -10,13 +9,6 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const router = useRouter();
-
-  const handleLogout = () => {
-    // 로그아웃 로직 (토큰 제거 등)
-    localStorage.removeItem('token');
-    router.push('/front/intro');
-  };
 
   const navigationItems = [
     { name: '대시보드', href: '/admin/main', icon: '📊' },
@@ -58,15 +50,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </svg>
             </button>
             <h1 className="text-lg font-bold text-gray-900">관리자 페이지</h1>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleLogout}
-              className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              로그아웃
-            </button>
           </div>
         </div>
       </header>
