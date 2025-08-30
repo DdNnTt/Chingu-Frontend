@@ -55,11 +55,7 @@ export default function AdminGroup() {
   const fetchGroups = async () => {
     try {
       setIsLoading(true);
-      console.log('그룹 목록 가져오기 시작...');
-
       const response = await axiosInstance.get('/api/admin/groups');
-      console.log('API 응답:', response);
-      console.log('응답 데이터:', response.data);
 
       if (!response.data || !Array.isArray(response.data)) {
         console.error('API 응답 데이터가 배열이 아닙니다:', response.data);
@@ -98,7 +94,6 @@ export default function AdminGroup() {
         })
       );
 
-      console.log('처리된 그룹 데이터:', fetchedGroups);
       setGroups(fetchedGroups);
       setFilteredGroups(fetchedGroups);
     } catch (error: unknown) {
@@ -340,7 +335,6 @@ export default function AdminGroup() {
                           </svg>
                         </button>
                         <GroupActions
-                          group={group}
                           onDelete={() => {
                             setSelectedGroups([group.id]);
                             setShowDeleteModal(true);

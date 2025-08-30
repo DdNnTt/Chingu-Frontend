@@ -51,29 +51,67 @@ export default function AdminMember() {
   const fetchMembers = async () => {
     try {
       setIsLoading(true);
-      const response = await axiosInstance.get('/api/admin/users');
-      const fetchedMembers = response.data.map(
-        (
-          user: {
-            id: string;
+
+      // 회원 목록과 그룹 목록을 동시에 가져오기
+      const [usersResponse, groupsResponse] = await Promise.all([
+        axiosInstance.get('/api/admin/users'),
+        axiosInstance.get('/api/admin/groups'),
+      ]);
+
+      // 각 회원이 속한 그룹 수 계산
+      const userGroupCounts = new Map<number, number>();
+
+      groupsResponse.data.forEach(
+        (group: {
+          groupId: number;
+          groupName: string;
+          createdDate: string;
+          members: {
+            userId: number;
+            name: string;
+            nickname: string;
             email: string;
-            nickname?: string;
-            createdAt: string;
-            lastLoginAt?: string;
-            isActive?: boolean;
-            groups?: { id: string; name: string }[];
-          },
-          index: number
-        ) => ({
-          id: user.id || `user-${index}`,
+          }[];
+        }) => {
+          if (group.members && Array.isArray(group.members)) {
+            group.members.forEach(
+              (member: {
+                userId: number;
+                name: string;
+                nickname: string;
+                email: string;
+              }) => {
+                const userId = member.userId;
+                userGroupCounts.set(
+                  userId,
+                  (userGroupCounts.get(userId) || 0) + 1
+                );
+              }
+            );
+          }
+        }
+      );
+
+      const fetchedMembers = usersResponse.data.map(
+        (user: {
+          userId: number;
+          name: string;
+          nickname: string;
+          email: string;
+          joinDate: string | null;
+          lastLoginDate: string | null;
+        }) => ({
+          id: user.userId.toString(),
           email: user.email,
           nickname: user.nickname || '닉네임 없음',
-          createdAt: new Date(user.createdAt).toLocaleDateString('ko-KR'),
-          lastLoginAt: user.lastLoginAt
-            ? new Date(user.lastLoginAt).toLocaleDateString('ko-KR')
+          createdAt: user.joinDate
+            ? new Date(user.joinDate).toLocaleDateString('ko-KR')
+            : '가입일 없음',
+          lastLoginAt: user.lastLoginDate
+            ? new Date(user.lastLoginDate).toLocaleDateString('ko-KR')
             : '로그인 기록 없음',
-          isActive: user.isActive !== false,
-          groupCount: user.groups?.length || 0,
+          isActive: true, // 백엔드에서 제공하지 않으므로 기본값
+          groupCount: userGroupCounts.get(user.userId) || 0, // 실제 그룹 수 계산
         })
       );
 
@@ -266,7 +304,6 @@ export default function AdminMember() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <MemberActions
-                              member={member}
                               onDelete={() => {
                                 setSelectedMembers([member.id]);
                                 setShowDeleteModal(true);

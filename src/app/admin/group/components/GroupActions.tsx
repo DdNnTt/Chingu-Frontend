@@ -2,56 +2,15 @@
 
 import { useState } from 'react';
 
-interface GroupMember {
-  id: string;
-  email: string;
-  nickname: string;
-  role: string;
-  joinedAt: string;
-}
-
-interface Group {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  memberCount: number;
-  maxMembers: number;
-  isActive: boolean;
-  members: GroupMember[];
-}
-
 interface GroupActionsProps {
-  group: Group;
   onDelete: () => void;
 }
 
-export default function GroupActions({ group, onDelete }: GroupActionsProps) {
+export default function GroupActions({ onDelete }: GroupActionsProps) {
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleViewDetails = () => {
-    // 그룹 상세 정보 모달 또는 페이지로 이동
-    console.log('그룹 상세 정보:', group);
-    setShowDropdown(false);
-  };
-
-  const handleToggleStatus = () => {
-    // 그룹 상태 토글 (활성/비활성)
-    console.log('그룹 상태 토글:', group.id);
-    setShowDropdown(false);
-  };
-
-  const handleManageMembers = () => {
-    // 그룹 멤버 관리 페이지로 이동
-    console.log('그룹 멤버 관리:', group.id);
-    setShowDropdown(false);
-  };
-
-  const handleEditGroup = () => {
-    // 그룹 정보 수정 모달 또는 페이지로 이동
-    console.log('그룹 정보 수정:', group.id);
-    setShowDropdown(false);
-  };
+  // 현재 백엔드에서 지원하지 않는 기능들은 제거
+  // 상세보기, 상태 토글, 멤버 관리, 그룹 수정 기능은 백엔드 API가 필요
 
   return (
     <div className="relative">
@@ -75,91 +34,8 @@ export default function GroupActions({ group, onDelete }: GroupActionsProps) {
           {/* 드롭다운 메뉴 */}
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
             <div className="py-1">
-              <button
-                onClick={handleViewDetails}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              >
-                <svg
-                  className="mr-3 h-4 w-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
-                상세보기
-              </button>
-
-              <button
-                onClick={handleEditGroup}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              >
-                <svg
-                  className="mr-3 h-4 w-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-                그룹 정보 수정
-              </button>
-
-              <button
-                onClick={handleManageMembers}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              >
-                <svg
-                  className="mr-3 h-4 w-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-                멤버 관리 ({group.memberCount})
-              </button>
-
-              <button
-                onClick={handleToggleStatus}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              >
-                <svg
-                  className="mr-3 h-4 w-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-                {group.isActive ? '비활성화' : '활성화'}
-              </button>
+              {/* 현재 백엔드에서 지원하는 기능만 남김 */}
+              {/* 상세보기, 그룹 수정, 멤버 관리, 상태 토글은 백엔드 API가 필요하여 제거 */}
 
               <div className="border-t border-gray-100 my-1"></div>
 
