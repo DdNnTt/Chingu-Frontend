@@ -23,6 +23,7 @@ export default function AdminMember() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const ITEMS_PER_PAGE = 10;
 
@@ -133,17 +134,38 @@ export default function AdminMember() {
 
   const handleDeleteMembers = async () => {
     try {
-      // 선택된 회원들 삭제
-      for (const memberId of selectedMembers) {
-        await axiosInstance.delete(`/api/admin/users/${memberId}`);
-      }
+      setIsDeleting(true);
+      const results = await Promise.allSettled(
+        selectedMembers.map((memberId) =>
+          axiosInstance.delete(`/api/admin/users/${memberId}`)
+        )
+      );
+
+      const failed = results.filter((r) => r.status === 'rejected');
 
       // 성공적으로 삭제된 후 목록 새로고침
       await fetchMembers();
-      setSelectedMembers([]);
+
+      // 실패한 삭제만 선택 상태에서 제거
+      setSelectedMembers((prev) =>
+        prev.filter(
+          (id) =>
+            !failed.some(
+              (f) =>
+                f.status === 'rejected' &&
+                'reason' in f &&
+                String(f.reason?.config?.url || '').endsWith(id) === false
+            )
+        )
+      );
+
       setShowDeleteModal(false);
 
-      alert('선택된 회원이 삭제되었습니다.');
+      if (failed.length > 0) {
+        alert(`${failed.length}명의 회원 삭제에 실패했습니다.`);
+      } else {
+        alert('선택된 회원이 삭제되었습니다.');
+      }
     } catch (error: unknown) {
       console.error('회원 삭제 실패:', error);
 
@@ -161,6 +183,8 @@ export default function AdminMember() {
       } else {
         alert('회원 삭제 중 오류가 발생했습니다.');
       }
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -217,9 +241,12 @@ export default function AdminMember() {
                 {selectedMembers.length > 0 && (
                   <button
                     onClick={() => setShowDeleteModal(true)}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
+                    disabled={isDeleting}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm disabled:bg-red-400 disabled:cursor-not-allowed"
                   >
-                    선택 삭제 ({selectedMembers.length})
+                    {isDeleting
+                      ? '삭제 중...'
+                      : `선택 삭제 (${selectedMembers.length})`}
                   </button>
                 )}
                 <button
@@ -421,9 +448,10 @@ export default function AdminMember() {
                   <div className="items-center px-4 py-3">
                     <button
                       onClick={handleDeleteMembers}
-                      className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      disabled={isDeleting}
+                      className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-red-400 disabled:cursor-not-allowed"
                     >
-                      삭제
+                      {isDeleting ? '삭제 중...' : '삭제'}
                     </button>
                     <button
                       onClick={() => setShowDeleteModal(false)}

@@ -9,7 +9,7 @@ import GroupActions from './components/GroupActions';
 interface GroupMember {
   id: string;
   email: string;
-  nickname: string;
+  nickname?: string;
 }
 
 interface Group {
@@ -77,7 +77,7 @@ export default function AdminGroup() {
             group.members?.map((member) => ({
               id: member.userId.toString(),
               email: member.email,
-              nickname: member.nickname || '닉네임 없음',
+              nickname: member.nickname || undefined,
             })) || [],
         })
       );
@@ -340,7 +340,7 @@ export default function AdminGroup() {
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <p className="text-sm font-medium text-gray-900">
-                                      {member.nickname}
+                                      {member.nickname || '닉네임 없음'}
                                     </p>
                                     <p className="text-xs text-gray-500">
                                       {member.email}
