@@ -48,6 +48,29 @@ interface QuizStats {
   friendshipScore: number;
 }
 
+// API 응답 타입 정의
+interface FriendQuizInfo {
+  userId: number;
+  nickname: string;
+  quizSetId: number | null;
+}
+
+interface QuizDetailResponse {
+  quizSetId: number;
+  title?: string;
+  description?: string;
+  createdAt?: string;
+  created_at?: string;
+  questions: Array<{
+    questionId: number;
+    content: string;
+    option1: string;
+    option2: string;
+    option3: string;
+    option4: string;
+  }>;
+}
+
 export default function FriendDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -184,26 +207,31 @@ export default function FriendDetailPage() {
 
       // 현재 친구가 만든 퀴즈 찾기
       const friendQuiz = response.data.find(
-        (friend: {
-          userId: number;
-          nickname: string;
-          quizSetId: number | null;
-        }) => friend.userId === user.id && friend.quizSetId !== null
+        (friend: FriendQuizInfo) =>
+          friend.userId === user.id && friend.quizSetId !== null
       );
 
       if (friendQuiz && friendQuiz.quizSetId) {
         // 퀴즈 세트 상세 정보 조회
-        const quizDetailResponse = await axiosInstance.get(
+        const quizDetailResponse = await axiosInstance.get<QuizDetailResponse>(
           `/api/quizzes/${friendQuiz.quizSetId}`
         );
 
+        const quizData: QuizDetailResponse = quizDetailResponse.data;
+        const questionsCount = quizData.questions?.length || 0;
+
         setQuizzes([
           {
-            id: quizDetailResponse.data.quizSetId,
-            title: `퀴즈 세트 ${quizDetailResponse.data.quizSetId}`,
-            description: `${quizDetailResponse.data.questions.length}개의 문제`,
-            totalQuestions: quizDetailResponse.data.questions.length,
-            createdAt: new Date().toISOString(), // 임시로 현재 시간 사용
+            id: quizData.quizSetId,
+            title: quizData.title || `${friendQuiz.nickname}님의 퀴즈`,
+            description:
+              quizData.description ||
+              `${questionsCount}개의 문제로 구성된 퀴즈입니다`,
+            totalQuestions: questionsCount,
+            createdAt:
+              quizData.createdAt ||
+              quizData.created_at ||
+              new Date().toISOString(),
             isSolved: false, // 아직 풀지 않음
             myScore: undefined,
           },

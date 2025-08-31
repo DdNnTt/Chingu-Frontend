@@ -209,7 +209,15 @@ export default function MyHome() {
   const fetchTotalFriendshipScore = async () => {
     try {
       const response = await axiosInstance.get('/api/quizzes/scores');
-      const totalScore = response.data.reduce(
+
+      // 응답 데이터 구조를 안전하게 처리
+      const items = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray(response.data?.items)
+          ? response.data.items
+          : [];
+
+      const totalScore = items.reduce(
         (
           sum: number,
           score: { friendId: number; friendNickname: string; score: number }
@@ -223,6 +231,11 @@ export default function MyHome() {
       }));
     } catch (err) {
       console.error('우정 점수 총합 조회 실패:', err);
+      // 에러 발생 시 기본값 설정
+      setQuizStats((prev) => ({
+        ...prev,
+        totalFriendshipScore: 0,
+      }));
     }
   };
 
@@ -236,7 +249,15 @@ export default function MyHome() {
     try {
       setIsRandomLoading(true);
       const response = await axiosInstance.get('/api/quizzes/question-random');
-      setRandomQuestions(response.data);
+
+      // 응답 스키마를 안전하게 노멀라이즈
+      const items = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray((response.data as { items?: unknown[] })?.items)
+          ? (response.data as { items: unknown[] }).items
+          : [];
+
+      setRandomQuestions(items as Question[]);
     } catch (err) {
       console.error('랜덤 문제 조회 실패:', err);
       setRandomQuestions([]);
@@ -250,7 +271,15 @@ export default function MyHome() {
     try {
       setIsAllLoading(true);
       const response = await axiosInstance.get('/api/quizzes/question-all');
-      setAllQuestions(response.data);
+
+      // 응답 스키마를 안전하게 노멀라이즈
+      const items = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray((response.data as { items?: unknown[] })?.items)
+          ? (response.data as { items: unknown[] }).items
+          : [];
+
+      setAllQuestions(items as Question[]);
     } catch (err) {
       console.error('전체 문제 조회 실패:', err);
       setAllQuestions([]);

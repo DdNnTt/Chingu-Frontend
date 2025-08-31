@@ -21,18 +21,35 @@ export default function AllQuestionsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // 전체 문제 조회
-  const fetchAllQuestions = async () => {
+  const fetchAllQuestions = async (signal?: AbortSignal) => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axiosInstance.get('/api/quizzes/question-all');
-      setQuestions(response.data);
+      const response = await axiosInstance.get('/api/quizzes/question-all', {
+        signal,
+      });
+
+      // 응답 스키마를 안전하게 노멀라이즈
+      const items = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray((response.data as { items?: unknown[] })?.items)
+          ? (response.data as { items: unknown[] }).items
+          : [];
+
+      setQuestions(items as Question[]);
     } catch (err) {
+      // AbortError인 경우 상태 업데이트하지 않음
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       console.error('전체 문제 조회 실패:', err);
       setError('문제를 불러오는데 실패했습니다.');
       setQuestions([]);
     } finally {
-      setIsLoading(false);
+      // AbortError가 아닌 경우에만 로딩 상태 해제
+      if (!signal?.aborted) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -110,7 +127,6 @@ export default function AllQuestionsPage() {
 
             <h1 className="text-3xl font-bold text-gray-800">전체 문제 목록</h1>
 
-            {/* 오른쪽 공간을 위한 빈 div (균형 맞추기) */}
             <div className="w-24"></div>
           </div>
 

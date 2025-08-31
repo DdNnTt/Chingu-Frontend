@@ -30,14 +30,17 @@ export default function GameMakeQuiz() {
 
   // 문제 추가
   const addQuestion = () => {
-    if (
-      currentQuestion.content &&
-      currentQuestion.option1 &&
-      currentQuestion.option2 &&
-      currentQuestion.option3 &&
-      currentQuestion.option4
-    ) {
-      setQuestions([...questions, currentQuestion]);
+    const content = currentQuestion.content.trim();
+    const option1 = currentQuestion.option1.trim();
+    const option2 = currentQuestion.option2.trim();
+    const option3 = currentQuestion.option3.trim();
+    const option4 = currentQuestion.option4.trim();
+
+    if (content && option1 && option2 && option3 && option4) {
+      setQuestions([
+        ...questions,
+        { ...currentQuestion, content, option1, option2, option3, option4 },
+      ]);
       setCurrentQuestion({
         content: '',
         option1: '',

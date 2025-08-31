@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       const errorText = await res.text();
       console.error('[퀴즈 생성 응답 실패]', res.status, errorText);
       return NextResponse.json(
-        { error: '퀴즈 생성 실패' },
+        { error: '퀴즈 생성 실패', status: res.status, details: errorText },
         { status: res.status }
       );
     }
