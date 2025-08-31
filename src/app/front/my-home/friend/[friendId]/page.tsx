@@ -48,6 +48,29 @@ interface QuizStats {
   friendshipScore: number;
 }
 
+// API 응답 타입 정의
+interface FriendQuizInfo {
+  userId: number;
+  nickname: string;
+  quizSetId: number | null;
+}
+
+interface QuizDetailResponse {
+  quizSetId: number;
+  title?: string;
+  description?: string;
+  createdAt?: string;
+  created_at?: string;
+  questions: Array<{
+    questionId: number;
+    content: string;
+    option1: string;
+    option2: string;
+    option3: string;
+    option4: string;
+  }>;
+}
+
 export default function FriendDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -107,13 +130,7 @@ export default function FriendDetailPage() {
     }
   }, [friendId, fetchUserInfo]);
 
-  // 친구 관계가 변경될 때마다 퀴즈 데이터 새로고침
-  useEffect(() => {
-    if (friendSince && user) {
-      fetchFriendQuizzes();
-      fetchFriendshipScore();
-    }
-  }, [friendSince, user, fetchFriendQuizzes, fetchFriendshipScore]);
+  // 친구 관계가 변경될 때마다 퀴즈 데이터 새로고침 (함수 정의 이후로 이동)
 
   // 친구 관계 확인 함수
   const checkFriendStatus = async (targetUserId: number) => {
@@ -178,40 +195,82 @@ export default function FriendDetailPage() {
 
   // 친구가 만든 퀴즈 목록 조회
   const fetchFriendQuizzes = useCallback(async () => {
-    if (!user || !friendSince) return;
+    if (!user) return;
 
     try {
       setIsQuizLoading(true);
-      // 친구가 만든 퀴즈 목록 조회 (API 엔드포인트는 백엔드에 맞게 수정 필요)
-      const response = await axiosInstance.get(`/api/quizzes/user/${user.id}`);
-      setQuizzes(response.data.quizzes || []);
-      setQuizStats(
-        response.data.stats || {
-          totalQuizzes: 0,
-          solvedQuizzes: 0,
-          averageScore: 0,
-          friendshipScore: 0,
-        }
+
+      // friends-available API로 친구가 만든 퀴즈 확인
+      const response = await axiosInstance.get(
+        '/api/quizzes/friends-available'
       );
+
+      // 현재 친구가 만든 퀴즈 찾기
+      const friendQuiz = response.data.find(
+        (friend: FriendQuizInfo) =>
+          friend.userId === user.id && friend.quizSetId !== null
+      );
+
+      if (friendQuiz && friendQuiz.quizSetId) {
+        // 퀴즈 세트 상세 정보 조회
+        const quizDetailResponse = await axiosInstance.get<QuizDetailResponse>(
+          `/api/quizzes/${friendQuiz.quizSetId}`
+        );
+
+        const quizData: QuizDetailResponse = quizDetailResponse.data;
+        const questionsCount = quizData.questions?.length || 0;
+
+        setQuizzes([
+          {
+            id: quizData.quizSetId,
+            title: quizData.title || `${friendQuiz.nickname}님의 퀴즈`,
+            description:
+              quizData.description ||
+              `${questionsCount}개의 문제로 구성된 퀴즈입니다`,
+            totalQuestions: questionsCount,
+            createdAt:
+              quizData.createdAt ||
+              quizData.created_at ||
+              new Date().toISOString(),
+            isSolved: false, // 아직 풀지 않음
+            myScore: undefined,
+          },
+        ]);
+
+        setQuizStats((prev) => ({
+          ...prev,
+          totalQuizzes: 1,
+        }));
+      } else {
+        setQuizzes([]);
+        setQuizStats((prev) => ({
+          ...prev,
+          totalQuizzes: 0,
+        }));
+      }
     } catch (err) {
       console.error('친구 퀴즈 조회 실패:', err);
-      // 에러가 발생해도 기본값으로 설정
       setQuizzes([]);
-      setQuizStats({
+      setQuizStats((prev) => ({
+        ...prev,
         totalQuizzes: 0,
-        solvedQuizzes: 0,
-        averageScore: 0,
-        friendshipScore: 0,
-      });
+      }));
     } finally {
       setIsQuizLoading(false);
     }
-  }, [user, friendSince]);
+  }, [user]);
 
   // 퀴즈 풀기
   const handleSolveQuiz = (quizId: number) => {
     router.push(`/front/game/guess-me/solve-quiz?quizId=${quizId}`);
   };
+
+  // 친구 정보가 로드되면 퀴즈 데이터도 가져오기
+  useEffect(() => {
+    if (user) {
+      fetchFriendQuizzes();
+    }
+  }, [user, fetchFriendQuizzes]);
 
   // 우정 점수 조회
   const fetchFriendshipScore = useCallback(async () => {
@@ -231,6 +290,14 @@ export default function FriendDetailPage() {
       console.error('우정 점수 조회 실패:', err);
     }
   }, [user, friendSince]);
+
+  // 친구 관계가 변경될 때마다 퀴즈 데이터 새로고침
+  useEffect(() => {
+    if (friendSince && user) {
+      fetchFriendQuizzes();
+      fetchFriendshipScore();
+    }
+  }, [friendSince, user, fetchFriendQuizzes, fetchFriendshipScore]);
 
   const handleSendMessage = () => {
     setIsMessageModalOpen(true);
@@ -375,7 +442,7 @@ export default function FriendDetailPage() {
   }
 
   return (
-    <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="my-home-page py-4 px-4 pt-20 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
         <Button
           type="button"
