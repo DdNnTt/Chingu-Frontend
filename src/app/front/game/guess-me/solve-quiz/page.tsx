@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Button from '@/components/common/Button';
 import axiosInstance from '@/libs/axios';
@@ -20,7 +20,7 @@ interface QuizSet {
   questions: Question[];
 }
 
-export default function SolveQuizPage() {
+function SolveQuizContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const quizId = searchParams.get('quizId');
@@ -344,5 +344,13 @@ export default function SolveQuizPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SolveQuizPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SolveQuizContent />
+    </Suspense>
   );
 }

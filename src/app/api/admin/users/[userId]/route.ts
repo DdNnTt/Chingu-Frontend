@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');
-  const { userId } = params;
+  const { userId } = await params;
 
   if (!API_BASE) {
     return NextResponse.json({ error: 'API_BASE_URL 누락됨' }, { status: 500 });
