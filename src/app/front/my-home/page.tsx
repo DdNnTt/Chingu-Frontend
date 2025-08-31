@@ -72,6 +72,14 @@ interface QuizStats {
   totalFriendshipScore: number;
 }
 
+interface MyQuizDetailResponse {
+  quizSetId: number;
+  title?: string;
+  description?: string;
+  questions: Array<{ questionId: number }>;
+  creatorNickname: string;
+}
+
 interface Question {
   id: number;
   content: string;
@@ -146,52 +154,35 @@ export default function MyHome() {
     }
   };
 
-  // 내가 만든 퀴즈 목록 조회 (기존 API 활용)
+  // 내가 만든 퀴즈 목록 조회
   const fetchMyQuizzes = async () => {
     try {
       setIsQuizLoading(true);
 
-      // 1. friends-available API로 퀴즈를 만든 친구들 조회
-      const friendsResponse = await axiosInstance.get(
-        '/api/quizzes/friends-available'
+      // 내가 만든 퀴즈 세트 조회
+      const { data } = await axiosInstance.get<MyQuizDetailResponse[]>(
+        '/api/quizzes/my-quizzes'
       );
 
-      // 2. 내가 만든 퀴즈 찾기 (임시로 첫 번째 퀴즈가 있는 친구)
-      const myQuiz = friendsResponse.data.find(
-        (friend: {
-          userId: number;
-          nickname: string;
-          quizSetId: number | null;
-        }) => friend.quizSetId !== null
-      );
-
-      if (myQuiz?.quizSetId) {
-        // 3. 퀴즈 세트 상세 정보 조회
-        const quizDetailResponse = await axiosInstance.get(
-          `/api/quizzes/${myQuiz.quizSetId}`
-        );
-
-        // 4. 데이터 변환하여 설정
+      const items = Array.isArray(data) ? data : [];
+      if (items.length > 0) {
+        const first = items[0];
+        const total = Array.isArray(first.questions)
+          ? first.questions.length
+          : 0;
         setQuizzes([
           {
-            id: quizDetailResponse.data.quizSetId,
-            title: `퀴즈 세트 ${quizDetailResponse.data.quizSetId}`,
-            description: `${quizDetailResponse.data.questions.length}개의 문제`,
-            totalQuestions: quizDetailResponse.data.questions.length,
-            creatorNickname: quizDetailResponse.data.creatorNickname,
+            id: first.quizSetId,
+            title: first.title ?? `퀴즈 세트 ${first.quizSetId}`,
+            description: first.description ?? `${total}개의 문제`,
+            totalQuestions: total,
+            creatorNickname: first.creatorNickname,
           },
         ]);
-
-        setQuizStats((prev) => ({
-          ...prev,
-          totalQuizzes: 1,
-        }));
+        setQuizStats((prev) => ({ ...prev, totalQuizzes: 1 }));
       } else {
         setQuizzes([]);
-        setQuizStats((prev) => ({
-          ...prev,
-          totalQuizzes: 0,
-        }));
+        setQuizStats((prev) => ({ ...prev, totalQuizzes: 0 }));
       }
     } catch (err) {
       console.error('내 퀴즈 조회 실패:', err);

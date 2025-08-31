@@ -3,6 +3,12 @@
 import { useRouter } from 'next/navigation';
 import Button from '@/components/common/Button';
 
+export const metadata = {
+  title: '퀴즈 만들기 완료',
+  description:
+    '친구들이 나에 대해 얼마나 알고 있는지 테스트할 수 있는 퀴즈가 성공적으로 만들어졌습니다.',
+};
+
 export default function QuizComplete() {
   const router = useRouter();
 
