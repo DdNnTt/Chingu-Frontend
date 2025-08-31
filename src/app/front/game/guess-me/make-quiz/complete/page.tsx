@@ -1,6 +1,4 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Button from '@/components/common/Button';
 
 export const metadata = {
@@ -10,8 +8,6 @@ export const metadata = {
 };
 
 export default function QuizComplete() {
-  const router = useRouter();
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8 px-4">
       <div className="max-w-md mx-auto text-center">
@@ -42,26 +38,23 @@ export default function QuizComplete() {
 
           {/* 버튼들 */}
           <div className="space-y-3">
-            <Button
-              onClick={() => router.push('/front/my-home')}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-            >
-              마이홈으로 돌아가기
-            </Button>
+            <Link href="/front/my-home" className="block">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3">
+                마이홈으로 돌아가기
+              </Button>
+            </Link>
 
-            <Button
-              onClick={() => router.push('/front/game/guess-me/make-quiz')}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
-            >
-              퀴즈 더 만들기
-            </Button>
+            <Link href="/front/game/guess-me/make-quiz" className="block">
+              <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-3">
+                퀴즈 더 만들기
+              </Button>
+            </Link>
 
-            <Button
-              onClick={() => router.push('/front/game/guess-me')}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
-            >
-              게임 메인으로
-            </Button>
+            <Link href="/front/game/guess-me" className="block">
+              <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3">
+                게임 메인으로
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

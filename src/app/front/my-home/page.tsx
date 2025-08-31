@@ -166,20 +166,20 @@ export default function MyHome() {
 
       const items = Array.isArray(data) ? data : [];
       if (items.length > 0) {
-        const first = items[0];
-        const total = Array.isArray(first.questions)
-          ? first.questions.length
-          : 0;
-        setQuizzes([
-          {
-            id: first.quizSetId,
-            title: first.title ?? `퀴즈 세트 ${first.quizSetId}`,
-            description: first.description ?? `${total}개의 문제`,
-            totalQuestions: total,
-            creatorNickname: first.creatorNickname,
-          },
-        ]);
-        setQuizStats((prev) => ({ ...prev, totalQuizzes: 1 }));
+        // 모든 퀴즈를 매핑하여 표시
+        const mappedQuizzes = items.map((quiz) => ({
+          id: quiz.quizSetId,
+          title: quiz.title ?? `퀴즈 세트 ${quiz.quizSetId}`,
+          description:
+            quiz.description ?? `${quiz.questions?.length || 0}개의 문제`,
+          totalQuestions: Array.isArray(quiz.questions)
+            ? quiz.questions.length
+            : 0,
+          creatorNickname: quiz.creatorNickname,
+        }));
+
+        setQuizzes(mappedQuizzes);
+        setQuizStats((prev) => ({ ...prev, totalQuizzes: items.length }));
       } else {
         setQuizzes([]);
         setQuizStats((prev) => ({ ...prev, totalQuizzes: 0 }));
