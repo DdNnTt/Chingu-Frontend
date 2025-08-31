@@ -51,7 +51,7 @@ export default function FriendListPage() {
           {friends.map((friend) => (
             <li
               key={friend.friendUserId}
-              className="flex items-center justify-between bg-white border rounded-lg shadow-sm px-4 py-3 hover:bg-blue-50 transition"
+              className="flex items-center justify-between bg-white border rounded-lg shadow-sm px-4 py-3 hover:bg-[#aa96fc] hover:bg-opacity-10 transition"
             >
               <div>
                 <span className="font-semibold text-lg">{friend.nickname}</span>
@@ -65,7 +65,7 @@ export default function FriendListPage() {
               </div>
               <Link
                 href={`/front/my-home/friend/${friend.friendUserId}`}
-                className="text-blue-600 hover:underline text-sm font-medium"
+                className="main-color hover:underline text-sm font-medium"
               >
                 프로필
               </Link>

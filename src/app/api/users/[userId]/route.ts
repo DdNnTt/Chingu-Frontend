@@ -16,9 +16,7 @@ export async function GET(
   try {
     const res = await fetch(`${API_BASE}/api/users/${userId}`, {
       method: 'GET',
-      headers: {
-        Authorization: token || '',
-      },
+      headers: token ? { Authorization: token } : {},
     });
 
     if (!res.ok) {

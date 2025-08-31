@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axiosInstance from '@/libs/axios';
 import Link from 'next/link';
-import Button from '@/components/common/Button';
 import { AxiosError } from 'axios';
 
 interface FriendRequest {
@@ -134,30 +133,30 @@ export default function FriendRequestsPage() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <Button
+                <button
                   type="button"
                   onClick={() => handleRespond(request.fromUserId, 'accepted')}
                   disabled={responding === request.fromUserId}
-                  className={`text-white text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  className={`text-white text-sm px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
                     responding === request.fromUserId
                       ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                      : 'bg-main-color hover:bg-sub-color hover:shadow-md transform hover:scale-105'
+                      : 'bg-[#9477ff] hover:bg-[#6845f5] hover:shadow-md'
                   }`}
                 >
-                  {responding === request.fromUserId ? '처리중...' : '수락'}
-                </Button>
-                <Button
+                  수락
+                </button>
+                <button
                   type="button"
                   onClick={() => handleRespond(request.fromUserId, 'rejected')}
                   disabled={responding === request.fromUserId}
-                  className={`text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200 border ${
+                  className={`text-sm px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 active:scale-95 border ${
                     responding === request.fromUserId
                       ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed opacity-70'
-                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transform hover:scale-105'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md'
                   }`}
                 >
-                  {responding === request.fromUserId ? '처리중...' : '거절'}
-                </Button>
+                  거절
+                </button>
               </div>
             </li>
           ))}
