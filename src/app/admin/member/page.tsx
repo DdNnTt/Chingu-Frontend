@@ -165,15 +165,20 @@ export default function AdminMember() {
   };
 
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      const currentPageMembers = filteredMembers.slice(
-        (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE
-      );
-      setSelectedMembers(currentPageMembers.map((m) => m.id));
-    } else {
-      setSelectedMembers([]);
-    }
+    const currentPageMembers = filteredMembers.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+    );
+    const currentIds = new Set(currentPageMembers.map((m) => m.id));
+    setSelectedMembers((prev) => {
+      const prevSet = new Set(prev);
+      if (checked) {
+        currentIds.forEach((id) => prevSet.add(id));
+      } else {
+        currentIds.forEach((id) => prevSet.delete(id));
+      }
+      return Array.from(prevSet);
+    });
   };
 
   const handleSelectMember = (memberId: string, checked: boolean) => {
@@ -244,9 +249,10 @@ export default function AdminMember() {
                           <input
                             type="checkbox"
                             checked={
-                              selectedMembers.length ===
-                                paginatedMembers.length &&
-                              paginatedMembers.length > 0
+                              paginatedMembers.length > 0 &&
+                              paginatedMembers.every((m) =>
+                                selectedMembers.includes(m.id)
+                              )
                             }
                             onChange={(e) => handleSelectAll(e.target.checked)}
                             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
