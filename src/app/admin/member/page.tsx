@@ -135,34 +135,39 @@ export default function AdminMember() {
   const handleDeleteMembers = async () => {
     try {
       setIsDeleting(true);
+
+      // 각 삭제 요청에 memberId를 바인딩하여 결과 추적
       const results = await Promise.allSettled(
         selectedMembers.map((memberId) =>
-          axiosInstance.delete(`/api/admin/users/${memberId}`)
+          axiosInstance
+            .delete(`/api/admin/users/${memberId}`)
+            .then(() => ({ memberId, success: true }))
+            .catch((error) => {
+              // 실패 시에도 memberId를 보존
+              throw { memberId, error, success: false };
+            })
         )
       );
 
-      const failed = results.filter((r) => r.status === 'rejected');
+      // 실패한 삭제의 memberId만 추출
+      const failedIds = results
+        .filter((r) => r.status === 'rejected')
+        .map(
+          (r) =>
+            (r as PromiseRejectedResult & { reason: { memberId: string } })
+              .reason.memberId
+        );
 
       // 성공적으로 삭제된 후 목록 새로고침
       await fetchMembers();
 
-      // 실패한 삭제만 선택 상태에서 제거
-      setSelectedMembers((prev) =>
-        prev.filter(
-          (id) =>
-            !failed.some(
-              (f) =>
-                f.status === 'rejected' &&
-                'reason' in f &&
-                String(f.reason?.config?.url || '').endsWith(id) === false
-            )
-        )
-      );
+      // 실패한 ID만 선택 상태에 유지
+      setSelectedMembers(failedIds);
 
       setShowDeleteModal(false);
 
-      if (failed.length > 0) {
-        alert(`${failed.length}명의 회원 삭제에 실패했습니다.`);
+      if (failedIds.length > 0) {
+        alert(`${failedIds.length}명의 회원 삭제에 실패했습니다.`);
       } else {
         alert('선택된 회원이 삭제되었습니다.');
       }
