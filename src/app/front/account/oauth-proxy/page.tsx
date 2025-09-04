@@ -21,7 +21,7 @@ function OAuthProxyContent() {
         const token = searchParams.get('token');
 
         if (token) {
-          console.log('OAuth2 토큰 수신 (프록시):', token);
+          console.log('OAuth2 토큰 수신 (프록시): 성공');
 
           // 토큰을 쿠키에 저장
           document.cookie = `accessToken=${token}; path=/; secure; SameSite=Lax`;

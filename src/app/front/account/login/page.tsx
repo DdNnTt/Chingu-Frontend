@@ -125,17 +125,35 @@ export default function Login() {
 
   // 소셜 로그인
   const handleGoogleLogin = () => {
-    // 백엔드 제공 OAuth2 엔드포인트
-    console.log('Google OAuth2 로그인 시작');
-    window.location.href =
-      'https://chinguchingu.kro.kr/oauth2/authorization/google';
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!base) {
+      console.error('OAuth2 base URL 미설정: NEXT_PUBLIC_API_BASE_URL');
+      alert('OAuth2 설정 오류가 발생했습니다. 관리자에게 문의해주세요.');
+      return;
+    }
+
+    try {
+      window.location.assign(`${base}/oauth2/authorization/google`);
+    } catch (error) {
+      console.error('Google OAuth2 리다이렉트 오류:', error);
+      alert('Google 로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
 
   const handleKakaoLogin = () => {
-    // 백엔드 제공 OAuth2 엔드포인트
-    console.log('카카오 OAuth2 로그인 시작');
-    window.location.href =
-      'https://chinguchingu.kro.kr/oauth2/authorization/kakao';
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!base) {
+      console.error('OAuth2 base URL 미설정: NEXT_PUBLIC_API_BASE_URL');
+      alert('OAuth2 설정 오류가 발생했습니다. 관리자에게 문의해주세요.');
+      return;
+    }
+
+    try {
+      window.location.assign(`${base}/oauth2/authorization/kakao`);
+    } catch (error) {
+      console.error('카카오 OAuth2 리다이렉트 오류:', error);
+      alert('카카오 로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
 
   // 로그인 후 진입
