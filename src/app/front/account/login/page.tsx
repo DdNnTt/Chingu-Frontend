@@ -98,9 +98,6 @@ export default function Login() {
       // 쿠키로 저장 (secure, SameSite는 필요 시 조정)
       document.cookie = `accessToken=${accessToken}; path=/; secure; SameSite=Lax`;
 
-      // localStorage.setItem('tokenType', tokenType);
-      // localStorage.setItem('nickname', nickname);
-
       router.push('/front/my-home');
     } catch (error: unknown) {
       console.error('[로그인 실패]', error);
@@ -124,6 +121,21 @@ export default function Login() {
     } finally {
       setIsLoggingIn(false);
     }
+  };
+
+  // 소셜 로그인
+  const handleGoogleLogin = () => {
+    // 백엔드 제공 OAuth2 엔드포인트
+    console.log('Google OAuth2 로그인 시작');
+    window.location.href =
+      'https://chinguchingu.kro.kr/oauth2/authorization/google';
+  };
+
+  const handleKakaoLogin = () => {
+    // 백엔드 제공 OAuth2 엔드포인트
+    console.log('카카오 OAuth2 로그인 시작');
+    window.location.href =
+      'https://chinguchingu.kro.kr/oauth2/authorization/kakao';
   };
 
   // 로그인 후 진입
@@ -266,7 +278,10 @@ export default function Login() {
 
         {/* 소셜 로그인 */}
         <div className="social-login-wrap mt-12 animate-slideUp delay-1200 opacity-0">
-          <div className="border border-gray-300 text-sm px-4 py-3 rounded-xl w-full text-center bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer mb-3 flex items-center justify-center gap-2 shadow-sm hover:shadow-md">
+          <div
+            className="border border-gray-300 text-sm px-4 py-3 rounded-xl w-full text-center bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer mb-3 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+            onClick={handleGoogleLogin}
+          >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
@@ -287,7 +302,10 @@ export default function Login() {
             </svg>
             <span className="text-gray-700 font-medium">Google로 로그인</span>
           </div>
-          <div className="border border-gray-300 text-sm px-4 py-3 rounded-xl w-full text-center bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:shadow-md">
+          <div
+            className="border border-gray-300 text-sm px-4 py-3 rounded-xl w-full text-center bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+            onClick={handleKakaoLogin}
+          >
             <Image
               src="/images/kakao-logo.png"
               alt="카카오"
