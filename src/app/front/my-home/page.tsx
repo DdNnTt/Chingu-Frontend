@@ -477,10 +477,6 @@ export default function MyHome() {
         </div>
       </div>
 
-      <div className="profile-intro p-4 bg-white rounded-lg shadow-sm mb-4">
-        <p className="text-gray-700">자기소개 멘트</p>
-      </div>
-
       <div className="flex gap-2 mb-4">
         <Link
           href="/front/message/list"
