@@ -156,7 +156,7 @@ export default function MessageDetail() {
 
   return (
     <div className="flex flex-col bg-gray-100 overflow-hidden pt-20 pb-20">
-      <div className="bg-white p-4 flex items-center border-b">
+      <div className="p-4 flex items-center border-b">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
@@ -200,7 +200,7 @@ export default function MessageDetail() {
         </div>
       </div>
 
-      <div className="bg-white p-4 flex gap-2 border-t">
+      <div className="p-4 flex gap-2 border-t">
         <Button
           variant="secondary"
           className="flex-1"
