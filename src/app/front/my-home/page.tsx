@@ -91,6 +91,7 @@ interface Question {
 
 export default function MyHome() {
   const [nickname, setNickname] = useState<string>('');
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string>('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -124,6 +125,28 @@ export default function MyHome() {
   const [showMoreAll, setShowMoreAll] = useState(false);
 
   const router = useRouter();
+
+  // 사용자 정보 조회
+  const fetchUserInfo = async () => {
+    try {
+      const token = getCookieValue('accessToken');
+      if (!token) return;
+
+      const response = await fetch('/api/users/mypage', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setProfilePictureUrl(userData.profilePictureUrl || '');
+      }
+    } catch (err) {
+      console.error('사용자 정보 조회 실패:', err);
+    }
+  };
 
   // 일정 목록 조회
   const fetchSchedules = async () => {
@@ -315,6 +338,7 @@ export default function MyHome() {
       setError('');
       try {
         await Promise.all([
+          fetchUserInfo(),
           fetchSchedules(),
           fetchFriends(),
           fetchFriendRequests(),
@@ -428,7 +452,7 @@ export default function MyHome() {
 
       <div className="profile-card flex items-center mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
         <Image
-          src="/images/test-profile.png"
+          src={profilePictureUrl || '/images/test-profile.png'}
           alt="프로필 사진"
           width={64}
           height={64}
