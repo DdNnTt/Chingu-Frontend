@@ -598,15 +598,8 @@ export default function MyHome() {
 
       {/* 랜덤 문제 섹션 */}
       <div className="random-questions bg-white p-6 rounded-lg shadow-sm mb-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4">
           <h2 className="text-lg font-semibold">랜덤 문제</h2>
-          <Button
-            type="button"
-            onClick={fetchRandomQuestions}
-            className="bg-orange-600 text-white text-sm px-4 py-2"
-          >
-            새로고침
-          </Button>
         </div>
 
         {isRandomLoading ? (
@@ -663,15 +656,8 @@ export default function MyHome() {
 
       {/* 전체 문제 섹션 */}
       <div className="all-questions bg-white p-6 rounded-lg shadow-sm mb-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4">
           <h2 className="text-lg font-semibold">전체 문제</h2>
-          <Button
-            type="button"
-            onClick={fetchAllQuestions}
-            className="bg-indigo-600 text-white text-sm px-4 py-2"
-          >
-            새로고침
-          </Button>
         </div>
 
         {isAllLoading ? (
