@@ -435,7 +435,6 @@ export default function MyHome() {
           className="object-cover rounded-full border border-gray-300"
         />
         <div className="profile-info">
-          {/* <h3 className="text-lg font-semibold">닉네임</h3> */}
           <h3 className="text-lg font-semibold">{nickname || '닉네임'}</h3>
           <div className="flex gap-4">
             <Link
@@ -520,7 +519,7 @@ export default function MyHome() {
       {/* 퀴즈 섹션 */}
       <div className="quiz-section bg-white p-6 rounded-lg shadow-sm mb-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">🧩 나의 퀴즈</h2>
+          <h2 className="text-lg font-semibold">나의 퀴즈</h2>
           <Button
             type="button"
             onClick={handleCreateQuiz}
@@ -554,7 +553,7 @@ export default function MyHome() {
           </div>
         ) : quizzes.length === 0 ? (
           <div className="text-center py-6 text-gray-500">
-            <p>아직 만든 퀴즈가 없어요 😢</p>
+            <p>아직 만든 퀴즈가 없어요</p>
             <p className="text-sm mt-1">
               친구들과 우정을 쌓을 퀴즈를 만들어보세요!
             </p>
@@ -600,7 +599,7 @@ export default function MyHome() {
       {/* 랜덤 문제 섹션 */}
       <div className="random-questions bg-white p-6 rounded-lg shadow-sm mb-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">🎲 랜덤 문제</h2>
+          <h2 className="text-lg font-semibold">랜덤 문제</h2>
           <Button
             type="button"
             onClick={fetchRandomQuestions}
@@ -665,23 +664,14 @@ export default function MyHome() {
       {/* 전체 문제 섹션 */}
       <div className="all-questions bg-white p-6 rounded-lg shadow-sm mb-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">📚 전체 문제</h2>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onClick={fetchAllQuestions}
-              className="bg-indigo-600 text-white text-sm px-4 py-2"
-            >
-              새로고침
-            </Button>
-            <Button
-              type="button"
-              onClick={() => router.push('/front/game/guess-me/all-questions')}
-              className="bg-green-600 text-white text-sm px-4 py-2"
-            >
-              전체 보기
-            </Button>
-          </div>
+          <h2 className="text-lg font-semibold">전체 문제</h2>
+          <Button
+            type="button"
+            onClick={fetchAllQuestions}
+            className="bg-indigo-600 text-white text-sm px-4 py-2"
+          >
+            새로고침
+          </Button>
         </div>
 
         {isAllLoading ? (
