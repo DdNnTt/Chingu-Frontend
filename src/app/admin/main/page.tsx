@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AdminGuard from '../components/AdminGuard';
 import Link from 'next/link';
 import axiosInstance from '@/libs/axios';
@@ -12,6 +13,7 @@ interface StatsData {
 }
 
 export default function AdminMain() {
+  const router = useRouter();
   const [stats, setStats] = useState<StatsData>({
     totalUsers: 0,
     totalGroups: 0,
@@ -53,9 +55,31 @@ export default function AdminMain() {
   return (
     <AdminGuard>
       <div className="admin-page py-4 px-4 pt-24 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
-        <h2 className="text-2xl font-semibold mb-6 text-center">
-          관리자 페이지
-        </h2>
+        <div className="flex items-center mb-6">
+          <button
+            onClick={() => router.back()}
+            className="text-gray-600 hover:text-gray-800 mr-4"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+              />
+            </svg>
+          </button>
+          <h2 className="text-2xl font-semibold text-center flex-1">
+            관리자 페이지
+          </h2>
+          <div className="w-6"></div>
+        </div>
 
         {/* 통계 섹션 */}
         <div className="mb-6">
