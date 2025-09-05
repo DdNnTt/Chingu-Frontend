@@ -92,6 +92,7 @@ interface Question {
 export default function MyHome() {
   const [nickname, setNickname] = useState<string>('');
   const [profilePictureUrl, setProfilePictureUrl] = useState<string>('');
+  const [userRole, setUserRole] = useState<string>('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -142,6 +143,7 @@ export default function MyHome() {
       if (response.ok) {
         const userData = await response.json();
         setProfilePictureUrl(userData.profilePictureUrl || '');
+        setUserRole(userData.role || '');
       }
     } catch (err) {
       console.error('사용자 정보 조회 실패:', err);
@@ -458,7 +460,7 @@ export default function MyHome() {
           height={64}
           className="object-cover rounded-full border border-gray-300"
         />
-        <div className="profile-info">
+        <div className="profile-info flex-1">
           <h3 className="text-lg font-semibold">{nickname || '닉네임'}</h3>
           <div className="flex gap-4">
             <Link
@@ -474,6 +476,14 @@ export default function MyHome() {
               받은 친구 요청 <span>{friendRequests.length}</span>
             </Link>
           </div>
+          {userRole === 'ROLE_ADMIN' && (
+            <Link
+              href="/front/admin"
+              className="inline-block bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors mt-2"
+            >
+              관리자 페이지
+            </Link>
+          )}
         </div>
       </div>
 
