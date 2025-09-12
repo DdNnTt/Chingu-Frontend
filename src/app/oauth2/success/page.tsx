@@ -52,7 +52,7 @@ function OAuthSuccessContent() {
   }, [searchParams, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+    <div className="flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
         <div className="text-center">
           {status === 'loading' && (
@@ -118,7 +118,7 @@ export default function OAuthSuccess() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+        <div className="flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
           <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
