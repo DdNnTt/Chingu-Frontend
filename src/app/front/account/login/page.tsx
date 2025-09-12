@@ -55,6 +55,37 @@ export default function Login() {
     }
   }, [router]);
 
+  // OAuth 오류 처리
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+
+    if (error) {
+      let errorMessage = '로그인 중 오류가 발생했습니다.';
+
+      switch (error) {
+        case 'oauth_error':
+          errorMessage = '소셜 로그인 중 오류가 발생했습니다.';
+          break;
+        case 'no_code':
+          errorMessage = '인증 코드를 받지 못했습니다.';
+          break;
+        case 'token_exchange_failed':
+          errorMessage = '토큰 교환에 실패했습니다.';
+          break;
+        case 'callback_error':
+          errorMessage = '로그인 콜백 처리 중 오류가 발생했습니다.';
+          break;
+      }
+
+      setLoginError(errorMessage);
+
+      // URL에서 오류 파라미터 제거
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, []);
+
   useEffect(() => {
     if (loginError) {
       setShowAlert(true);
@@ -123,37 +154,24 @@ export default function Login() {
     }
   };
 
-  // 소셜 로그인
-  const handleGoogleLogin = () => {
-    const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-    if (!base) {
-      console.error('OAuth2 base URL 미설정: NEXT_PUBLIC_API_BASE_URL');
-      alert('OAuth2 설정 오류가 발생했습니다. 관리자에게 문의해주세요.');
-      return;
-    }
+  // 카카오 로그인 처리
+  const handleKakaoLogin = () => {
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_URL || 'https://chinguchingu.kro.kr';
+    const kakaoLoginUrl = `${apiBaseUrl}/oauth2/authorization/kakao`;
 
-    try {
-      window.location.assign(`${base}/oauth2/authorization/google`);
-    } catch (error) {
-      console.error('Google OAuth2 리다이렉트 오류:', error);
-      alert('Google 로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
-    }
+    console.log('[카카오 로그인 URL]', kakaoLoginUrl);
+    window.location.href = kakaoLoginUrl;
   };
 
-  const handleKakaoLogin = () => {
-    const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-    if (!base) {
-      console.error('OAuth2 base URL 미설정: NEXT_PUBLIC_API_BASE_URL');
-      alert('OAuth2 설정 오류가 발생했습니다. 관리자에게 문의해주세요.');
-      return;
-    }
+  // 구글 로그인 처리
+  const handleGoogleLogin = () => {
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_URL || 'https://chinguchingu.kro.kr';
+    const googleLoginUrl = `${apiBaseUrl}/oauth2/authorization/google`;
 
-    try {
-      window.location.assign(`${base}/oauth2/authorization/kakao`);
-    } catch (error) {
-      console.error('카카오 OAuth2 리다이렉트 오류:', error);
-      alert('카카오 로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
-    }
+    console.log('[구글 로그인 URL]', googleLoginUrl);
+    window.location.href = googleLoginUrl;
   };
 
   // 로그인 후 진입
@@ -297,8 +315,8 @@ export default function Login() {
         {/* 소셜 로그인 */}
         <div className="social-login-wrap mt-12 animate-slideUp delay-1200 opacity-0">
           <div
-            className="border border-gray-300 text-sm px-4 py-3 rounded-xl w-full text-center bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer mb-3 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
             onClick={handleGoogleLogin}
+            className="border border-gray-300 text-sm px-4 py-3 rounded-xl w-full text-center bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer mb-3 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -321,8 +339,8 @@ export default function Login() {
             <span className="text-gray-700 font-medium">Google로 로그인</span>
           </div>
           <div
-            className="border border-gray-300 text-sm px-4 py-3 rounded-xl w-full text-center bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
             onClick={handleKakaoLogin}
+            className="border border-gray-300 text-sm px-4 py-3 rounded-xl w-full text-center bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
           >
             <Image
               src="/images/kakao-logo.png"
