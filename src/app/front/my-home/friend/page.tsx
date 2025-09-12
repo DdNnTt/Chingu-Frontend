@@ -12,7 +12,7 @@ export default function MyHomeFriend() {
   };
 
   return (
-    <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="my-home-page py-4 px-4 pt-28 mx-auto rounded-lg bg-gray-100">
       <h2 className="text-2xl font-semibold mb-6 text-center">친구 마이 홈</h2>
 
       <div className="profile-card flex items-center justify-between mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">

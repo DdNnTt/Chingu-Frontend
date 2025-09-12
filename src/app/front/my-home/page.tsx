@@ -91,6 +91,8 @@ interface Question {
 
 export default function MyHome() {
   const [nickname, setNickname] = useState<string>('');
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string>('');
+  const [userRole, setUserRole] = useState<string>('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -124,6 +126,29 @@ export default function MyHome() {
   const [showMoreAll, setShowMoreAll] = useState(false);
 
   const router = useRouter();
+
+  // 사용자 정보 조회
+  const fetchUserInfo = async () => {
+    try {
+      const token = getCookieValue('accessToken');
+      if (!token) return;
+
+      const response = await fetch('/api/users/mypage', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setProfilePictureUrl(userData.profilePictureUrl || '');
+        setUserRole(userData.role || '');
+      }
+    } catch (err) {
+      console.error('사용자 정보 조회 실패:', err);
+    }
+  };
 
   // 일정 목록 조회
   const fetchSchedules = async () => {
@@ -315,6 +340,7 @@ export default function MyHome() {
       setError('');
       try {
         await Promise.all([
+          fetchUserInfo(),
           fetchSchedules(),
           fetchFriends(),
           fetchFriendRequests(),
@@ -428,14 +454,13 @@ export default function MyHome() {
 
       <div className="profile-card flex items-center mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
         <Image
-          src="/images/test-profile.png"
+          src={profilePictureUrl || '/images/test-profile.png'}
           alt="프로필 사진"
           width={64}
           height={64}
           className="object-cover rounded-full border border-gray-300"
         />
-        <div className="profile-info">
-          {/* <h3 className="text-lg font-semibold">닉네임</h3> */}
+        <div className="profile-info flex-1">
           <h3 className="text-lg font-semibold">{nickname || '닉네임'}</h3>
           <div className="flex gap-4">
             <Link
@@ -451,11 +476,15 @@ export default function MyHome() {
               받은 친구 요청 <span>{friendRequests.length}</span>
             </Link>
           </div>
+          {userRole === 'ROLE_ADMIN' && (
+            <Link
+              href="/admin/main"
+              className="inline-block bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors mt-2"
+            >
+              관리자 페이지
+            </Link>
+          )}
         </div>
-      </div>
-
-      <div className="profile-intro p-4 bg-white rounded-lg shadow-sm mb-4">
-        <p className="text-gray-700">자기소개 멘트</p>
       </div>
 
       <div className="flex gap-2 mb-4">
@@ -520,7 +549,7 @@ export default function MyHome() {
       {/* 퀴즈 섹션 */}
       <div className="quiz-section bg-white p-6 rounded-lg shadow-sm mb-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">🧩 나의 퀴즈</h2>
+          <h2 className="text-lg font-semibold">나의 퀴즈</h2>
           <Button
             type="button"
             onClick={handleCreateQuiz}
@@ -554,7 +583,7 @@ export default function MyHome() {
           </div>
         ) : quizzes.length === 0 ? (
           <div className="text-center py-6 text-gray-500">
-            <p>아직 만든 퀴즈가 없어요 😢</p>
+            <p>아직 만든 퀴즈가 없어요</p>
             <p className="text-sm mt-1">
               친구들과 우정을 쌓을 퀴즈를 만들어보세요!
             </p>
@@ -599,15 +628,8 @@ export default function MyHome() {
 
       {/* 랜덤 문제 섹션 */}
       <div className="random-questions bg-white p-6 rounded-lg shadow-sm mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">🎲 랜덤 문제</h2>
-          <Button
-            type="button"
-            onClick={fetchRandomQuestions}
-            className="bg-orange-600 text-white text-sm px-4 py-2"
-          >
-            새로고침
-          </Button>
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">랜덤 문제</h2>
         </div>
 
         {isRandomLoading ? (
@@ -664,24 +686,8 @@ export default function MyHome() {
 
       {/* 전체 문제 섹션 */}
       <div className="all-questions bg-white p-6 rounded-lg shadow-sm mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">📚 전체 문제</h2>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onClick={fetchAllQuestions}
-              className="bg-indigo-600 text-white text-sm px-4 py-2"
-            >
-              새로고침
-            </Button>
-            <Button
-              type="button"
-              onClick={() => router.push('/front/game/guess-me/all-questions')}
-              className="bg-green-600 text-white text-sm px-4 py-2"
-            >
-              전체 보기
-            </Button>
-          </div>
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">전체 문제</h2>
         </div>
 
         {isAllLoading ? (

@@ -45,7 +45,7 @@ export default function MessageList() {
   const messages = activeTab === 'sent' ? sentMessages : receivedMessages;
 
   return (
-    <div className="my-home-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="my-home-page py-4 px-4 pt-28 mx-auto rounded-lg bg-gray-100">
       <h2 className="text-2xl font-semibold mb-6 text-center">나의 쪽지함</h2>
 
       <div className="flex mb-4 gap-2">
@@ -76,10 +76,16 @@ export default function MessageList() {
           messages.map((message) => (
             <div
               key={message.messageId}
-              className="bg-white p-4 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50"
-              onClick={() =>
-                router.push(`/front/message/detail?id=${message.messageId}`)
-              }
+              className={`bg-white p-4 rounded-lg shadow-sm ${
+                activeTab === 'received'
+                  ? 'cursor-pointer hover:bg-gray-50'
+                  : ''
+              }`}
+              onClick={() => {
+                if (activeTab === 'received') {
+                  router.push(`/front/message/detail?id=${message.messageId}`);
+                }
+              }}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="text-gray-600 text-sm">
