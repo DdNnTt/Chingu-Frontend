@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 interface Friend {
   friendUserId: number;
+  id: string;
   nickname: string;
   name: string;
   score: number;
@@ -89,7 +90,7 @@ export default function FriendListPage() {
                 </span>
               </div>
               <Link
-                href={`/front/my-home/friend/${friend.friendUserId}`}
+                href={`/front/my-home/friend/${friend.id}`}
                 className="main-color hover:underline text-sm font-medium"
               >
                 프로필
