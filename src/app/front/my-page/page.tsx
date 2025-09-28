@@ -303,39 +303,82 @@ export default function Mypage() {
             />
           </div>
 
-          {/* 프로필 */}
+          {/* 프로필 이미지 */}
           <div className="mb-4">
-            <label className="block font-medium text-sm mb-1">프로필</label>
+            <label className="block font-medium text-sm mb-1">
+              프로필 이미지
+            </label>
 
-            <div className="w-20 h-20 relative">
-              <Image
-                src={imagePreview || '/images/default-profile.jpg'}
-                alt="프로필 이미지"
-                fill
-                className="object-cover rounded-md"
-              />
+            <div className="flex flex-col items-center gap-4">
+              {/* 프로필 이미지 미리보기 */}
+              {imagePreview ? (
+                <div className="w-full max-w-md">
+                  <div className="flex justify-center">
+                    <div className="relative w-32 h-32">
+                      <Image
+                        src={imagePreview}
+                        alt="프로필 이미지"
+                        width={128}
+                        height={128}
+                        className="w-full h-full rounded-lg object-cover border border-gray-200"
+                      />
+                      {isEditable && (
+                        <button
+                          type="button"
+                          onClick={() => setImagePreview(null)}
+                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full max-w-md h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+                  <div className="text-center">
+                    <svg
+                      className="w-12 h-12 text-gray-400 mx-auto mb-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <p className="text-gray-500 text-sm">
+                      프로필 이미지를 선택해주세요
+                    </p>
+                    <p className="text-gray-400 text-xs mt-1">
+                      JPG, PNG 파일만 가능
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* 파일 선택 버튼 */}
+              {isEditable && (
+                <div className="w-full max-w-md">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="profile-upload"
+                  />
+                  <label
+                    htmlFor="profile-upload"
+                    className="w-full bg-[#9477ff] hover:bg-[#6845f5] text-white py-2 px-4 rounded-lg cursor-pointer transition-colors text-center block"
+                  >
+                    {imagePreview ? '이미지 변경' : '이미지 선택'}
+                  </label>
+                </div>
+              )}
             </div>
-
-            {/* 이미지 삭제 버튼 (수정 모드일 때만) */}
-            {/* {isEditable && imagePreview && (
-              <Button
-                type="button"
-                className="mt-2 mb-2 !text-xs !bg-red-500 text-white"
-                onClick={handleImageRemove}
-              >
-                이미지 삭제
-              </Button>
-            )} */}
-
-            {/* 파일 업로드 input */}
-            {isEditable && (
-              <input
-                type="file"
-                accept="image/*"
-                className="mt-2 mb-2"
-                onChange={handleImageChange}
-              />
-            )}
           </div>
 
           {/* 수정 완료 버튼 */}
@@ -343,7 +386,7 @@ export default function Mypage() {
             <Button
               type="button"
               onClick={handleSubmitEdit}
-              className="w-full !bg-[#aa96fc]"
+              className="w-full"
               disabled={isSubmitting}
             >
               {isSubmitting ? '수정 중...' : '수정 완료'}
@@ -363,7 +406,23 @@ export default function Mypage() {
         </Button>
 
         {/* 회원 탈퇴 버튼 */}
-        <Button type="button" onClick={handleWithdraw} className="w-full">
+        <Button
+          type="button"
+          onClick={handleWithdraw}
+          className="w-full text-white"
+          style={{
+            backgroundColor: '#F55',
+            borderColor: '#F55',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#e44';
+            e.currentTarget.style.borderColor = '#e44';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#F55';
+            e.currentTarget.style.borderColor = '#F55';
+          }}
+        >
           회원 탈퇴
         </Button>
       </div>
