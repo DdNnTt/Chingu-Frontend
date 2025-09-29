@@ -80,14 +80,15 @@ interface MyQuizDetailResponse {
   creatorNickname: string;
 }
 
-interface Question {
-  id: number;
-  content: string;
-  option1: string;
-  option2: string;
-  option3: string;
-  option4: string;
-}
+// Question 인터페이스 제거 - 사용하지 않음
+// interface Question {
+//   id: number;
+//   content: string;
+//   option1: string;
+//   option2: string;
+//   option3: string;
+//   option4: string;
+// }
 
 export default function MyHome() {
   const [nickname, setNickname] = useState<string>('');
@@ -115,15 +116,15 @@ export default function MyHome() {
   });
   const [isQuizLoading, setIsQuizLoading] = useState(false);
 
-  // 랜덤 문제 및 전체 문제 상태
-  const [randomQuestions, setRandomQuestions] = useState<Question[]>([]);
-  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
-  const [isRandomLoading, setIsRandomLoading] = useState(false);
-  const [isAllLoading, setIsAllLoading] = useState(false);
+  // 랜덤 문제 및 전체 문제 상태 - 삭제
+  // const [randomQuestions, setRandomQuestions] = useState<Question[]>([]);
+  // const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+  // const [isRandomLoading, setIsRandomLoading] = useState(false);
+  // const [isAllLoading, setIsAllLoading] = useState(false);
 
-  // 더보기 상태
-  const [showMoreRandom, setShowMoreRandom] = useState(false);
-  const [showMoreAll, setShowMoreAll] = useState(false);
+  // 더보기 상태 - 삭제
+  // const [showMoreRandom, setShowMoreRandom] = useState(false);
+  // const [showMoreAll, setShowMoreAll] = useState(false);
 
   const router = useRouter();
 
@@ -260,69 +261,63 @@ export default function MyHome() {
     router.push('/front/game/guess-me/make-quiz');
   };
 
-  // 랜덤 문제 10개 조회
-  const fetchRandomQuestions = async () => {
-    try {
-      setIsRandomLoading(true);
-      const response = await axiosInstance.get('/api/quizzes/question-random');
+  // 랜덤 문제 10개 조회 - 삭제
+  // const fetchRandomQuestions = async () => {
+  //   try {
+  //     setIsRandomLoading(true);
+  //     const response = await axiosInstance.get('/api/quizzes/question-random');
+  //     // 응답 스키마를 안전하게 노멀라이즈
+  //     const items = Array.isArray(response.data)
+  //       ? response.data
+  //       : Array.isArray((response.data as { items?: unknown[] })?.items)
+  //         ? (response.data as { items: unknown[] }).items
+  //         : [];
+  //     // ... 기존 코드
+  //   } catch (err) {
+  //     // ... 에러 처리
+  //   } finally {
+  //     setIsRandomLoading(false);
+  //   }
+  // };
 
-      // 응답 스키마를 안전하게 노멀라이즈
-      const items = Array.isArray(response.data)
-        ? response.data
-        : Array.isArray((response.data as { items?: unknown[] })?.items)
-          ? (response.data as { items: unknown[] }).items
-          : [];
+  // 전체 문제 조회 - 삭제
+  // const fetchAllQuestions = async () => {
+  //   try {
+  //     setIsAllLoading(true);
+  //     const response = await axiosInstance.get('/api/quizzes/question-all');
+  //     // 응답 스키마를 안전하게 노멀라이즈
+  //     const items = Array.isArray(response.data)
+  //       ? response.data
+  //       : Array.isArray((response.data as { items?: unknown[] })?.items)
+  //         ? (response.data as { items: unknown[] }).items
+  //         : [];
+  //     // ... 기존 코드
+  //   } catch (err) {
+  //     // ... 에러 처리
+  //   } finally {
+  //     setIsAllLoading(false);
+  //   }
+  // };
 
-      setRandomQuestions(items as Question[]);
-    } catch (err) {
-      console.error('랜덤 문제 조회 실패:', err);
-      setRandomQuestions([]);
-    } finally {
-      setIsRandomLoading(false);
-    }
-  };
+  // 랜덤 문제 더보기 - 삭제
+  // const handleShowMoreRandom = () => {
+  //   setShowMoreRandom(true);
+  // };
 
-  // 전체 문제 조회
-  const fetchAllQuestions = async () => {
-    try {
-      setIsAllLoading(true);
-      const response = await axiosInstance.get('/api/quizzes/question-all');
+  // 랜덤 문제 접기 - 삭제
+  // const handleShowLessRandom = () => {
+  //   setShowMoreRandom(false);
+  // };
 
-      // 응답 스키마를 안전하게 노멀라이즈
-      const items = Array.isArray(response.data)
-        ? response.data
-        : Array.isArray((response.data as { items?: unknown[] })?.items)
-          ? (response.data as { items: unknown[] }).items
-          : [];
+  // 전체 문제 더보기 - 삭제
+  // const handleShowMoreAll = () => {
+  //   setShowMoreAll(true);
+  // };
 
-      setAllQuestions(items as Question[]);
-    } catch (err) {
-      console.error('전체 문제 조회 실패:', err);
-      setAllQuestions([]);
-    } finally {
-      setIsAllLoading(false);
-    }
-  };
-
-  // 랜덤 문제 더보기
-  const handleShowMoreRandom = () => {
-    setShowMoreRandom(true);
-  };
-
-  // 랜덤 문제 접기
-  const handleShowLessRandom = () => {
-    setShowMoreRandom(false);
-  };
-
-  // 전체 문제 더보기
-  const handleShowMoreAll = () => {
-    setShowMoreAll(true);
-  };
-
-  // 전체 문제 접기
-  const handleShowLessAll = () => {
-    setShowMoreAll(false);
-  };
+  // 전체 문제 접기 - 삭제
+  // const handleShowLessAll = () => {
+  //   setShowMoreAll(false);
+  // };
 
   // 받은 쪽지 개수 조회
   const fetchReceivedMessagesCount = async () => {
@@ -348,8 +343,8 @@ export default function MyHome() {
           fetchGroups(),
           fetchMyQuizzes(),
           fetchTotalFriendshipScore(),
-          fetchRandomQuestions(),
-          fetchAllQuestions(),
+          // fetchRandomQuestions(), // 삭제된 함수
+          // fetchAllQuestions(), // 삭제된 함수
         ]);
       } catch {
         setError('데이터를 불러오는데 실패했습니다.');
@@ -449,7 +444,7 @@ export default function MyHome() {
   };
 
   return (
-    <div className="my-home-page py-4 px-4 pt-20 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+    <div className="my-home-page py-4 px-4 pt-28 pb-28 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <h2 className="text-2xl font-semibold mb-6 text-center">마이 홈</h2>
 
       <div className="profile-card flex items-center mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
@@ -626,122 +621,15 @@ export default function MyHome() {
         )}
       </div>
 
-      {/* 랜덤 문제 섹션 */}
-      <div className="random-questions bg-white p-6 rounded-lg shadow-sm mb-4">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">랜덤 문제</h2>
-        </div>
+      {/* 랜덤 문제 섹션 - 삭제 */}
+      {/* <div className="random-questions bg-white p-6 rounded-lg shadow-sm mb-4">
+        ... 랜덤 문제 관련 코드 ...
+      </div> */}
 
-        {isRandomLoading ? (
-          <div className="text-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-600 mx-auto"></div>
-            <p className="mt-2 text-gray-500 text-sm">
-              랜덤 문제를 불러오는 중...
-            </p>
-          </div>
-        ) : randomQuestions.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">
-            <p>랜덤 문제를 불러올 수 없습니다.</p>
-            <p className="text-sm mt-1">새로고침 버튼을 눌러보세요!</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {randomQuestions
-              .slice(0, showMoreRandom ? randomQuestions.length : 5)
-              .map((question, index) => (
-                <div
-                  key={question.id}
-                  className="p-3 bg-orange-50 rounded-lg border border-orange-200"
-                >
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-800 mb-2">
-                      문제 {index + 1}: {question.content}
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                      <div>A. {question.option1}</div>
-                      <div>B. {question.option2}</div>
-                      <div>C. {question.option3}</div>
-                      <div>D. {question.option4}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-            {/* 더보기/접기 버튼 */}
-            {randomQuestions.length > 5 && (
-              <div className="text-center mt-4">
-                <Button
-                  onClick={
-                    showMoreRandom ? handleShowLessRandom : handleShowMoreRandom
-                  }
-                  className="bg-orange-500 text-white text-sm px-4 py-2"
-                >
-                  {showMoreRandom ? '접기' : '더보기'}
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* 전체 문제 섹션 */}
-      <div className="all-questions bg-white p-6 rounded-lg shadow-sm mb-4">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">전체 문제</h2>
-        </div>
-
-        {isAllLoading ? (
-          <div className="text-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-2 text-gray-500 text-sm">
-              전체 문제를 불러오는 중...
-            </p>
-          </div>
-        ) : allQuestions.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">
-            <p>전체 문제를 불러올 수 없습니다.</p>
-            <p className="text-sm mt-1">새로고침 버튼을 눌러보세요!</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="text-center text-sm text-gray-600 mb-3">
-              총 {allQuestions.length}개의 문제가 있습니다
-            </div>
-            {allQuestions
-              .slice(0, showMoreAll ? allQuestions.length : 3)
-              .map((question, index) => (
-                <div
-                  key={question.id}
-                  className="p-3 bg-indigo-50 rounded-lg border border-indigo-200"
-                >
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-800 mb-2">
-                      문제 {index + 1}: {question.content}
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                      <div>A. {question.option1}</div>
-                      <div>B. {question.option2}</div>
-                      <div>C. {question.option3}</div>
-                      <div>D. {question.option4}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-            {/* 더보기/접기 버튼 */}
-            {allQuestions.length > 3 && (
-              <div className="text-center mt-4">
-                <Button
-                  onClick={showMoreAll ? handleShowLessAll : handleShowMoreAll}
-                  className="bg-indigo-500 text-white text-sm px-4 py-2"
-                >
-                  {showMoreAll ? '접기' : '더보기'}
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      {/* 전체 문제 섹션 - 삭제 */}
+      {/* <div className="all-questions bg-white p-6 rounded-lg shadow-sm mb-4">
+        ... 전체 문제 관련 코드 ...
+      </div> */}
 
       <div className="my-groups bg-white p-4 rounded-lg shadow-sm">
         <h3 className="text-lg font-semibold mb-4">내 그룹 목록</h3>
