@@ -106,7 +106,7 @@ export default function FindPasswordPage() {
         <div className="mt-6 text-center animate-slideUp delay-900 opacity-0">
           <Button
             type="button"
-            onClick={() => router.push('/front/my-home')}
+            onClick={() => router.push('/front/account/login')}
             className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-300"
           >
             홈으로 돌아가기
