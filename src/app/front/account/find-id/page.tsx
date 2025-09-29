@@ -94,7 +94,7 @@ export default function FindIdPage() {
                 e.currentTarget.style.boxShadow = '';
               }}
             />
-            <p className="absolute top-[38px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200">
+            <p className="absolute top-[45px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200">
               {errors.name?.message ?? ''}
             </p>
           </div>
@@ -117,7 +117,7 @@ export default function FindIdPage() {
                 e.currentTarget.style.boxShadow = '';
               }}
             />
-            <p className="absolute top-[38px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200">
+            <p className="absolute top-[45px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200">
               {errors.email?.message ?? ''}
             </p>
           </div>

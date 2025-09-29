@@ -45,7 +45,7 @@ export default function MessageList() {
   const messages = activeTab === 'sent' ? sentMessages : receivedMessages;
 
   return (
-    <div className="my-home-page py-4 px-4 pt-28 mx-auto rounded-lg bg-gray-100">
+    <div className="my-home-page py-4 px-4 pt-10 mx-auto rounded-lg bg-gray-100">
       <h2 className="text-2xl font-semibold mb-6 text-center">나의 쪽지함</h2>
 
       <div className="flex mb-4 gap-2">

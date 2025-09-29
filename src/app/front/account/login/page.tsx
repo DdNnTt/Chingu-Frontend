@@ -242,7 +242,7 @@ export default function Login() {
               }}
             />
             <p
-              className={`absolute top-[38px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200 ${
+              className={`absolute top-[45px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200 ${
                 errors.id ? 'opacity-100' : 'opacity-0'
               }`}
             >
@@ -270,7 +270,7 @@ export default function Login() {
               }}
             />
             <p
-              className={`absolute top-[38px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200 ${
+              className={`absolute top-[45px] left-0 mt-1 text-xs text-red-500 transition-opacity duration-200 ${
                 errors.password ? 'opacity-100' : 'opacity-0'
               }`}
             >

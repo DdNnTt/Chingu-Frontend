@@ -99,7 +99,7 @@ export default function MypageChangePw() {
             placeholder="현재 비밀번호"
             {...register('currentPassword')}
           />
-          <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs text-red-500">
+          <p className="absolute top-[45px] left-0 mt-1 px-2 text-xs text-red-500">
             {errors.currentPassword?.message}
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function MypageChangePw() {
             placeholder="새 비밀번호"
             {...register('newPassword')}
           />
-          <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs text-red-500">
+          <p className="absolute top-[45px] left-0 mt-1 px-2 text-xs text-red-500">
             {errors.newPassword?.message}
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function MypageChangePw() {
             placeholder="새 비밀번호 확인"
             {...register('confirmPassword')}
           />
-          <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs text-red-500">
+          <p className="absolute top-[45px] left-0 mt-1 px-2 text-xs text-red-500">
             {errors.confirmPassword?.message}
           </p>
         </div>

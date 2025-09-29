@@ -9,11 +9,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <HeaderWrapper />
-        <main>{children}</main>
-        <DockbarWrapper />
+    <html lang="ko">
+      <body className="min-h-screen bg-gray-50">
+        <div className="flex flex-col min-h-screen">
+          <HeaderWrapper />
+          <main className="flex-1">{children}</main>
+          <DockbarWrapper />
+        </div>
       </body>
     </html>
   );

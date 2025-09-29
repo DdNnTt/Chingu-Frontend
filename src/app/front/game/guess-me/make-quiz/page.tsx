@@ -90,7 +90,7 @@ export default function GameMakeQuiz() {
   };
 
   return (
-    <div className="my-home-page py-4 px-4 pt-28 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+    <div className="my-home-page py-4 px-4 pt-10 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
