@@ -356,11 +356,12 @@ function AlbumDetailContent() {
   // 로딩 상태
   if (loading) {
     return (
-      <div className="group-detail-page h-screen flex flex-col py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+      <div className="group-detail-page h-screen flex flex-col py-24 px-4 mx-auto rounded-lg bg-gray-100">
         <div className="flex items-center mb-6">
           <button
             onClick={() => router.back()}
             className="text-gray-600 hover:text-gray-800"
+            aria-label="뒤로가기"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -394,11 +395,12 @@ function AlbumDetailContent() {
   // 에러 상태
   if (error || !albumDetail) {
     return (
-      <div className="group-detail-page h-screen flex flex-col py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+      <div className="group-detail-page h-screen flex flex-col py-24 px-4 mx-auto rounded-lg bg-gray-100">
         <div className="flex items-center mb-6">
           <button
             onClick={() => router.back()}
             className="text-gray-600 hover:text-gray-800"
+            aria-label="뒤로가기"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -441,7 +443,7 @@ function AlbumDetailContent() {
   const imageUrls = getImageUrls(albumDetail);
 
   return (
-    <div className="group-detail-page h-screen flex flex-col py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="group-detail-page h-screen flex flex-col py-24 px-4 mx-auto rounded-lg bg-gray-100">
       <div className="flex items-center mb-6">
         <button
           onClick={() => router.back()}

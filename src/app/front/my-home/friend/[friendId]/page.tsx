@@ -398,7 +398,7 @@ export default function FriendDetailPage() {
 
   if (loading) {
     return (
-      <div className="my-home-page py-4 px-4 pt-28 mx-auto rounded-lg bg-gray-100">
+      <div className="my-home-page py-4 px-4 pt-10 mx-auto rounded-lg bg-gray-100">
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-2 text-gray-600">사용자 정보를 불러오는 중...</p>
@@ -409,7 +409,7 @@ export default function FriendDetailPage() {
 
   if (error) {
     return (
-      <div className="my-home-page py-4 px-4 pt-28 mx-auto rounded-lg bg-gray-100">
+      <div className="my-home-page py-4 px-4 pt-10 mx-auto rounded-lg bg-gray-100">
         <div className="text-center py-8">
           <p className="text-red-600 mb-4">{error}</p>
           <Button
@@ -426,7 +426,7 @@ export default function FriendDetailPage() {
 
   if (!user) {
     return (
-      <div className="my-home-page py-4 px-4 pt-28 mx-auto rounded-lg bg-gray-100">
+      <div className="my-home-page py-4 px-4 pt-10 mx-auto rounded-lg bg-gray-100">
         <div className="text-center py-8">
           <p className="text-gray-600 mb-4">사용자 정보를 찾을 수 없습니다.</p>
           <Button
@@ -442,7 +442,7 @@ export default function FriendDetailPage() {
   }
 
   return (
-    <div className="my-home-page py-4 px-4 pt-20 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+    <div className="my-home-page py-4 px-4 pt-10 pb-10 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
         <Button
           type="button"

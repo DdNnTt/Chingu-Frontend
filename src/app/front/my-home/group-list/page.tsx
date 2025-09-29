@@ -82,7 +82,10 @@ export default function GroupList() {
     if (!confirmDelete) return;
 
     const token = getCookieValue('accessToken');
-    console.log('[그룹 삭제] 쿠키에서 가져온 토큰:', token ? `${token.substring(0, 30)}...` : 'null');
+    console.log(
+      '[그룹 삭제] 쿠키에서 가져온 토큰:',
+      token ? `${token.substring(0, 30)}...` : 'null'
+    );
 
     if (!token) {
       alert('인증 토큰이 없습니다.');
@@ -91,9 +94,14 @@ export default function GroupList() {
 
     try {
       // 토큰에 Bearer가 이미 포함되어 있는지 확인
-      const authHeader = token?.startsWith('Bearer ') ? token : `Bearer ${token}`;
-      console.log('[그룹 삭제] 최종 Authorization 헤더:', authHeader ? `${authHeader.substring(0, 30)}...` : 'null');
-      
+      const authHeader = token?.startsWith('Bearer ')
+        ? token
+        : `Bearer ${token}`;
+      console.log(
+        '[그룹 삭제] 최종 Authorization 헤더:',
+        authHeader ? `${authHeader.substring(0, 30)}...` : 'null'
+      );
+
       const res = await fetch(`/api/groups/${groupId}`, {
         method: 'DELETE',
         headers: {
@@ -102,7 +110,9 @@ export default function GroupList() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ message: '그룹 삭제 실패' }));
+        const errorData = await res
+          .json()
+          .catch(() => ({ message: '그룹 삭제 실패' }));
         throw new Error(errorData.message || '그룹 삭제 실패');
       }
 
@@ -111,12 +121,20 @@ export default function GroupList() {
       setGroups((prev) => prev.filter((group) => group.groupId !== groupId));
     } catch (err) {
       console.error('[그룹 삭제 실패]', err);
-      
-      const errorMessage = err instanceof Error ? err.message : '그룹 삭제 중 오류가 발생했습니다.';
-      
+
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : '그룹 삭제 중 오류가 발생했습니다.';
+
       // 외래키 제약조건 오류 처리
-      if (errorMessage.includes('foreign key constraint') || errorMessage.includes('Cannot delete')) {
-        alert('그룹에 연결된 데이터가 있어 삭제할 수 없습니다.\n\n가능한 원인:\n• 그룹 스케줄\n• 그룹 앨범\n• 그룹 멤버 정보\n\n백엔드 관리자에게 문의하거나 잠시 후 다시 시도해주세요.');
+      if (
+        errorMessage.includes('foreign key constraint') ||
+        errorMessage.includes('Cannot delete')
+      ) {
+        alert(
+          '그룹에 연결된 데이터가 있어 삭제할 수 없습니다.\n\n가능한 원인:\n• 그룹 스케줄\n• 그룹 앨범\n• 그룹 멤버 정보\n\n백엔드 관리자에게 문의하거나 잠시 후 다시 시도해주세요.'
+        );
       } else {
         alert(errorMessage);
       }
@@ -124,11 +142,12 @@ export default function GroupList() {
   };
 
   return (
-    <div className="group-list-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="group-list-page py-24 px-4 mx-auto rounded-lg bg-gray-100">
       <div className="flex items-center mb-6">
         <button
           onClick={() => router.back()}
           className="text-gray-600 hover:text-gray-800"
+          aria-label="뒤로가기"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

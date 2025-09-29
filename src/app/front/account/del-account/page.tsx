@@ -76,7 +76,7 @@ export default function MypageDeleteAccount() {
             placeholder="비밀번호 입력"
             {...register('password')}
           />
-          <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs text-red-500">
+          <p className="absolute top-[45px] left-0 mt-1 px-2 text-xs text-red-500">
             {errors.password?.message}
           </p>
         </div>

@@ -93,6 +93,7 @@ export default function MessageDetail() {
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="뒤로가기"
           >
             <svg
               className="w-5 h-5"
@@ -126,6 +127,7 @@ export default function MessageDetail() {
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="뒤로가기"
           >
             <svg
               className="w-5 h-5"
