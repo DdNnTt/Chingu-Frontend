@@ -108,7 +108,7 @@ export default function GroupAdd() {
   };
 
   return (
-    <div className="group-add-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="group-add-page py-24 px-4 mx-auto rounded-lg bg-gray-100">
       <div className="flex items-center mb-6">
         <button
           onClick={() => router.back()}
@@ -166,9 +166,7 @@ export default function GroupAdd() {
                 친구 목록을 불러오는 중...
               </p>
             ) : error ? (
-              <p className="text-red-500 text-sm text-center">
-                {error}
-              </p>
+              <p className="text-red-500 text-sm text-center">{error}</p>
             ) : friends.length === 0 ? (
               <p className="text-gray-400 text-sm text-center">
                 초대 가능한 친구가 없습니다.
@@ -187,7 +185,9 @@ export default function GroupAdd() {
                   />
                   <div className="flex-1">
                     <span className="font-medium">{friend.nickname}</span>
-                    <span className="ml-2 text-gray-500 text-sm">({friend.name})</span>
+                    <span className="ml-2 text-gray-500 text-sm">
+                      ({friend.name})
+                    </span>
                   </div>
                 </label>
               ))

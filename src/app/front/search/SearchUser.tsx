@@ -154,8 +154,29 @@ export default function SearchUser() {
   };
 
   return (
-    <div className="search-user-page py-4 px-4 pt-20 bg-gray-100 min-h-screen">
-      <h2 className="text-2xl font-semibold mb-6 text-center">유저 찾기</h2>
+    <div className="search-user-page py-24 px-4 bg-gray-100 min-h-screen">
+      <div className="flex items-center mb-6">
+        <button
+          onClick={() => router.back()}
+          className="text-gray-600 hover:text-gray-800"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-6 h-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+            />
+          </svg>
+        </button>
+        <h2 className="text-2xl font-semibold text-center flex-1">유저 찾기</h2>
+      </div>
 
       <div className="users-wrap scroll-overlay h-[calc(84px*7)] overflow-y-auto overflow-x-hidden flex flex-col gap-3 bg-white p-4 rounded-lg shadow-sm">
         {isSearching && (

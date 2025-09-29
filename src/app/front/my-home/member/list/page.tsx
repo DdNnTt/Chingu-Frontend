@@ -65,7 +65,7 @@ export default function MemberDetail() {
   }, [router]);
 
   return (
-    <div className="member-list-page py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100 min-h-screen">
+    <div className="member-list-page py-24 px-4 mx-auto rounded-lg bg-gray-100 min-h-screen">
       <div className="flex items-center mb-6">
         <button
           onClick={() => router.back()}
