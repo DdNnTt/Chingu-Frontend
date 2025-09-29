@@ -107,9 +107,32 @@ export default function GameMakeQuiz() {
     <div className="my-home-page py-4 px-4 pt-28 pb-28 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            나를 맞춰봐 문제 만들기
-          </h1>
+          {/* 뒤로가기 버튼과 타이틀 */}
+          <div className="flex items-center mb-6">
+            <button
+              onClick={() => router.back()}
+              className="text-gray-600 hover:text-gray-800 mr-4"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+                />
+              </svg>
+            </button>
+            <h1 className="text-3xl font-bold text-gray-800 flex-1">
+              나를 맞춰봐 문제 만들기
+            </h1>
+            <div className="w-6"></div> {/* 오른쪽 정렬을 위한 빈 공간 */}
+          </div>
           <p className="text-gray-600">
             아래 문제들 중에서 선택하고 정답을 설정해주세요!
           </p>
