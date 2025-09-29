@@ -216,6 +216,9 @@ a.small-ver {
   .delay-900 {
     animation-delay: 0.9s;
   }
+  .delay-1000 {
+    animation-delay: 1s;
+  }
   .delay-1500 {
     animation-delay: 1.5s;
   }

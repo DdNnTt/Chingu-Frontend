@@ -70,6 +70,7 @@ export default function MemberDetail() {
         <button
           onClick={() => router.back()}
           className="text-gray-600 hover:text-gray-800"
+          aria-label="뒤로가기"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

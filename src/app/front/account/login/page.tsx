@@ -295,7 +295,7 @@ export default function Login() {
           </div>
 
           {/* 로그인 버튼 / 회원가입 */}
-          <div className="flex items-center justify-center gap-3 mt-8 animate-slideUp delay-900 opacity-0">
+          <div className="flex items-center justify-center gap-3 mt-8 animate-slideUp delay-1000 opacity-0">
             <Link
               href="signup"
               className="flex-1 bg-main-color text-white px-4 py-3 rounded-xl text-center font-medium shadow-lg hover:shadow-xl transition-all duration-300"

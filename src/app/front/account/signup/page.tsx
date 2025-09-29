@@ -308,7 +308,7 @@ export default function Signup() {
           />
 
           {/* 취소 버튼 / 회원가입 */}
-          <div className="flex items-center justify-center gap-3 mt-8 animate-slideUp delay-900 opacity-0">
+          <div className="flex items-center justify-center gap-3 mt-8 animate-slideUp delay-1000 opacity-0">
             <Link
               href="/front/account/login"
               className="flex-1 bg-white text-gray-700 border border-gray-300 px-4 py-3 rounded-xl text-center font-medium shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-300"

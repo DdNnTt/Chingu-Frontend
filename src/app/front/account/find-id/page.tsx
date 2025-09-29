@@ -160,14 +160,13 @@ export default function FindIdPage() {
           </div>
         )}
 
-        {/* 홈으로 이동 버튼 */}
-        <div className="mt-6 text-center animate-slideUp delay-900 opacity-0">
+        <div className="mt-6 text-center animate-slideUp delay-1000 opacity-0">
           <Button
             type="button"
             onClick={() => router.push('/front/account/login')}
             className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-300"
           >
-            홈으로 돌아가기
+            로그인하기
           </Button>
         </div>
       </div>
