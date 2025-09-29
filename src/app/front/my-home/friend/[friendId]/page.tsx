@@ -442,7 +442,7 @@ export default function FriendDetailPage() {
   }
 
   return (
-    <div className="my-home-page py-4 px-4 pt-20 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+    <div className="my-home-page py-4 px-4 pt-20 pb-28 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
         <Button
           type="button"

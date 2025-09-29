@@ -108,30 +108,16 @@ export default function GameMakeQuiz() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           {/* 뒤로가기 버튼과 타이틀 */}
-          <div className="flex items-center mb-6">
+          <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
             <button
               onClick={() => router.back()}
-              className="text-gray-600 hover:text-gray-800 mr-4"
+              className="px-4 py-3 rounded-lg transition-colors bg-gray-200 text-gray-700 absolute left-0 top-1/2 -translate-y-1/2 px-3 py-1 text-sm"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-                />
-              </svg>
+              ← 뒤로
             </button>
-            <h1 className="text-3xl font-bold text-gray-800 flex-1">
+            <h1 className="text-3xl font-bold text-gray-800 text-center w-full">
               나를 맞춰봐 문제 만들기
             </h1>
-            <div className="w-6"></div> {/* 오른쪽 정렬을 위한 빈 공간 */}
           </div>
           <p className="text-gray-600">
             아래 문제들 중에서 선택하고 정답을 설정해주세요!

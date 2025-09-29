@@ -74,10 +74,8 @@ interface QuizStats {
 
 interface MyQuizDetailResponse {
   quizSetId: number;
-  title?: string;
-  description?: string;
-  questions: Array<{ questionId: number }>;
-  creatorNickname: string;
+  createdAt: string;
+  questionCount: number;
 }
 
 // Question 인터페이스 제거 - 사용하지 않음
@@ -193,19 +191,26 @@ export default function MyHome() {
       const items = Array.isArray(data) ? data : [];
       if (items.length > 0) {
         // 모든 퀴즈를 매핑하여 표시
-        const mappedQuizzes = items.map((quiz) => ({
-          id: quiz.quizSetId,
-          title: quiz.title ?? `퀴즈 세트 ${quiz.quizSetId}`,
-          description:
-            quiz.description ?? `${quiz.questions?.length || 0}개의 문제`,
-          totalQuestions: Array.isArray(quiz.questions)
-            ? quiz.questions.length
-            : 0,
-          creatorNickname: quiz.creatorNickname,
-        }));
+        const mappedQuizzes = items
+          .map((quiz) => {
+            const questionCount = quiz.questionCount || 0;
+
+            return {
+              id: quiz.quizSetId,
+              title: `퀴즈 세트 ${quiz.quizSetId}`,
+              description:
+                questionCount > 0 ? `${questionCount}개의 문제` : '문제 없음',
+              totalQuestions: questionCount,
+              creatorNickname: '나',
+            };
+          })
+          .filter((quiz) => quiz.totalQuestions > 0); // 문제가 있는 퀴즈만 표시
 
         setQuizzes(mappedQuizzes);
-        setQuizStats((prev) => ({ ...prev, totalQuizzes: items.length }));
+        setQuizStats((prev) => ({
+          ...prev,
+          totalQuizzes: mappedQuizzes.length, // 실제 표시되는 퀴즈 수로 설정
+        }));
       } else {
         setQuizzes([]);
         setQuizStats((prev) => ({ ...prev, totalQuizzes: 0 }));
@@ -444,7 +449,7 @@ export default function MyHome() {
   };
 
   return (
-    <div className="my-home-page py-4 px-4 pt-28 pb-28 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+    <div className="my-home-page py-4 px-4 pt-20 pb-28 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <h2 className="text-2xl font-semibold mb-6 text-center">마이 홈</h2>
 
       <div className="profile-card flex items-center mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
@@ -596,10 +601,12 @@ export default function MyHome() {
                     <p className="text-sm text-gray-600 mt-1">
                       {quiz.description}
                     </p>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                      <span>문제 수: {quiz.totalQuestions}개</span>
-                      <span>생성자: {quiz.creatorNickname}</span>
-                    </div>
+                    {quiz.totalQuestions > 0 && (
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        <span>문제 수: {quiz.totalQuestions}개</span>
+                        <span>생성자: {quiz.creatorNickname}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="ml-3">
                     <Button
