@@ -28,6 +28,8 @@ export default function Mypage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isEditable, setIsEditable] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [canUploadToday, setCanUploadToday] = useState(true);
+  const [lastUploadDate, setLastUploadDate] = useState<string | null>(null);
 
   const { register, reset, getValues, setValue } = useForm<MypageFormValues>({
     resolver: zodResolver(MypageSchema),
@@ -44,6 +46,18 @@ export default function Mypage() {
     const token = getCookieValue('accessToken');
 
     if (!token) return;
+
+    // 하루 1개 업로드 제한 체크
+    const today = new Date().toDateString();
+    const storedDate = localStorage.getItem('lastProfileUploadDate');
+
+    if (storedDate === today) {
+      setCanUploadToday(false);
+      setLastUploadDate(storedDate);
+    } else {
+      setCanUploadToday(true);
+      setLastUploadDate(storedDate);
+    }
 
     fetch('/api/users/mypage', {
       method: 'GET',
@@ -76,8 +90,33 @@ export default function Mypage() {
   }, [router, reset]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 하루 1개 업로드 제한 체크
+    if (!canUploadToday) {
+      alert(
+        '하루에 1개의 프로필 이미지만 업로드할 수 있습니다. 내일 다시 시도해주세요.'
+      );
+      e.target.value = ''; // 파일 선택 취소
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (file) {
+      // 파일 크기 제한 (5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        alert('파일 크기는 5MB 이하여야 합니다.');
+        e.target.value = '';
+        return;
+      }
+
+      // 파일 타입 제한
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('JPG, PNG 파일만 업로드 가능합니다.');
+        e.target.value = '';
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = () => {
         setImagePreview(reader.result as string);
@@ -151,34 +190,89 @@ export default function Mypage() {
       const file = fileInput?.files?.[0];
 
       if (file) {
+        // 하루 1개 업로드 제한 재확인
+        if (!canUploadToday) {
+          alert(
+            '하루에 1개의 프로필 이미지만 업로드할 수 있습니다. 내일 다시 시도해주세요.'
+          );
+          return;
+        }
+
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
 
-        // 1. presigned URL 요청
-        const presignRes = await fetch(
-          `/api/users/upload-url/profile?extension=${ext}`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        try {
+          console.log(`[프로필 업로드 시작] ${file.name} - 하루 1개 제한 적용`);
+
+          // 1. presigned URL 요청 (단일 시도만)
+          const presignRes = await fetch(
+            `/api/users/upload-url/profile?extension=${ext}`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (presignRes.ok) {
+            const { uploadUrl, fileUrl } = await presignRes.json();
+            console.log('[프로필 업로드 응답]', { uploadUrl, fileUrl });
+
+            // 2. S3로 이미지 업로드 (타임아웃 설정)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
+
+            const uploadResponse = await fetch(uploadUrl, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': file.type,
+              },
+              body: file,
+              signal: controller.signal,
+            });
+
+            clearTimeout(timeoutId);
+
+            if (uploadResponse.ok) {
+              // 3. 업로드 성공 시 하루 제한 적용
+              const today = new Date().toDateString();
+              localStorage.setItem('lastProfileUploadDate', today);
+              setCanUploadToday(false);
+              setLastUploadDate(today);
+
+              // 4. 업로드된 이미지 URL 저장 및 반영
+              uploadedImageUrl = fileUrl;
+              setImagePreview(fileUrl);
+              console.log(
+                `[프로필 이미지 업로드 성공] ${file.name} - 하루 제한 적용됨`
+              );
+            } else {
+              console.error(
+                `[프로필 이미지 업로드 실패] ${file.name}:`,
+                uploadResponse.status,
+                uploadResponse.statusText
+              );
+              alert(
+                '프로필 이미지 업로드에 실패했습니다. 내일 다시 시도해주세요.'
+              );
+              return;
+            }
+          } else {
+            console.warn(
+              `[프로필 Presign URL 요청 실패] ${file.name}:`,
+              presignRes.status,
+              presignRes.statusText
+            );
+            alert(
+              '프로필 이미지 업로드에 실패했습니다. 내일 다시 시도해주세요.'
+            );
+            return;
           }
-        );
-
-        const { uploadUrl, fileUrl } = await presignRes.json();
-        console.log('[프로필 업로드 응답]', { uploadUrl, fileUrl });
-
-        // 2. S3로 이미지 업로드
-        await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': file.type,
-          },
-          body: file,
-        });
-
-        // 3. 업로드된 이미지 URL 저장 및 반영
-        uploadedImageUrl = fileUrl;
-        setImagePreview(fileUrl);
+        } catch (error) {
+          console.error(`[프로필 업로드 오류] ${file.name}:`, error);
+          alert('프로필 이미지 업로드에 실패했습니다. 내일 다시 시도해주세요.');
+          return;
+        }
       }
 
       // 최종 수정 요청
@@ -395,13 +489,27 @@ export default function Mypage() {
                     onChange={handleImageChange}
                     className="hidden"
                     id="profile-upload"
+                    disabled={!canUploadToday}
                   />
                   <label
                     htmlFor="profile-upload"
-                    className="w-full bg-[#9477ff] hover:bg-[#6845f5] text-white py-2 px-4 rounded-lg cursor-pointer transition-colors text-center block"
+                    className={`w-full py-2 px-4 rounded-lg text-center block transition-colors ${
+                      canUploadToday
+                        ? 'bg-[#9477ff] hover:bg-[#6845f5] text-white cursor-pointer'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
                   >
-                    {imagePreview ? '이미지 변경' : '이미지 선택'}
+                    {!canUploadToday
+                      ? `오늘 업로드 완료 (${lastUploadDate})`
+                      : imagePreview
+                        ? '이미지 변경'
+                        : '이미지 선택'}
                   </label>
+                  {!canUploadToday && (
+                    <p className="text-xs text-gray-500 mt-1 text-center">
+                      하루에 1개의 프로필 이미지만 업로드할 수 있습니다.
+                    </p>
+                  )}
                 </div>
               )}
             </div>

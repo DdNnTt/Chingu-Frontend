@@ -68,6 +68,8 @@ function AlbumDetailContent() {
   });
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [canUploadToday, setCanUploadToday] = useState(true);
+  const [lastUploadDate, setLastUploadDate] = useState<string | null>(null);
 
   useEffect(() => {
     if (!groupId || !albumId) {
@@ -82,6 +84,19 @@ function AlbumDetailContent() {
       setError('로그인이 필요합니다.');
       setLoading(false);
       return;
+    }
+
+    // 하루 1개 업로드 제한 체크
+    const today = new Date().toDateString();
+    const groupUploadKey = `albumUpload_${groupId}_${today}`;
+    const storedDate = localStorage.getItem(groupUploadKey);
+
+    if (storedDate === today) {
+      setCanUploadToday(false);
+      setLastUploadDate(storedDate);
+    } else {
+      setCanUploadToday(true);
+      setLastUploadDate(storedDate);
     }
 
     const fetchAlbumDetail = async () => {
@@ -210,8 +225,43 @@ function AlbumDetailContent() {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 하루 1개 업로드 제한 체크
+    if (!canUploadToday) {
+      alert(
+        '하루에 1개의 앨범만 업로드할 수 있습니다. 내일 다시 시도해주세요.'
+      );
+      e.target.value = '';
+      return;
+    }
+
     const files = Array.from(e.target.files || []);
+
+    // 최대 3장 제한
+    const MAX_IMAGES = 3;
+    if (selectedFiles.length + files.length > MAX_IMAGES) {
+      alert(`최대 ${MAX_IMAGES}장까지만 업로드할 수 있습니다.`);
+      e.target.value = '';
+      return;
+    }
+
     if (files.length > 0) {
+      // 파일 검증
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
+      for (const file of files) {
+        if (file.size > maxSize) {
+          alert('파일 크기는 5MB 이하여야 합니다.');
+          e.target.value = '';
+          return;
+        }
+        if (!allowedTypes.includes(file.type)) {
+          alert('JPG, PNG 파일만 업로드 가능합니다.');
+          e.target.value = '';
+          return;
+        }
+      }
+
       const newFiles = [...selectedFiles, ...files];
       setSelectedFiles(newFiles);
 
@@ -232,6 +282,14 @@ function AlbumDetailContent() {
   };
 
   const handleUpdateAlbum = async () => {
+    // 하루 1개 업로드 제한 재확인
+    if (!canUploadToday) {
+      alert(
+        '하루에 1개의 앨범만 업로드할 수 있습니다. 내일 다시 시도해주세요.'
+      );
+      return;
+    }
+
     setIsEditing(true);
 
     try {
@@ -248,53 +306,78 @@ function AlbumDetailContent() {
         for (const file of selectedFiles) {
           const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
 
-          const presignRes = await fetch(
-            `/api/albums/${groupId}/upload-url?extension=${ext}`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-            }
-          );
+          try {
+            console.log(`[앨범 수정 이미지 업로드 시도] ${file.name}`);
 
-          if (presignRes.ok) {
-            const responseData = await presignRes.json();
-
-            const uploadUrl =
-              responseData.uploadUrl ||
-              responseData.presignedUrl ||
-              responseData.url ||
-              responseData.additionalProp1 ||
-              Object.values(responseData)[0];
-            const fileUrl =
-              responseData.fileUrl ||
-              responseData.publicUrl ||
-              responseData.downloadUrl ||
-              responseData.additionalProp2 ||
-              Object.values(responseData)[1];
-
-            if (uploadUrl) {
-              const uploadResponse = await fetch(uploadUrl, {
-                method: 'PUT',
+            const presignRes = await fetch(
+              `/api/albums/${groupId}/upload-url?extension=${ext}`,
+              {
+                method: 'GET',
                 headers: {
-                  'Content-Type': file.type,
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${accessToken}`,
                 },
-                body: file,
-              });
-
-              if (uploadResponse.ok) {
-                const finalUrl = fileUrl || uploadUrl.split('?')[0];
-                uploadedImageUrls.push(finalUrl);
-              } else {
-                console.error(
-                  '[이미지 업로드 실패]',
-                  file.name,
-                  uploadResponse.status
-                );
               }
+            );
+
+            if (presignRes.ok) {
+              const responseData = await presignRes.json();
+
+              const uploadUrl =
+                responseData.uploadUrl ||
+                responseData.presignedUrl ||
+                responseData.url ||
+                responseData.additionalProp1 ||
+                Object.values(responseData)[0];
+              const fileUrl =
+                responseData.fileUrl ||
+                responseData.publicUrl ||
+                responseData.downloadUrl ||
+                responseData.additionalProp2 ||
+                Object.values(responseData)[1];
+
+              if (uploadUrl) {
+                // S3로 이미지 업로드 (타임아웃 설정)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
+
+                const uploadResponse = await fetch(uploadUrl, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': file.type,
+                  },
+                  body: file,
+                  signal: controller.signal,
+                });
+
+                clearTimeout(timeoutId);
+
+                if (uploadResponse.ok) {
+                  const finalUrl = fileUrl || uploadUrl.split('?')[0];
+                  uploadedImageUrls.push(finalUrl);
+                  console.log(`[앨범 수정 이미지 업로드 성공] ${file.name}`);
+                } else {
+                  console.error(
+                    `[앨범 수정 이미지 업로드 실패] ${file.name}:`,
+                    uploadResponse.status,
+                    uploadResponse.statusText
+                  );
+                }
+              } else {
+                console.error('[앨범 수정 Presign URL 없음]', responseData);
+              }
+            } else {
+              console.warn(
+                `[앨범 수정 Presign URL 요청 실패] ${file.name}:`,
+                presignRes.status,
+                presignRes.statusText
+              );
             }
+          } catch (error) {
+            console.error(
+              `[앨범 수정 이미지 업로드 오류] ${file.name}:`,
+              error
+            );
           }
         }
       }
@@ -334,6 +417,14 @@ function AlbumDetailContent() {
         setShowEditModal(false);
         setImagePreviews([]);
         setSelectedFiles([]);
+
+        // 업로드 성공 시 하루 제한 적용
+        const today = new Date().toDateString();
+        const groupUploadKey = `albumUpload_${groupId}_${today}`;
+        localStorage.setItem(groupUploadKey, today);
+        setCanUploadToday(false);
+        setLastUploadDate(today);
+
         alert('앨범이 수정되었습니다.');
       } else {
         const errorText = await response.text();
@@ -781,7 +872,12 @@ function AlbumDetailContent() {
                 {/* 이미지 첨부 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    이미지 첨부 ({imagePreviews.length}장)
+                    이미지 첨부 ({imagePreviews.length}/3장)
+                    {!canUploadToday && (
+                      <span className="text-red-500 text-xs ml-2">
+                        (오늘 업로드 완료)
+                      </span>
+                    )}
                   </label>
                   <div className="flex flex-col items-center gap-4">
                     {/* 이미지 미리보기 슬라이더 */}
@@ -851,15 +947,27 @@ function AlbumDetailContent() {
                         onChange={handleImageChange}
                         className="hidden"
                         id="edit-image-upload"
+                        disabled={!canUploadToday}
                       />
                       <label
                         htmlFor="edit-image-upload"
-                        className="w-full bg-[#9477ff] hover:bg-[#6845f5] text-white py-2 px-4 rounded-lg cursor-pointer transition-colors text-center block"
+                        className={`w-full py-2 px-4 rounded-lg text-center block transition-colors ${
+                          canUploadToday
+                            ? 'bg-[#9477ff] hover:bg-[#6845f5] text-white cursor-pointer'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
                       >
-                        {imagePreviews.length > 0
-                          ? '이미지 추가'
-                          : '이미지 선택'}
+                        {!canUploadToday
+                          ? `오늘 업로드 완료 (${lastUploadDate})`
+                          : imagePreviews.length > 0
+                            ? '이미지 추가'
+                            : '이미지 선택'}
                       </label>
+                      {!canUploadToday && (
+                        <p className="text-xs text-gray-500 mt-1 text-center">
+                          하루에 1개의 앨범만 업로드할 수 있습니다.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -876,7 +984,7 @@ function AlbumDetailContent() {
                 </button>
                 <button
                   onClick={handleUpdateAlbum}
-                  disabled={isEditing}
+                  disabled={isEditing || !canUploadToday}
                   className="flex-1 px-4 py-2 text-white border border-purple-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   style={
                     {
@@ -885,17 +993,21 @@ function AlbumDetailContent() {
                     } as React.CSSProperties
                   }
                   onMouseEnter={(e) => {
-                    if (!isEditing) {
+                    if (!isEditing && canUploadToday) {
                       e.currentTarget.style.backgroundColor = '#5b35e0';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!isEditing) {
+                    if (!isEditing && canUploadToday) {
                       e.currentTarget.style.backgroundColor = '#6845f5';
                     }
                   }}
                 >
-                  {isEditing ? '수정 중...' : '수정'}
+                  {isEditing
+                    ? '수정 중...'
+                    : !canUploadToday
+                      ? '오늘 업로드 완료'
+                      : '수정'}
                 </button>
               </div>
             </div>
