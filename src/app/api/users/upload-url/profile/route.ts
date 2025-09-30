@@ -3,6 +3,16 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const extension = searchParams.get('extension') || 'jpg';
+
+  // 허용된 확장자만 처리
+  const allowedExtensions = ['jpg', 'jpeg', 'png'];
+  if (!allowedExtensions.includes(extension.toLowerCase())) {
+    return NextResponse.json(
+      { message: '지원하지 않는 파일 형식입니다.' },
+      { status: 400 }
+    );
+  }
+
   const token = req.headers.get('authorization');
 
   const API_BASE = process.env.API_BASE_URL;
