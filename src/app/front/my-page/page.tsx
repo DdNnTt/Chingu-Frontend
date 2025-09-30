@@ -47,17 +47,42 @@ export default function Mypage() {
 
     if (!token) return;
 
-    // 하루 1개 업로드 제한 체크
-    const today = new Date().toDateString();
-    const storedDate = localStorage.getItem('lastProfileUploadDate');
+    const checkUploadLimit = () => {
+      // SSR 환경에서 localStorage 접근 안전성 확인
+      if (typeof window === 'undefined') return;
 
-    if (storedDate === today) {
-      setCanUploadToday(false);
-      setLastUploadDate(storedDate);
-    } else {
-      setCanUploadToday(true);
-      setLastUploadDate(storedDate);
-    }
+      // 하루 1개 업로드 제한 체크
+      const today = new Date().toDateString();
+      const storedDate = localStorage.getItem('lastProfileUploadDate');
+
+      if (storedDate === today) {
+        setCanUploadToday(false);
+        setLastUploadDate(storedDate);
+      } else {
+        setCanUploadToday(true);
+        setLastUploadDate(storedDate);
+      }
+    };
+
+    checkUploadLimit();
+
+    // 자정까지 남은 시간 계산하여 한 번만 체크
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+
+    // 자정에 한 번만 체크 (최대 24시간으로 제한)
+    const timeoutId = setTimeout(
+      checkUploadLimit,
+      Math.min(timeUntilMidnight, 24 * 60 * 60 * 1000)
+    );
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
 
     fetch('/api/users/mypage', {
       method: 'GET',
@@ -120,6 +145,9 @@ export default function Mypage() {
       const reader = new FileReader();
       reader.onload = () => {
         setImagePreview(reader.result as string);
+      };
+      reader.onerror = () => {
+        console.error('파일 읽기 실패:', file.name);
       };
       reader.readAsDataURL(file);
     }
@@ -203,7 +231,7 @@ export default function Mypage() {
         try {
           console.log(`[프로필 업로드 시작] ${file.name} - 하루 1개 제한 적용`);
 
-          // 1. presigned URL 요청 (단일 시도만)
+          // presigned URL 요청 (단일 시도만)
           const presignRes = await fetch(
             `/api/users/upload-url/profile?extension=${ext}`,
             {
@@ -218,44 +246,46 @@ export default function Mypage() {
             const { uploadUrl, fileUrl } = await presignRes.json();
             console.log('[프로필 업로드 응답]', { uploadUrl, fileUrl });
 
-            // 2. S3로 이미지 업로드 (타임아웃 설정)
+            // S3로 이미지 업로드 (타임아웃 설정)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
 
-            const uploadResponse = await fetch(uploadUrl, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': file.type,
-              },
-              body: file,
-              signal: controller.signal,
-            });
+            try {
+              const uploadResponse = await fetch(uploadUrl, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': file.type,
+                },
+                body: file,
+                signal: controller.signal,
+              });
 
-            clearTimeout(timeoutId);
+              if (uploadResponse.ok) {
+                // 업로드 성공 시 하루 제한 적용
+                const today = new Date().toDateString();
+                localStorage.setItem('lastProfileUploadDate', today);
+                setCanUploadToday(false);
+                setLastUploadDate(today);
 
-            if (uploadResponse.ok) {
-              // 3. 업로드 성공 시 하루 제한 적용
-              const today = new Date().toDateString();
-              localStorage.setItem('lastProfileUploadDate', today);
-              setCanUploadToday(false);
-              setLastUploadDate(today);
-
-              // 4. 업로드된 이미지 URL 저장 및 반영
-              uploadedImageUrl = fileUrl;
-              setImagePreview(fileUrl);
-              console.log(
-                `[프로필 이미지 업로드 성공] ${file.name} - 하루 제한 적용됨`
-              );
-            } else {
-              console.error(
-                `[프로필 이미지 업로드 실패] ${file.name}:`,
-                uploadResponse.status,
-                uploadResponse.statusText
-              );
-              alert(
-                '프로필 이미지 업로드에 실패했습니다. 내일 다시 시도해주세요.'
-              );
-              return;
+                // 업로드된 이미지 URL 저장 및 반영
+                uploadedImageUrl = fileUrl;
+                setImagePreview(fileUrl);
+                console.log(
+                  `[프로필 이미지 업로드 성공] ${file.name} - 하루 제한 적용됨`
+                );
+              } else {
+                console.error(
+                  `[프로필 이미지 업로드 실패] ${file.name}:`,
+                  uploadResponse.status,
+                  uploadResponse.statusText
+                );
+                alert(
+                  '프로필 이미지 업로드에 실패했습니다. 내일 다시 시도해주세요.'
+                );
+                return;
+              }
+            } finally {
+              clearTimeout(timeoutId);
             }
           } else {
             console.warn(
@@ -309,14 +339,8 @@ export default function Mypage() {
     }
   };
 
-  // const handleImageRemove = () => {
-  //   setImagePreview(null);
-  // };
-
   return (
     <div className="mypage-page py-24 px-4 mx-auto rounded-lg bg-gray-100">
-      {/* <h2 className="text-2xl font-semibold mb-6 text-center">마이페이지</h2> */}
-
       <div className="flex items-center mb-6">
         <button
           onClick={() => router.back()}

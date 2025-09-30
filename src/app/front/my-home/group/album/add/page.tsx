@@ -43,7 +43,7 @@ function AlbumAddContent() {
       });
 
       if (groupResponse.ok) {
-        await groupResponse.json(); // 응답 소비
+        await groupResponse.json();
         return;
       }
 
@@ -81,18 +81,35 @@ function AlbumAddContent() {
     if (groupId && accessToken) {
       checkGroupMembership();
 
-      // 하루 1개 앨범 업로드 제한 체크
-      const today = new Date().toDateString();
-      const groupUploadKey = `albumUpload_${groupId}_${today}`;
-      const storedDate = localStorage.getItem(groupUploadKey);
+      const checkUploadLimit = () => {
+        // 하루 1개 앨범 업로드 제한 체크
+        const today = new Date().toDateString();
+        const groupUploadKey = `albumUpload_${groupId}_${today}`;
+        const storedDate = localStorage.getItem(groupUploadKey);
 
-      if (storedDate === today) {
-        setCanUploadToday(false);
-        setLastUploadDate(storedDate);
-      } else {
-        setCanUploadToday(true);
-        setLastUploadDate(storedDate);
-      }
+        if (storedDate === today) {
+          setCanUploadToday(false);
+          setLastUploadDate(storedDate);
+        } else {
+          setCanUploadToday(true);
+          setLastUploadDate(storedDate);
+        }
+      };
+
+      checkUploadLimit();
+
+      // 자정까지 남은 시간 계산하여 한 번만 체크
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+
+      const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+
+      // 자정에 한 번만 체크
+      const timeoutId = setTimeout(checkUploadLimit, timeUntilMidnight);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [groupId, accessToken, checkGroupMembership]);
 
@@ -141,11 +158,14 @@ function AlbumAddContent() {
       const newFiles = [...selectedFiles, ...files];
       setSelectedFiles(newFiles);
 
-      // 새로 추가한 파일 미리보기 생성
+      // 새로 추가한 파일 미리보기 생성 (메모리 최적화)
       files.forEach((file) => {
         const reader = new FileReader();
         reader.onload = () => {
           setImagePreviews((prev) => [...prev, reader.result as string]);
+        };
+        reader.onerror = () => {
+          console.error('파일 읽기 실패:', file.name);
         };
         reader.readAsDataURL(file);
       });
@@ -267,28 +287,30 @@ function AlbumAddContent() {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
 
-                const uploadResponse = await fetch(uploadUrl, {
-                  method: 'PUT',
-                  headers: {
-                    'Content-Type': file.type,
-                  },
-                  body: file,
-                  signal: controller.signal,
-                });
+                try {
+                  const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': file.type,
+                    },
+                    body: file,
+                    signal: controller.signal,
+                  });
 
-                clearTimeout(timeoutId);
-
-                if (uploadResponse.ok) {
-                  // fileUrl이 있으면 사용, 없으면 uploadUrl에서 쿼리 파라미터 제거
-                  const finalUrl = fileUrl || uploadUrl.split('?')[0];
-                  uploadedImageUrls.push(finalUrl);
-                  console.log(`[앨범 이미지 업로드 성공] ${file.name}`);
-                } else {
-                  console.error(
-                    `[앨범 이미지 업로드 실패] ${file.name}:`,
-                    uploadResponse.status,
-                    uploadResponse.statusText
-                  );
+                  if (uploadResponse.ok) {
+                    // fileUrl이 있으면 사용, 없으면 uploadUrl에서 쿼리 파라미터 제거
+                    const finalUrl = fileUrl || uploadUrl.split('?')[0];
+                    uploadedImageUrls.push(finalUrl);
+                    console.log(`[앨범 이미지 업로드 성공] ${file.name}`);
+                  } else {
+                    console.error(
+                      `[앨범 이미지 업로드 실패] ${file.name}:`,
+                      uploadResponse.status,
+                      uploadResponse.statusText
+                    );
+                  }
+                } finally {
+                  clearTimeout(timeoutId);
                 }
               } else {
                 console.error('[앨범 Presign URL 없음]', responseData);
@@ -343,14 +365,10 @@ function AlbumAddContent() {
       });
 
       if (createRes.ok) {
-        await createRes.json(); // 응답 소비
+        await createRes.json();
 
-        // 업로드 성공 시 하루 제한 적용
-        const today = new Date().toDateString();
-        const groupUploadKey = `albumUpload_${groupId}_${today}`;
-        localStorage.setItem(groupUploadKey, today);
         setCanUploadToday(false);
-        setLastUploadDate(today);
+        setLastUploadDate(new Date().toDateString());
 
         alert('앨범이 성공적으로 추가되었습니다!');
         router.back();
@@ -377,19 +395,15 @@ function AlbumAddContent() {
           data: errorData,
         });
 
-        // 401 에러
         if (createRes.status === 401) {
           alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-          // 만료된 토큰 쿠키 제거
           document.cookie =
             'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           router.push('/front/account/login');
           return;
         }
 
-        // 403 에러
         if (createRes.status === 403) {
-          // 그룹 멤버십 재확인
           console.log('[403 오류 발생] 그룹 멤버십 재확인 중...');
 
           try {
@@ -452,7 +466,7 @@ function AlbumAddContent() {
     }
   };
 
-  // groupId가 없을 때 안내 메시지 표시
+  // groupId가 없을 시
   if (!groupId) {
     return (
       <div className="group-detail-page h-screen flex flex-col py-24 px-4 mx-auto rounded-lg bg-gray-100">

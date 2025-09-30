@@ -30,6 +30,9 @@ export async function POST(req: NextRequest) {
       `[프로필 이미지 업로드 URL 요청] extension: ${extension}, token: ${token ? 'present' : 'missing'}`
     );
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
+
     const backendRes = await fetch(
       `${API_BASE}/api/users/upload-url/profile?extension=${extension}`,
       {
@@ -38,8 +41,11 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
           Authorization: token ?? '',
         },
+        signal: controller.signal,
       }
     );
+
+    clearTimeout(timeoutId);
 
     const contentType = backendRes.headers.get('content-type');
     const rawText = await backendRes.text();

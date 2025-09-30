@@ -17,7 +17,6 @@ type AlbumDetail = {
   location?: string;
   memoryDate: string;
   createdAt: string;
-  // 호환성을 위한 추가 필드들
   description?: string;
   imageUrl?: string;
   albumTitle?: string;
@@ -86,18 +85,35 @@ function AlbumDetailContent() {
       return;
     }
 
-    // 하루 1개 업로드 제한 체크
-    const today = new Date().toDateString();
-    const groupUploadKey = `albumUpload_${groupId}_${today}`;
-    const storedDate = localStorage.getItem(groupUploadKey);
+    const checkUploadLimit = () => {
+      // 하루 1개 업로드 제한 체크
+      const today = new Date().toDateString();
+      const groupUploadKey = `albumUpload_${groupId}_${today}`;
+      const storedDate = localStorage.getItem(groupUploadKey);
 
-    if (storedDate === today) {
-      setCanUploadToday(false);
-      setLastUploadDate(storedDate);
-    } else {
-      setCanUploadToday(true);
-      setLastUploadDate(storedDate);
-    }
+      if (storedDate === today) {
+        setCanUploadToday(false);
+        setLastUploadDate(storedDate);
+      } else {
+        setCanUploadToday(true);
+        setLastUploadDate(storedDate);
+      }
+    };
+
+    checkUploadLimit();
+
+    // 자정까지 남은 시간 계산하여 한 번만 체크
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+
+    // 자정에 한 번만 체크
+    const timeoutId = setTimeout(checkUploadLimit, timeUntilMidnight);
+
+    return () => clearTimeout(timeoutId);
 
     const fetchAlbumDetail = async () => {
       try {
@@ -145,11 +161,9 @@ function AlbumDetailContent() {
   // 이미지 URL 배열 생성
   const getImageUrls = (album: AlbumDetail) => {
     const urls = [];
-    // API 스펙에 따른 이미지 필드들 확인
     if (album.imageUrl1) urls.push(album.imageUrl1);
     if (album.imageUrl2) urls.push(album.imageUrl2);
     if (album.imageUrl3) urls.push(album.imageUrl3);
-    // 호환성을 위한 추가 필드들
     if (album.imageUrl) urls.push(album.imageUrl);
     if (album.albumImage) urls.push(album.albumImage);
     return urls;
@@ -179,7 +193,7 @@ function AlbumDetailContent() {
 
       if (response.ok) {
         alert('앨범이 삭제되었습니다.');
-        router.back(); // 이전 페이지로 돌아가기
+        router.back();
       } else {
         const errorText = await response.text();
         console.error('[앨범 삭제] API 오류:', response.status, errorText);
@@ -211,7 +225,7 @@ function AlbumDetailContent() {
         memoryDate: albumDetail.memoryDate || '',
       });
 
-      // 기존 이미지들을 미리보기에 추가
+      // 기존 이미지들 미리보기 추가
       const existingImages = [
         albumDetail.imageUrl1,
         albumDetail.imageUrl2,
@@ -265,11 +279,14 @@ function AlbumDetailContent() {
       const newFiles = [...selectedFiles, ...files];
       setSelectedFiles(newFiles);
 
-      // 새로 추가한 파일 미리보기 생성
+      // 새로 추가한 파일 미리보기 생성 (메모리 최적화)
       files.forEach((file) => {
         const reader = new FileReader();
         reader.onload = () => {
           setImagePreviews((prev) => [...prev, reader.result as string]);
+        };
+        reader.onerror = () => {
+          console.error('파일 읽기 실패:', file.name);
         };
         reader.readAsDataURL(file);
       });
@@ -282,8 +299,8 @@ function AlbumDetailContent() {
   };
 
   const handleUpdateAlbum = async () => {
-    // 하루 1개 업로드 제한 재확인
-    if (!canUploadToday) {
+    // 새 이미지를 추가하는 경우에만 하루 제한 확인
+    if (selectedFiles.length > 0 && !canUploadToday) {
       alert(
         '하루에 1개의 앨범만 업로드할 수 있습니다. 내일 다시 시도해주세요.'
       );
@@ -341,27 +358,29 @@ function AlbumDetailContent() {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
 
-                const uploadResponse = await fetch(uploadUrl, {
-                  method: 'PUT',
-                  headers: {
-                    'Content-Type': file.type,
-                  },
-                  body: file,
-                  signal: controller.signal,
-                });
+                try {
+                  const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': file.type,
+                    },
+                    body: file,
+                    signal: controller.signal,
+                  });
 
-                clearTimeout(timeoutId);
-
-                if (uploadResponse.ok) {
-                  const finalUrl = fileUrl || uploadUrl.split('?')[0];
-                  uploadedImageUrls.push(finalUrl);
-                  console.log(`[앨범 수정 이미지 업로드 성공] ${file.name}`);
-                } else {
-                  console.error(
-                    `[앨범 수정 이미지 업로드 실패] ${file.name}:`,
-                    uploadResponse.status,
-                    uploadResponse.statusText
-                  );
+                  if (uploadResponse.ok) {
+                    const finalUrl = fileUrl || uploadUrl.split('?')[0];
+                    uploadedImageUrls.push(finalUrl);
+                    console.log(`[앨범 수정 이미지 업로드 성공] ${file.name}`);
+                  } else {
+                    console.error(
+                      `[앨범 수정 이미지 업로드 실패] ${file.name}:`,
+                      uploadResponse.status,
+                      uploadResponse.statusText
+                    );
+                  }
+                } finally {
+                  clearTimeout(timeoutId);
                 }
               } else {
                 console.error('[앨범 수정 Presign URL 없음]', responseData);
@@ -418,12 +437,14 @@ function AlbumDetailContent() {
         setImagePreviews([]);
         setSelectedFiles([]);
 
-        // 업로드 성공 시 하루 제한 적용
-        const today = new Date().toDateString();
-        const groupUploadKey = `albumUpload_${groupId}_${today}`;
-        localStorage.setItem(groupUploadKey, today);
-        setCanUploadToday(false);
-        setLastUploadDate(today);
+        // 새 이미지를 업로드한 경우에만 하루 제한 적용
+        if (uploadedImageUrls.length > 0) {
+          const today = new Date().toDateString();
+          const groupUploadKey = `albumUpload_${groupId}_${today}`;
+          localStorage.setItem(groupUploadKey, today);
+          setCanUploadToday(false);
+          setLastUploadDate(today);
+        }
 
         alert('앨범이 수정되었습니다.');
       } else {
@@ -984,7 +1005,7 @@ function AlbumDetailContent() {
                 </button>
                 <button
                   onClick={handleUpdateAlbum}
-                  disabled={isEditing || !canUploadToday}
+                  disabled={isEditing}
                   className="flex-1 px-4 py-2 text-white border border-purple-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   style={
                     {
@@ -993,21 +1014,17 @@ function AlbumDetailContent() {
                     } as React.CSSProperties
                   }
                   onMouseEnter={(e) => {
-                    if (!isEditing && canUploadToday) {
+                    if (!isEditing) {
                       e.currentTarget.style.backgroundColor = '#5b35e0';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!isEditing && canUploadToday) {
+                    if (!isEditing) {
                       e.currentTarget.style.backgroundColor = '#6845f5';
                     }
                   }}
                 >
-                  {isEditing
-                    ? '수정 중...'
-                    : !canUploadToday
-                      ? '오늘 업로드 완료'
-                      : '수정'}
+                  {isEditing ? '수정 중...' : '수정'}
                 </button>
               </div>
             </div>
