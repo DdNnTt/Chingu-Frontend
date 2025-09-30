@@ -194,6 +194,10 @@ export default function Mypage() {
   };
 
   const handleSubmitEdit = async () => {
+    // 중복 실행 방지
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     const getCookieValue = (name: string) => {
       const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
       return match ? decodeURIComponent(match[2]) : null;
@@ -202,6 +206,7 @@ export default function Mypage() {
     const token = getCookieValue('accessToken');
     if (!token) {
       alert('로그인이 필요합니다.');
+      setIsSubmitting(false);
       router.push('/front/account/login');
       return;
     }

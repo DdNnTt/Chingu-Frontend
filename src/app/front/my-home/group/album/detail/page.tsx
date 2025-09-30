@@ -299,15 +299,18 @@ function AlbumDetailContent() {
   };
 
   const handleUpdateAlbum = async () => {
+    // 중복 실행 방지
+    if (isEditing) return;
+    setIsEditing(true);
+
     // 새 이미지를 추가하는 경우에만 하루 제한 확인
     if (selectedFiles.length > 0 && !canUploadToday) {
       alert(
         '하루에 1개의 앨범만 업로드할 수 있습니다. 내일 다시 시도해주세요.'
       );
+      setIsEditing(false);
       return;
     }
-
-    setIsEditing(true);
 
     try {
       const accessToken = getCookieValue('accessToken');
