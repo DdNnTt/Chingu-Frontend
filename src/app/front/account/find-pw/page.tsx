@@ -51,6 +51,16 @@ export default function FindPasswordPage() {
       {/* 배경 그라데이션 */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100"></div>
 
+      {/* 애니메이션 배경 요소들 */}
+      <div className="absolute top-10 left-6 w-32 h-32 bg-purple-200 rounded-full opacity-30 animate-pulse"></div>
+      <div className="absolute bottom-10 right-8 w-24 h-24 bg-blue-200 rounded-full opacity-40 animate-pulse delay-1000"></div>
+      <div className="absolute top-1/3 right-0 w-16 h-16 bg-pink-200 rounded-full opacity-30 animate-pulse delay-700"></div>
+      <div className="absolute bottom-1/4 left-0 w-20 h-20 bg-indigo-200 rounded-full opacity-20 animate-pulse delay-500"></div>
+      <div
+        className="absolute top-1/2 left-1/2 w-12 h-12 bg-yellow-100 rounded-full opacity-20 animate-pulse delay-300"
+        style={{ transform: 'translate(-50%, -50%)' }}
+      ></div>
+
       {/* 메인 컨텐츠 */}
       <div className="relative z-10 w-full max-w-sm mx-auto">
         {/* 헤더 */}
@@ -91,6 +101,16 @@ export default function FindPasswordPage() {
             </Button>
           </div>
         </form>
+
+        <div className="mt-6 text-center animate-slideUp delay-1000 opacity-0">
+          <Button
+            type="button"
+            onClick={() => router.push('/front/account/login')}
+            className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-300"
+          >
+            로그인하기
+          </Button>
+        </div>
       </div>
     </div>
   );

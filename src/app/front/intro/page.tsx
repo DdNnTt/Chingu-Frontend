@@ -28,7 +28,7 @@ export default function Intro() {
             친구들과 소통하고 그룹으로 추억을 쌓아보세요!
           </p>
         </div>
-        <div className="flex justify-center mb-8 animate-slideUp delay-900 opacity-0">
+        <div className="flex justify-center mb-8 animate-slideUp delay-1000 opacity-0">
           <Image
             src="/images/friend.png"
             alt="친구와 대화하는 3D 캐릭터"

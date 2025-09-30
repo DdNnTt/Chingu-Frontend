@@ -53,7 +53,7 @@ export default function Header() {
 
       <div className="flex items-center gap-2">
         {isSearchPage ? (
-          <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          <form onSubmit={handleSubmit} className="flex items-center">
             <Input
               type="text"
               placeholder="검색어 입력"

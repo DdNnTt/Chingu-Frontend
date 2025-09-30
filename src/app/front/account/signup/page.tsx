@@ -194,11 +194,11 @@ export default function Signup() {
               }}
             />
             {errors.name?.message ? (
-              <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs text-red-500">
+              <p className="absolute top-[45px] left-0 mt-1 px-2 text-xs text-red-500">
                 {errors.name.message}
               </p>
             ) : typeof name === 'string' && name.trim().length > 0 ? (
-              <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs main-color">
+              <p className="absolute top-[45px] left-0 mt-1 px-2 text-xs main-color">
                 이름이 확인되었습니다.
               </p>
             ) : null}
@@ -239,12 +239,12 @@ export default function Signup() {
             />
             {/* 오류 메시지 */}
             {errors.password ? (
-              <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs text-red-500 transition-opacity duration-200 opacity-100">
+              <p className="absolute top-[45px] left-0 mt-1 px-2 text-xs text-red-500 transition-opacity duration-200 opacity-100">
                 {errors.password.message}
               </p>
             ) : password?.length >= 6 ? (
               // 성공 메시지
-              <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs main-color transition-opacity duration-200 opacity-100">
+              <p className="absolute top-[45px] left-0 mt-1 px-2 text-xs main-color transition-opacity duration-200 opacity-100">
                 사용 가능한 비밀번호입니다
               </p>
             ) : null}
@@ -271,13 +271,13 @@ export default function Signup() {
             />
             {/* 오류 메시지 */}
             {errors.confirmPassword && (
-              <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs text-red-500 transition-opacity duration-200 opacity-100">
+              <p className="absolute top-[45px] left-0 mt-1 px-2 text-xs text-red-500 transition-opacity duration-200 opacity-100">
                 {errors.confirmPassword.message}
               </p>
             )}
             {/* 성공 메시지 */}
             {!errors.confirmPassword && isPasswordMatch && (
-              <p className="absolute top-[38px] left-0 mt-1 px-2 text-xs main-color transition-opacity duration-200 opacity-100">
+              <p className="absolute top-[45px] left-0 mt-1 px-2 text-xs main-color transition-opacity duration-200 opacity-100">
                 비밀번호가 일치합니다
               </p>
             )}
@@ -308,7 +308,7 @@ export default function Signup() {
           />
 
           {/* 취소 버튼 / 회원가입 */}
-          <div className="flex items-center justify-center gap-3 mt-8 animate-slideUp delay-900 opacity-0">
+          <div className="flex items-center justify-center gap-3 mt-8 animate-slideUp delay-1000 opacity-0">
             <Link
               href="/front/account/login"
               className="flex-1 bg-white text-gray-700 border border-gray-300 px-4 py-3 rounded-xl text-center font-medium shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-300"

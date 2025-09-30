@@ -362,7 +362,7 @@ function AlbumAddContent() {
   // groupId가 없을 때 안내 메시지 표시
   if (!groupId) {
     return (
-      <div className="group-detail-page h-screen flex flex-col py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+      <div className="group-detail-page h-screen flex flex-col py-24 px-4 mx-auto rounded-lg bg-gray-100">
         <div className="flex items-center mb-6 flex-shrink-0">
           <button
             onClick={() => router.back()}
@@ -408,11 +408,12 @@ function AlbumAddContent() {
   }
 
   return (
-    <div className="group-detail-page h-screen flex flex-col py-4 px-4 pt-20 mx-auto rounded-lg bg-gray-100">
+    <div className="group-detail-page h-screen flex flex-col py-24 px-4 mx-auto rounded-lg bg-gray-100">
       <div className="flex items-center mb-6">
         <button
           onClick={() => router.back()}
           className="text-gray-600 hover:text-gray-800"
+          aria-label="뒤로가기"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
