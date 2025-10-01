@@ -88,33 +88,23 @@ export default function MessageDetail() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col bg-gray-100 overflow-hidden pt-20">
-        <div className="bg-white p-4 flex items-center border-b">
+      <div className="my-home-page py-4 px-4 pt-10 pb-10 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+        <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="뒤로가기"
+            className="px-4 py-3 rounded-lg transition-colors bg-gray-200 text-gray-700 absolute left-0 top-1/2 -translate-y-1/2 px-3 py-1 text-sm"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            뒤로
+            ← 뒤로
           </button>
-          <h1 className="text-center flex-1 font-semibold">쪽지 상세</h1>
-          <div className="w-10"></div>
+          <h1 className="text-2xl font-semibold text-center w-full">
+            쪽지 상세
+          </h1>
         </div>
-        <div className="flex-1 p-4 flex items-center justify-center">
-          <div className="text-gray-500">쪽지를 불러오는 중...</div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-6xl mb-4">⏳</div>
+            <p className="text-gray-600">쪽지를 불러오는 중...</p>
+          </div>
         </div>
       </div>
     );
@@ -122,34 +112,24 @@ export default function MessageDetail() {
 
   if (error || !message) {
     return (
-      <div className="flex flex-col bg-gray-100 overflow-hidden pt-20">
-        <div className="bg-white p-4 flex items-center border-b">
+      <div className="my-home-page py-4 px-4 pt-20 pb-28 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+        <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="뒤로가기"
+            className="px-4 py-3 rounded-lg transition-colors bg-gray-200 text-gray-700 absolute left-0 top-1/2 -translate-y-1/2 px-3 py-1 text-sm"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            뒤로
+            ← 뒤로
           </button>
-          <h1 className="text-center flex-1 font-semibold">쪽지 상세</h1>
-          <div className="w-10"></div>
+          <h1 className="text-2xl font-semibold text-center w-full">
+            쪽지 상세
+          </h1>
         </div>
-        <div className="flex-1 p-4 flex items-center justify-center">
-          <div className="text-red-500">
-            {error || '쪽지를 찾을 수 없습니다.'}
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="text-center py-12">
+            <div className="text-red-400 text-6xl mb-4">❌</div>
+            <p className="text-red-600 mb-2">
+              {error || '쪽지를 찾을 수 없습니다.'}
+            </p>
           </div>
         </div>
       </div>
@@ -157,62 +137,60 @@ export default function MessageDetail() {
   }
 
   return (
-    <div className="flex flex-col bg-gray-100 overflow-hidden pt-20 pb-20">
-      <div className="p-4 flex items-center border-b">
+    <div className="my-home-page py-4 px-4 pt-10 pb-10 mx-auto rounded-lg bg-gray-100 min-h-screen">
+      <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+          className="px-4 py-3 rounded-lg transition-colors bg-gray-200 text-gray-700 absolute left-0 top-1/2 -translate-y-1/2 px-3 py-1 text-sm"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          뒤로
+          ← 뒤로
         </button>
-        <h1 className="text-center flex-1 font-semibold">
+        <h1 className="text-2xl font-semibold text-center w-full">
           보낸 사람: {message.sender}
         </h1>
-        <div className="w-10"></div>
       </div>
 
-      <div className="flex-1 p-4">
-        <div className="bg-white rounded-lg p-4 min-h-[200px]">
-          <div className="text-sm text-gray-400 mb-2">
-            {new Date(message.sendTime).toLocaleString()}
-          </div>
-          <div className="text-gray-800 whitespace-pre-line">
-            {message.content}
-          </div>
-          {!message.readStatus && (
-            <div className="mt-2">
+      {/* 쪽지 내용 */}
+      <div className="bg-white p-6 rounded-lg shadow-sm mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">쪽지 내용</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">
+              {new Date(message.sendTime).toLocaleString()}
+            </span>
+            {!message.readStatus && (
               <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs">
                 읽지 않음
               </span>
-            </div>
-          )}
+            )}
+          </div>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg min-h-[200px] max-h-[400px] overflow-y-auto">
+          <div className="text-gray-800 whitespace-pre-line leading-relaxed">
+            {message.content}
+          </div>
         </div>
       </div>
 
-      <div className="p-4 flex gap-2 border-t">
-        <Button
-          variant="secondary"
-          className="flex-1"
-          onClick={() => router.push('/front/message/list')}
-        >
-          목록
-        </Button>
-        <Button variant="primary" className="flex-1" onClick={handleDelete}>
-          삭제
-        </Button>
+      {/* 액션 버튼 */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <div className="flex gap-3">
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={() => router.push('/front/message/list')}
+          >
+            목록으로
+          </Button>
+          <Button
+            variant="primary"
+            className="flex-1 bg-red-600"
+            onClick={handleDelete}
+          >
+            삭제하기
+          </Button>
+        </div>
       </div>
     </div>
   );

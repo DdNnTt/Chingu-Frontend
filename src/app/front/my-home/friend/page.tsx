@@ -22,6 +22,7 @@ export default function MyHomeFriend() {
             alt="프로필 사진"
             width={64}
             height={64}
+            priority={true}
             className="object-cover rounded-full border border-gray-300"
           />
           <div className="profile-info">
