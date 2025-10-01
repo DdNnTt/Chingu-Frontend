@@ -104,7 +104,7 @@ export default function GameMakeQuiz() {
   }
 
   return (
-    <div className="my-home-page py-4 px-4 pt-28 pb-28 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+    <div className="my-home-page py-4 px-4 pt-10 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           {/* 뒤로가기 버튼과 타이틀 */}

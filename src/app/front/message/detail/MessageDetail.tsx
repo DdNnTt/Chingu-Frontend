@@ -88,7 +88,7 @@ export default function MessageDetail() {
 
   if (isLoading) {
     return (
-      <div className="my-home-page py-4 px-4 pt-20 pb-28 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+      <div className="my-home-page py-4 px-4 pt-10 pb-10 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
         <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
           <button
             onClick={() => router.back()}
@@ -137,7 +137,7 @@ export default function MessageDetail() {
   }
 
   return (
-    <div className="my-home-page py-4 px-4 pt-20 pb-28 mx-auto rounded-lg bg-gray-100 min-h-screen">
+    <div className="my-home-page py-4 px-4 pt-10 pb-10 mx-auto rounded-lg bg-gray-100 min-h-screen">
       <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
         <button
           onClick={() => router.back()}
