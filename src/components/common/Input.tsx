@@ -22,7 +22,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           id={generatedId}
           ref={ref}
           {...props}
-          className={`mt-1 block w-full px-3 py-2 border bg-[#f3f3f5] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-300 ${className}`}
+          className={`mt-1 block w-full px-3 py-2 border border-gray-300 bg-[#f3f3f5] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-300 ${
+            props.readOnly ? 'cursor-default' : 'cursor-text'
+          } ${className}`}
         />
       </div>
     );

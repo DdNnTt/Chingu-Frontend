@@ -51,7 +51,7 @@ export default function Mypage() {
       // SSR 환경에서 localStorage 접근 안전성 확인
       if (typeof window === 'undefined') return;
 
-      // 하루 1개 업로드 제한 체크 (UTC 기준)
+      // 하루 1개 업로드 제한 체크
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD (UTC)
       const storedDate = localStorage.getItem('lastProfileUploadDate');
 
@@ -66,7 +66,7 @@ export default function Mypage() {
 
     checkUploadLimit();
 
-    // 자정까지 남은 시간 계산하여 한 번만 체크 (UTC 기준)
+    // 자정까지 남은 시간 계산하여 한 번만 체크
     const now = new Date();
     const tomorrow = new Date(
       Date.UTC(
@@ -87,10 +87,6 @@ export default function Mypage() {
       checkUploadLimit,
       Math.min(timeUntilMidnight, 24 * 60 * 60 * 1000)
     );
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
 
     fetch('/api/users/mypage', {
       method: 'GET',
@@ -120,6 +116,10 @@ export default function Mypage() {
         if (data.profilePictureUrl) setImagePreview(data.profilePictureUrl);
       })
       .catch((err) => console.error('[유저 정보 불러오기 오류]', err));
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [router, reset]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,8 +242,6 @@ export default function Mypage() {
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
 
         try {
-          console.log(`[프로필 업로드 시작] ${file.name} - 하루 1개 제한 적용`);
-
           // presigned URL 요청 (단일 시도만)
           const presignRes = await fetch(
             `/api/users/upload-url/profile?extension=${ext}`,
@@ -257,7 +255,6 @@ export default function Mypage() {
 
           if (presignRes.ok) {
             const { uploadUrl, fileUrl } = await presignRes.json();
-            console.log('[프로필 업로드 응답]', { uploadUrl, fileUrl });
 
             // S3로 이미지 업로드 (타임아웃 설정)
             const controller = new AbortController();
@@ -274,16 +271,9 @@ export default function Mypage() {
               });
 
               if (uploadResponse.ok) {
-                // 업로드된 이미지 URL 저장 및 반영
                 uploadedImageUrl = fileUrl;
                 setImagePreview(fileUrl);
-                console.log(`[프로필 이미지 업로드 성공] ${file.name}`);
               } else {
-                console.error(
-                  `[프로필 이미지 업로드 실패] ${file.name}:`,
-                  uploadResponse.status,
-                  uploadResponse.statusText
-                );
                 alert(
                   '프로필 이미지 업로드에 실패했습니다. 내일 다시 시도해주세요.'
                 );
@@ -293,18 +283,12 @@ export default function Mypage() {
               clearTimeout(timeoutId);
             }
           } else {
-            console.warn(
-              `[프로필 Presign URL 요청 실패] ${file.name}:`,
-              presignRes.status,
-              presignRes.statusText
-            );
             alert(
               '프로필 이미지 업로드에 실패했습니다. 내일 다시 시도해주세요.'
             );
             return;
           }
-        } catch (error) {
-          console.error(`[프로필 업로드 오류] ${file.name}:`, error);
+        } catch {
           alert('프로필 이미지 업로드에 실패했습니다. 내일 다시 시도해주세요.');
           return;
         }
@@ -334,13 +318,12 @@ export default function Mypage() {
         return;
       }
 
-      // 최종 성공 시에만 localStorage 업데이트 (UTC 기준)
+      // 최종 성공 시에만 localStorage 업데이트
       if (uploadedImageUrl) {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD (UTC)
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         localStorage.setItem('lastProfileUploadDate', today);
         setCanUploadToday(false);
         setLastUploadDate(today);
-        console.log('프로필 이미지 업로드 성공 - 하루 제한 적용됨');
       }
 
       alert('정보가 성공적으로 수정되었습니다.');
@@ -420,6 +403,7 @@ export default function Mypage() {
               placeholder="이름"
               {...register('name')}
               readOnly={!isEditable}
+              className="bg-[#f3f3f5] border-gray-300"
               onClick={(e) => {
                 if (!isEditable) {
                   e.stopPropagation();
@@ -436,6 +420,7 @@ export default function Mypage() {
               placeholder="아이디"
               {...register('userId')}
               readOnly={!isEditable}
+              className="bg-[#f3f3f5] border-gray-300"
               onClick={(e) => {
                 if (!isEditable) {
                   e.stopPropagation();
@@ -452,6 +437,7 @@ export default function Mypage() {
               placeholder="이메일"
               {...register('email')}
               readOnly={!isEditable}
+              className="bg-[#f3f3f5] border-gray-300"
               onClick={(e) => {
                 if (!isEditable) {
                   e.stopPropagation();
@@ -508,11 +494,14 @@ export default function Mypage() {
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                    <p className="text-gray-500 text-sm">
-                      프로필 이미지를 선택해주세요
+                    <p className="text-gray-600 text-sm font-medium">
+                      📷 프로필 이미지가 없습니다
+                    </p>
+                    <p className="text-gray-500 text-xs mt-1">
+                      프로필을 더 멋지게 만들어보세요!
                     </p>
                     <p className="text-gray-400 text-xs mt-1">
-                      JPG, PNG 파일만 가능
+                      JPG, PNG 파일만 가능 (최대 5MB)
                     </p>
                   </div>
                 </div>

@@ -114,7 +114,7 @@ export default function CheckableInput<T extends FieldValues>({
       </div>
       {message && (
         <p
-          className={`absolute top-[45px] left-0 mt-1 px-2 text-xs transition-opacity duration-200 ${
+          className={`absolute top-[35px] left-0 mt-1 px-2 text-xs transition-opacity duration-200 ${
             isAvailable === true
               ? 'main-color'
               : isAvailable === false
