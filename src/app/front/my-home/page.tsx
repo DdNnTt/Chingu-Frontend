@@ -437,14 +437,24 @@ export default function MyHome() {
   const fetchGroups = async () => {
     try {
       const token = getCookieValue('accessToken');
+      console.log('[그룹 조회] 토큰:', token ? '존재' : '없음');
+
       const response = await axiosInstance.get('/api/groups/mygroups', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      console.log('[그룹 조회] 응답:', response.data);
+      console.log('[그룹 조회] 그룹 개수:', response.data?.length || 0);
+
       setGroups(response.data);
     } catch (err) {
-      console.error('그룹 목록 조회 실패:', err);
+      console.error('[그룹 조회] 실패:', err);
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { data?: unknown } };
+        console.error('[그룹 조회] 에러 상세:', axiosError.response?.data);
+      }
     }
   };
 
