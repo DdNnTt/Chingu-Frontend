@@ -25,6 +25,9 @@ function AlbumAddContent() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [location, setLocation] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [canUploadToday, setCanUploadToday] = useState(true);
+  const [lastUploadDate, setLastUploadDate] = useState<string | null>(null);
 
   // 그룹 멤버십 확인
   const checkGroupMembership = useCallback(async () => {
@@ -40,7 +43,7 @@ function AlbumAddContent() {
       });
 
       if (groupResponse.ok) {
-        await groupResponse.json(); // 응답 소비
+        await groupResponse.json();
         return;
       }
 
@@ -73,10 +76,40 @@ function AlbumAddContent() {
     }
   }, [groupId, accessToken]);
 
-  // 페이지 로드 시 그룹 멤버십 확인
+  // 페이지 로드 시 그룹 멤버십 확인 및 업로드 제한 체크
   React.useEffect(() => {
     if (groupId && accessToken) {
       checkGroupMembership();
+
+      const checkUploadLimit = () => {
+        // 하루 1개 앨범 업로드 제한 체크
+        const today = new Date().toDateString();
+        const groupUploadKey = `albumUpload_${groupId}_${today}`;
+        const storedDate = localStorage.getItem(groupUploadKey);
+
+        if (storedDate === today) {
+          setCanUploadToday(false);
+          setLastUploadDate(storedDate);
+        } else {
+          setCanUploadToday(true);
+          setLastUploadDate(storedDate);
+        }
+      };
+
+      checkUploadLimit();
+
+      // 자정까지 남은 시간 계산하여 한 번만 체크
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+
+      const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+
+      // 자정에 한 번만 체크
+      const timeoutId = setTimeout(checkUploadLimit, timeUntilMidnight);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [groupId, accessToken, checkGroupMembership]);
 
@@ -85,16 +118,54 @@ function AlbumAddContent() {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 하루 1개 업로드 제한 체크
+    if (!canUploadToday) {
+      alert(
+        '하루에 1개의 앨범만 업로드할 수 있습니다. 내일 다시 시도해주세요.'
+      );
+      e.target.value = '';
+      return;
+    }
+
     const files = Array.from(e.target.files || []);
+
+    // 최대 3장 제한
+    const MAX_IMAGES = 3;
+    if (selectedFiles.length + files.length > MAX_IMAGES) {
+      alert(`최대 ${MAX_IMAGES}장까지만 업로드할 수 있습니다.`);
+      e.target.value = '';
+      return;
+    }
+
     if (files.length > 0) {
+      // 파일 검증
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
+      for (const file of files) {
+        if (file.size > maxSize) {
+          alert('파일 크기는 5MB 이하여야 합니다.');
+          e.target.value = '';
+          return;
+        }
+        if (!allowedTypes.includes(file.type)) {
+          alert('JPG, PNG 파일만 업로드 가능합니다.');
+          e.target.value = '';
+          return;
+        }
+      }
+
       const newFiles = [...selectedFiles, ...files];
       setSelectedFiles(newFiles);
 
-      // 새로 추가한 파일 미리보기 생성
+      // 새로 추가한 파일 미리보기 생성 (메모리 최적화)
       files.forEach((file) => {
         const reader = new FileReader();
         reader.onload = () => {
           setImagePreviews((prev) => [...prev, reader.result as string]);
+        };
+        reader.onerror = () => {
+          console.error('파일 읽기 실패:', file.name);
         };
         reader.readAsDataURL(file);
       });
@@ -115,6 +186,20 @@ function AlbumAddContent() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // 업로드 중복 방지
+    if (isUploading) {
+      alert('업로드 중입니다. 잠시만 기다려주세요.');
+      return;
+    }
+
+    // 하루 1개 업로드 제한 재확인
+    if (!canUploadToday) {
+      alert(
+        '하루에 1개의 앨범만 업로드할 수 있습니다. 내일 다시 시도해주세요.'
+      );
+      return;
+    }
 
     // 입력값 확인
     if (!groupId) {
@@ -156,77 +241,97 @@ function AlbumAddContent() {
     const uploadedImageUrls: string[] = [];
 
     try {
-      // 여러 이미지 업로드 처리
+      setIsUploading(true);
+      console.log(
+        `[앨범 업로드 시작] ${selectedFiles.length}장 - 하루 1개 제한 적용`
+      );
+
+      // 여러 이미지 업로드 처리 (최대 3장, 단일 시도)
       if (selectedFiles.length > 0) {
         for (const file of selectedFiles) {
           const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
 
-          const presignRes = await fetch(
-            `/api/albums/${groupId}/upload-url?extension=${ext}`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-            }
-          );
+          try {
+            console.log(`[앨범 이미지 업로드 시도] ${file.name}`);
 
-          if (presignRes.ok) {
-            const responseData = await presignRes.json();
-
-            // 앨범 presigned URL 응답 구조에 따라 URL 추출
-            const uploadUrl =
-              responseData.uploadUrl ||
-              responseData.presignedUrl ||
-              responseData.url ||
-              responseData.additionalProp1 ||
-              Object.values(responseData)[0];
-            const fileUrl =
-              responseData.fileUrl ||
-              responseData.publicUrl ||
-              responseData.downloadUrl ||
-              responseData.additionalProp2 ||
-              Object.values(responseData)[1];
-
-            if (uploadUrl) {
-              // S3로 이미지 업로드
-              const uploadResponse = await fetch(uploadUrl, {
-                method: 'PUT',
+            const presignRes = await fetch(
+              `/api/albums/${groupId}/upload-url?extension=${ext}`,
+              {
+                method: 'GET',
                 headers: {
-                  'Content-Type': file.type,
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${accessToken}`,
                 },
-                body: file,
-              });
+              }
+            );
 
-              if (uploadResponse.ok) {
-                // fileUrl이 있으면 사용, 없으면 uploadUrl에서 쿼리 파라미터 제거
-                const finalUrl = fileUrl || uploadUrl.split('?')[0];
-                uploadedImageUrls.push(finalUrl);
+            if (presignRes.ok) {
+              const responseData = await presignRes.json();
+
+              // 앨범 presigned URL 응답 구조에 따라 URL 추출
+              const uploadUrl =
+                responseData.uploadUrl ||
+                responseData.presignedUrl ||
+                responseData.url ||
+                responseData.additionalProp1 ||
+                Object.values(responseData)[0];
+              const fileUrl =
+                responseData.fileUrl ||
+                responseData.publicUrl ||
+                responseData.downloadUrl ||
+                responseData.additionalProp2 ||
+                Object.values(responseData)[1];
+
+              if (uploadUrl) {
+                // S3로 이미지 업로드 (타임아웃 설정)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
+
+                try {
+                  const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': file.type,
+                    },
+                    body: file,
+                    signal: controller.signal,
+                  });
+
+                  if (uploadResponse.ok) {
+                    // fileUrl이 있으면 사용, 없으면 uploadUrl에서 쿼리 파라미터 제거
+                    const finalUrl = fileUrl || uploadUrl.split('?')[0];
+                    uploadedImageUrls.push(finalUrl);
+                    console.log(`[앨범 이미지 업로드 성공] ${file.name}`);
+                  } else {
+                    console.error(
+                      `[앨범 이미지 업로드 실패] ${file.name}:`,
+                      uploadResponse.status,
+                      uploadResponse.statusText
+                    );
+                  }
+                } finally {
+                  clearTimeout(timeoutId);
+                }
               } else {
-                console.error(
-                  '[앨범 이미지 업로드 실패]',
-                  file.name,
-                  uploadResponse.status,
-                  uploadResponse.statusText
-                );
+                console.error('[앨범 Presign URL 없음]', responseData);
               }
             } else {
-              console.error('[앨범 Presign URL 없음]', responseData);
+              console.warn(
+                `[앨범 Presign URL 요청 실패] ${file.name}:`,
+                presignRes.status,
+                presignRes.statusText
+              );
             }
-          } else {
-            console.warn(
-              `[앨범 Presign URL 요청 실패] ${file.name}:`,
-              presignRes.status,
-              presignRes.statusText
-            );
+          } catch (error) {
+            console.error(`[앨범 이미지 업로드 오류] ${file.name}:`, error);
           }
         }
       }
 
       // 이미지 업로드 실패 시 앨범 생성 중단
       if (selectedFiles.length > 0 && uploadedImageUrls.length === 0) {
-        alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+        alert('이미지 업로드에 실패했습니다. 내일 다시 시도해주세요.');
+        setIsUploading(false);
         return;
       }
 
@@ -260,7 +365,11 @@ function AlbumAddContent() {
       });
 
       if (createRes.ok) {
-        await createRes.json(); // 응답 소비
+        await createRes.json();
+
+        setCanUploadToday(false);
+        setLastUploadDate(new Date().toDateString());
+
         alert('앨범이 성공적으로 추가되었습니다!');
         router.back();
       } else {
@@ -286,19 +395,15 @@ function AlbumAddContent() {
           data: errorData,
         });
 
-        // 401 에러
         if (createRes.status === 401) {
           alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-          // 만료된 토큰 쿠키 제거
           document.cookie =
             'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           router.push('/front/account/login');
           return;
         }
 
-        // 403 에러
         if (createRes.status === 403) {
-          // 그룹 멤버십 재확인
           console.log('[403 오류 발생] 그룹 멤버십 재확인 중...');
 
           try {
@@ -356,10 +461,12 @@ function AlbumAddContent() {
     } catch (error) {
       console.error('[앨범 추가 오류]', error);
       alert('앨범 추가 중 오류가 발생했습니다.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  // groupId가 없을 때 안내 메시지 표시
+  // groupId가 없을 시
   if (!groupId) {
     return (
       <div className="group-detail-page h-screen flex flex-col py-24 px-4 mx-auto rounded-lg bg-gray-100">
@@ -462,7 +569,12 @@ function AlbumAddContent() {
         {/* 이미지 첨부 */}
         <div className="mb-4 p-4 bg-white rounded-lg shadow-sm gap-2">
           <label className="block mb-1 font-medium">
-            이미지 첨부 ({imagePreviews.length}장)
+            이미지 첨부 ({imagePreviews.length}/3장)
+            {!canUploadToday && (
+              <span className="text-red-500 text-sm ml-2">
+                (오늘 업로드 완료)
+              </span>
+            )}
           </label>
           <div className="flex flex-col items-center gap-4">
             {/* 이미지 미리보기 슬라이더 */}
@@ -530,13 +642,27 @@ function AlbumAddContent() {
                 onChange={handleImageChange}
                 className="hidden"
                 id="image-upload"
+                disabled={!canUploadToday}
               />
               <label
                 htmlFor="image-upload"
-                className="w-full bg-[#9477ff] hover:bg-[#6845f5] text-white py-2 px-4 rounded-lg cursor-pointer transition-colors text-center block"
+                className={`w-full py-2 px-4 rounded-lg text-center block transition-colors ${
+                  canUploadToday
+                    ? 'bg-[#9477ff] hover:bg-[#6845f5] text-white cursor-pointer'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
-                {imagePreviews.length > 0 ? '이미지 추가' : '이미지 선택'}
+                {!canUploadToday
+                  ? `오늘 업로드 완료 (${lastUploadDate})`
+                  : imagePreviews.length > 0
+                    ? '이미지 추가'
+                    : '이미지 선택'}
               </label>
+              {!canUploadToday && (
+                <p className="text-xs text-gray-500 mt-1 text-center">
+                  하루에 1개의 앨범만 업로드할 수 있습니다.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -595,8 +721,16 @@ function AlbumAddContent() {
         </div>
 
         {/* 앨범 추가 버튼 */}
-        <Button type="submit" className="w-full">
-          앨범 추가
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={!canUploadToday || isUploading}
+        >
+          {isUploading
+            ? '업로드 중...'
+            : !canUploadToday
+              ? '오늘 업로드 완료'
+              : '앨범 추가'}
         </Button>
       </form>
     </div>
