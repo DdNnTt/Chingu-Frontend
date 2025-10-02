@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import axios from '@/libs/axios';
 import { isAxiosError } from 'axios';
 import Button from '@/components/common/Button';
@@ -17,7 +17,7 @@ interface Message {
   receiverDeleted: boolean;
 }
 
-export default function MessageDetail() {
+function MessageDetailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const messageId = searchParams.get('id');
@@ -193,5 +193,29 @@ export default function MessageDetail() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MessageDetail() {
+  return (
+    <Suspense
+      fallback={
+        <div className="my-home-page py-4 px-4 pt-20 pb-28 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+          <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
+            <h1 className="text-2xl font-semibold text-center w-full">
+              쪽지 상세
+            </h1>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="text-center py-12">
+              <div className="text-gray-400 text-6xl mb-4">⏳</div>
+              <p className="text-gray-600">로딩 중...</p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <MessageDetailContent />
+    </Suspense>
   );
 }
