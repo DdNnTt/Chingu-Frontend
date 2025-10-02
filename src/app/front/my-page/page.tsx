@@ -51,8 +51,8 @@ export default function Mypage() {
       // SSR 환경에서 localStorage 접근 안전성 확인
       if (typeof window === 'undefined') return;
 
-      // 하루 1개 업로드 제한 체크
-      const today = new Date().toDateString();
+      // 하루 1개 업로드 제한 체크 (UTC 기준)
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD (UTC)
       const storedDate = localStorage.getItem('lastProfileUploadDate');
 
       if (storedDate === today) {
@@ -66,11 +66,19 @@ export default function Mypage() {
 
     checkUploadLimit();
 
-    // 자정까지 남은 시간 계산하여 한 번만 체크
+    // 자정까지 남은 시간 계산하여 한 번만 체크 (UTC 기준)
     const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + 1,
+        0,
+        0,
+        0,
+        0
+      )
+    );
 
     const timeUntilMidnight = tomorrow.getTime() - now.getTime();
 
@@ -266,18 +274,10 @@ export default function Mypage() {
               });
 
               if (uploadResponse.ok) {
-                // 업로드 성공 시 하루 제한 적용
-                const today = new Date().toDateString();
-                localStorage.setItem('lastProfileUploadDate', today);
-                setCanUploadToday(false);
-                setLastUploadDate(today);
-
                 // 업로드된 이미지 URL 저장 및 반영
                 uploadedImageUrl = fileUrl;
                 setImagePreview(fileUrl);
-                console.log(
-                  `[프로필 이미지 업로드 성공] ${file.name} - 하루 제한 적용됨`
-                );
+                console.log(`[프로필 이미지 업로드 성공] ${file.name}`);
               } else {
                 console.error(
                   `[프로필 이미지 업로드 실패] ${file.name}:`,
@@ -332,6 +332,15 @@ export default function Mypage() {
         console.error('[수정 실패]', data);
         alert('수정에 실패했습니다.');
         return;
+      }
+
+      // 최종 성공 시에만 localStorage 업데이트 (UTC 기준)
+      if (uploadedImageUrl) {
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD (UTC)
+        localStorage.setItem('lastProfileUploadDate', today);
+        setCanUploadToday(false);
+        setLastUploadDate(today);
+        console.log('프로필 이미지 업로드 성공 - 하루 제한 적용됨');
       }
 
       alert('정보가 성공적으로 수정되었습니다.');

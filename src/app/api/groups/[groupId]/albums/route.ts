@@ -3,26 +3,64 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 const dailyUploadCounts = new Map<string, number>();
+const dailyUploadLocks = new Map<string, Promise<number>>();
 
 console.warn(
   '⚠️ 메모리 기반 카운트 관리 사용 중 - 서버 재시작 시 데이터 손실됨'
 );
 
-async function checkDailyUploadCount(
-  groupId: string,
-  date: string
-): Promise<number> {
-  const key = `daily_album_upload_${groupId}_${date}`;
-  return dailyUploadCounts.get(key) || 0;
+// 이전 날짜 키 정리 함수
+function cleanupOldKeys() {
+  const today = new Date().toISOString().split('T')[0];
+  const keysToDelete: string[] = [];
+
+  for (const key of dailyUploadCounts.keys()) {
+    const keyDate = key.split('_').pop();
+    if (keyDate && keyDate < today) {
+      keysToDelete.push(key);
+    }
+  }
+
+  keysToDelete.forEach((key) => {
+    dailyUploadCounts.delete(key);
+    dailyUploadLocks.delete(key);
+  });
+
+  if (keysToDelete.length > 0) {
+    console.log(`[메모리 정리] ${keysToDelete.length}개의 이전 날짜 키 삭제됨`);
+  }
 }
+
+// checkDailyUploadCount 함수는 더 이상 사용하지 않음 (원자적 연산으로 대체)
 
 async function incrementDailyUploadCount(
   groupId: string,
   date: string
-): Promise<void> {
+): Promise<number> {
   const key = `daily_album_upload_${groupId}_${date}`;
-  const currentCount = dailyUploadCounts.get(key) || 0;
-  dailyUploadCounts.set(key, currentCount + 1);
+
+  // 이전 날짜 키 정리
+  cleanupOldKeys();
+
+  // 동시성 문제 해결: 락 사용
+  if (dailyUploadLocks.has(key)) {
+    await dailyUploadLocks.get(key);
+  }
+
+  const lockPromise = (async () => {
+    const currentCount = dailyUploadCounts.get(key) || 0;
+    const newCount = currentCount + 1;
+    dailyUploadCounts.set(key, newCount);
+    return newCount;
+  })();
+
+  dailyUploadLocks.set(key, lockPromise);
+  const newCount = await lockPromise;
+
+  // 락 해제
+  dailyUploadLocks.delete(key);
+
+  return newCount;
 }
 
 export async function GET(req: NextRequest) {
@@ -81,9 +119,15 @@ export async function POST(req: NextRequest) {
 
   const today = new Date().toISOString().split('T')[0];
 
-  const dailyUploadCount = await checkDailyUploadCount(groupId, today);
+  // 원자적 연산: 증가 후 결과 확인 (TOCTOU 취약점 해결)
+  const newCount = await incrementDailyUploadCount(groupId, today);
 
-  if (dailyUploadCount >= 1) {
+  if (newCount > 1) {
+    // 제한 초과 시 롤백
+    const key = `daily_album_upload_${groupId}_${today}`;
+    const currentCount = dailyUploadCounts.get(key) || 0;
+    dailyUploadCounts.set(key, Math.max(0, currentCount - 1));
+
     return NextResponse.json(
       {
         message: '하루에 1개의 앨범만 업로드할 수 있습니다.',
@@ -136,11 +180,18 @@ export async function POST(req: NextRequest) {
       const data = JSON.parse(text);
       console.log('[앨범 생성 프록시] 파싱된 응답 데이터:', data);
 
-      // 앨범 생성 성공 시 일일 업로드 카운트 증가
+      // 앨범 생성 성공 시 카운트는 이미 증가됨 (원자적 연산으로 처리됨)
       if (res.status === 200 || res.status === 201) {
-        await incrementDailyUploadCount(groupId, today);
         console.log(
-          `[앨범 생성 성공] 그룹 ${groupId}의 일일 업로드 카운트 증가`
+          `[앨범 생성 성공] 그룹 ${groupId}의 일일 업로드 카운트: ${newCount}`
+        );
+      } else {
+        // 앨범 생성 실패 시 롤백
+        const key = `daily_album_upload_${groupId}_${today}`;
+        const currentCount = dailyUploadCounts.get(key) || 0;
+        dailyUploadCounts.set(key, Math.max(0, currentCount - 1));
+        console.log(
+          `[앨범 생성 실패] 그룹 ${groupId}의 일일 업로드 카운트 롤백`
         );
       }
 
