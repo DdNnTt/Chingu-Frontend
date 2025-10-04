@@ -88,6 +88,16 @@ function GroupScheduleContent() {
       minute
     );
 
+    // 전송할 데이터 검증
+    console.log('[일정 등록] 전송 데이터:', {
+      title,
+      description,
+      scheduleDate,
+      scheduleTime: `${hour}:${minute}:00`,
+      selectedHour: hour,
+      selectedMinute: minute,
+    });
+
     try {
       const res = await fetch(`/api/groups/${groupId}/schedules/add`, {
         method: 'POST',
@@ -99,16 +109,43 @@ function GroupScheduleContent() {
           title,
           description,
           scheduleDate,
+          scheduleTime: `${hour}:${minute}:00`, // 별도 시간 필드 추가
+          // 백엔드 호환성을 위해 기존 방식도 유지
+          scheduleDateTime: `${scheduleDate}T${hour}:${minute}:00`, // 완전한 datetime도 함께 전송
         }),
       });
 
-      if (!res.ok) throw new Error('일정 등록 실패');
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('[일정 등록 실패] 응답 상태:', res.status);
+        console.error('[일정 등록 실패] 에러 데이터:', errorData);
+        throw new Error(errorData.message || '일정 등록 실패');
+      }
+
+      const result = await res.json();
+      console.log('[일정 등록 성공] 응답 데이터:', result);
+
+      // 백엔드가 시간 정보를 제대로 처리하지 못하므로, 로컬 스토리지에 시간 정보 저장
+      if (result.scheduleId) {
+        const timeInfo = {
+          scheduleId: result.scheduleId,
+          time: `${hour}:${minute}:00`,
+          date: scheduleDate,
+        };
+        localStorage.setItem(
+          `schedule_time_${result.scheduleId}`,
+          JSON.stringify(timeInfo)
+        );
+        console.log('[일정 등록] 로컬 스토리지에 시간 정보 저장:', timeInfo);
+      }
 
       alert('일정이 성공적으로 추가되었습니다!');
       router.back();
     } catch (err) {
       console.error('[일정 등록 실패]', err);
-      alert('일정 등록 중 오류가 발생했습니다.');
+      alert(
+        `일정 등록 중 오류가 발생했습니다: ${err instanceof Error ? err.message : '알 수 없는 오류'}`
+      );
     }
   };
 
@@ -120,9 +157,13 @@ function GroupScheduleContent() {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const dd = String(date.getDate()).padStart(2, '0');
-    const hh = hour.padStart(2, '0');
-    const mi = minute.padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}T${hh}:${mi}:00`;
+
+    // 백엔드 호환성을 위해 날짜만 전송 (시간은 별도 필드로)
+    const dateOnly = `${yyyy}-${mm}-${dd}`;
+    console.log('[일정 등록] 포맷된 날짜:', dateOnly);
+    console.log('[일정 등록] 선택된 시간:', `${hour}:${minute}`);
+
+    return dateOnly;
   };
 
   return (

@@ -41,14 +41,26 @@ export default function SearchUser() {
 
       setIsSearching(true);
       setErrorMsg('');
+
+      // 토큰이 없으면 로그인 페이지로 이동
+      if (!token) {
+        setErrorMsg('로그인이 필요합니다.');
+        setIsSearching(false);
+        router.replace('/front/account/login');
+        return;
+      }
+
       try {
         const url = `/api/users/search?keyword=${encodeURIComponent(keyword)}`;
         console.log('[검색 요청]', { url, hasToken: Boolean(token) });
 
-        // Authorization 헤더 없이 요청
+        // Authorization 헤더 포함 요청
         const res = await fetch(url, {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         const data = await res.json();

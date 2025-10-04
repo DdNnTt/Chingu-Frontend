@@ -437,7 +437,7 @@ export default function MyHome() {
   const fetchGroups = async () => {
     try {
       const token = getCookieValue('accessToken');
-      console.log('[그룹 조회] 토큰:', token ? '존재' : '없음');
+      // console.log('[그룹 조회] 토큰:', token ? '존재' : '없음');
 
       const response = await axiosInstance.get('/api/groups/mygroups', {
         headers: {
@@ -445,8 +445,8 @@ export default function MyHome() {
         },
       });
 
-      console.log('[그룹 조회] 응답:', response.data);
-      console.log('[그룹 조회] 그룹 개수:', response.data?.length || 0);
+      // console.log('[그룹 조회] 응답:', response.data);
+      // console.log('[그룹 조회] 그룹 개수:', response.data?.length || 0);
 
       setGroups(response.data);
     } catch (err) {
