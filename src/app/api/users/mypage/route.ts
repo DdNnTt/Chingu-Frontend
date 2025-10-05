@@ -4,11 +4,15 @@ export async function GET(req: NextRequest) {
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');
 
-  if (!API_BASE) {
-    return NextResponse.json({ error: 'API_BASE_URL 누락됨' }, { status: 500 });
-  }
+  console.log('[마이페이지 API] 토큰:', token ? '존재' : '없음');
+  console.log('[마이페이지 API] API_BASE:', API_BASE);
 
   try {
+    console.log(
+      '[마이페이지 API] 백엔드 호출:',
+      `${API_BASE}/api/users/mypage`
+    );
+
     const res = await fetch(`${API_BASE}/api/users/mypage`, {
       method: 'GET',
       headers: {
@@ -16,7 +20,10 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    console.log('[마이페이지 API] 백엔드 응답 상태:', res.status);
     const data = await res.json();
+    console.log('[마이페이지 API] 백엔드 응답 데이터:', data);
+
     return NextResponse.json(data);
   } catch (err) {
     console.error('[마이페이지 프록시 오류]', err);

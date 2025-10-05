@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/common/Button';
 import Link from 'next/link';
 import { getCookieValue } from '@/utils/cookie';
 
@@ -26,12 +25,33 @@ type InviteGroup = {
 export default function GroupList() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [invites, setInvites] = useState<InviteGroup[]>([]);
-  const [visibleGroups, setVisibleGroups] = useState(3);
-  const [visibleInvites, setVisibleInvites] = useState(3);
-  const [error, setError] = useState('');
+  // 더보기 기능 제거 - 모든 항목을 처음부터 표시
+  const [error] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const router = useRouter();
+
+  // 그룹 목록 조회 함수
+  const fetchGroups = async () => {
+    const token = getCookieValue('accessToken');
+    if (!token) return;
+
+    try {
+      const res = await fetch('/api/groups/mygroups', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('그룹 목록 조회 실패');
+      const data = await res.json();
+      setGroups(data);
+      console.log('[그룹 목록 갱신]', data);
+    } catch (err) {
+      console.error('[그룹 목록 조회 오류]', err);
+    }
+  };
 
   // 초대 목록 조회 함수
   const fetchInvites = async () => {
@@ -73,25 +93,12 @@ export default function GroupList() {
     }
 
     // 내 그룹 목록 조회
-    fetch(`/api/groups/mygroups`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error('그룹 목록 조회 실패');
-        const data = await res.json();
-        setGroups(data);
-      })
-      .catch((err) => {
-        console.error('[그룹 목록 조회 오류]', err);
-        setError('그룹 목록을 불러오지 못했습니다.');
-      })
-      .finally(() => setIsLoading(false));
+    fetchGroups();
 
     // 초대 목록 조회
     fetchInvites();
+
+    setIsLoading(false);
   }, [router]);
 
   // 그룹 초대 승인
@@ -169,6 +176,8 @@ export default function GroupList() {
       });
       // 초대 목록 갱신
       fetchInvites();
+      // 그룹 목록 갱신 (새로 가입한 그룹이 목록에 나타나도록)
+      fetchGroups();
     } catch (err) {
       console.error('[초대 승인 실패]', err);
       alert(
@@ -359,7 +368,7 @@ export default function GroupList() {
             그룹 목록이 없습니다. 그룹을 생성해주세요!
           </div>
         ) : (
-          groups.slice(0, visibleGroups).map((group) => (
+          groups.map((group) => (
             <div
               key={group.groupId}
               className="group-item flex items-center justify-between bg-white py-2 px-3 rounded-md shadow-sm cursor-pointer hover:bg-gray-50"
@@ -387,18 +396,6 @@ export default function GroupList() {
             </div>
           ))
         )}
-
-        {visibleGroups < groups.length && (
-          <div className="text-center mt-2">
-            <Button
-              type="button"
-              onClick={() => setVisibleGroups((prev) => prev + 3)}
-              className="flex-1 w-full bg-blue-600 text-white mt-4"
-            >
-              더보기
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* 초대 목록 */}
@@ -416,7 +413,6 @@ export default function GroupList() {
         ) : (
           invites
             .filter((invite) => invite.requestStatus !== 'ACCEPTED')
-            .slice(0, visibleInvites)
             .map((invite) => (
               <div
                 key={invite.requestId}
@@ -441,20 +437,6 @@ export default function GroupList() {
                 </div>
               </div>
             ))
-        )}
-
-        {visibleInvites <
-          invites.filter((invite) => invite.requestStatus !== 'ACCEPTED')
-            .length && (
-          <div className="text-center mt-2">
-            <Button
-              type="button"
-              onClick={() => setVisibleInvites((prev) => prev + 3)}
-              className="text-sm text-blue-600"
-            >
-              더보기
-            </Button>
-          </div>
         )}
       </div>
     </div>
