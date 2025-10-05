@@ -108,7 +108,7 @@ export default function GroupAdd() {
   };
 
   return (
-    <div className="group-add-page py-24 px-4 mx-auto rounded-lg bg-gray-100">
+    <div className="group-add-page py-24 px-4 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <div className="flex items-center mb-6">
         <button
           onClick={() => router.back()}
@@ -154,7 +154,7 @@ export default function GroupAdd() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="그룹 설명 입력"
-            className="mt-1 block w-full px-3 py-2 border bg-[#f3f3f5] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-300"
+            className="mt-1 block w-full px-3 py-2 border-gray-300 bg-[#f3f3f5] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-300"
           />
         </div>
 

@@ -30,7 +30,38 @@ export default function GroupList() {
   const [visibleInvites, setVisibleInvites] = useState(3);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
   const router = useRouter();
+
+  // 초대 목록 조회 함수
+  const fetchInvites = async () => {
+    const token = getCookieValue('accessToken');
+    if (!token) return;
+
+    try {
+      const res = await fetch('/api/groups/invites', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('초대 목록 조회 실패');
+      const data = await res.json();
+      setInvites(data);
+      setRefreshKey((prev) => prev + 1); // 강제 리렌더링
+      console.log('[초대 목록 갱신]', data);
+      console.log(
+        '[필터링된 초대 목록]',
+        data.filter(
+          (invite: { requestStatus: string }) =>
+            invite.requestStatus !== 'ACCEPTED'
+        )
+      );
+    } catch (err) {
+      console.error('[초대 목록 조회 오류]', err);
+    }
+  };
 
   useEffect(() => {
     const token = getCookieValue('accessToken');
@@ -60,21 +91,155 @@ export default function GroupList() {
       .finally(() => setIsLoading(false));
 
     // 초대 목록 조회
-    fetch('/api/groups/invites', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error('초대 목록 조회 실패');
-        const data = await res.json();
-        setInvites(data);
-      })
-      .catch((err) => {
-        console.error('[초대 목록 조회 오류]', err);
-      });
+    fetchInvites();
   }, [router]);
+
+  // 그룹 초대 승인
+  const handleInviteAccept = async (requestId: number) => {
+    const token = getCookieValue('accessToken');
+    if (!token) {
+      alert('인증 토큰이 없습니다.');
+      return;
+    }
+
+    console.log('[초대 승인 시도]', {
+      requestId,
+      token: token.substring(0, 30) + '...',
+    });
+
+    try {
+      const res = await fetch('/api/groups/invites/respond', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          requestId,
+          status: 'ACCEPTED',
+        }),
+      });
+
+      console.log('[초대 승인 응답]', {
+        status: res.status,
+        statusText: res.statusText,
+      });
+
+      if (!res.ok) {
+        const errorData = await res
+          .json()
+          .catch(() => ({ message: '초대 승인 실패' }));
+        console.error('[초대 승인 오류]', errorData);
+
+        // 이미 가입된 사용자인 경우 초대 목록에서 제거
+        if (
+          errorData.message &&
+          errorData.message.includes('이미 그룹에 가입된 사용자')
+        ) {
+          console.log('[이미 가입된 사용자] 초대 목록에서 제거');
+          // 즉시 상태 초기화
+          setInvites([]);
+          setRefreshKey((prev) => prev + 1);
+          console.log('[초대 목록 즉시 초기화]');
+          alert(
+            '이미 해당 그룹에 가입되어 있습니다. 초대 목록에서 제거되었습니다.'
+          );
+          // 초대 목록 갱신
+          fetchInvites();
+          return;
+        }
+
+        throw new Error(errorData.message || '초대 승인 실패');
+      }
+
+      const responseData = await res.json();
+      console.log('[초대 승인 성공]', responseData);
+
+      alert('그룹 초대를 승인했습니다.');
+      // 초대 목록에서 해당 항목 제거
+      setInvites((prev) => {
+        const newInvites = prev.filter(
+          (invite) => invite.requestId !== requestId
+        );
+        console.log('[초대 목록 업데이트]', {
+          이전: prev.length,
+          이후: newInvites.length,
+        });
+        return newInvites;
+      });
+      // 초대 목록 갱신
+      fetchInvites();
+    } catch (err) {
+      console.error('[초대 승인 실패]', err);
+      alert(
+        err instanceof Error ? err.message : '초대 승인 중 오류가 발생했습니다.'
+      );
+    }
+  };
+
+  // 그룹 초대 거절
+  const handleInviteReject = async (requestId: number) => {
+    const token = getCookieValue('accessToken');
+    if (!token) {
+      alert('인증 토큰이 없습니다.');
+      return;
+    }
+
+    console.log('[초대 거절 시도]', {
+      requestId,
+      token: token.substring(0, 30) + '...',
+    });
+
+    try {
+      const res = await fetch('/api/groups/invites/respond', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          requestId,
+          status: 'REJECTED',
+        }),
+      });
+
+      console.log('[초대 거절 응답]', {
+        status: res.status,
+        statusText: res.statusText,
+      });
+
+      if (!res.ok) {
+        const errorData = await res
+          .json()
+          .catch(() => ({ message: '초대 거절 실패' }));
+        console.error('[초대 거절 오류]', errorData);
+        throw new Error(errorData.message || '초대 거절 실패');
+      }
+
+      const responseData = await res.json();
+      console.log('[초대 거절 성공]', responseData);
+
+      alert('그룹 초대를 거절했습니다.');
+      // 초대 목록에서 해당 항목 제거
+      setInvites((prev) => {
+        const newInvites = prev.filter(
+          (invite) => invite.requestId !== requestId
+        );
+        console.log('[초대 목록 업데이트]', {
+          이전: prev.length,
+          이후: newInvites.length,
+        });
+        return newInvites;
+      });
+      // 초대 목록 갱신
+      fetchInvites();
+    } catch (err) {
+      console.error('[초대 거절 실패]', err);
+      alert(
+        err instanceof Error ? err.message : '초대 거절 중 오류가 발생했습니다.'
+      );
+    }
+  };
 
   // 그룹 탈퇴
   const handleGroupDelete = async (groupId: number) => {
@@ -237,35 +402,50 @@ export default function GroupList() {
       </div>
 
       {/* 초대 목록 */}
-      <div className="group-vite-list bg-white rounded-lg shadow-sm p-4 mt-10 space-y-3 max-h-[calc(90px*3)] overflow-y-auto scroll-overlay">
+      <div
+        key={refreshKey}
+        className="group-vite-list bg-white rounded-lg shadow-sm p-4 mt-10 space-y-3 max-h-[calc(90px*3)] overflow-y-auto scroll-overlay"
+      >
         {isLoading ? (
           <p className="text-center text-gray-400 text-sm">불러오는 중...</p>
-        ) : invites.length === 0 ? (
+        ) : invites.filter((invite) => invite.requestStatus !== 'ACCEPTED')
+            .length === 0 ? (
           <p className="text-center text-gray-400 text-sm">
             초대된 그룹이 없습니다.
           </p>
         ) : (
-          invites.slice(0, visibleInvites).map((invite) => (
-            <div
-              key={invite.requestId}
-              className="flex items-center justify-between bg-white p-3 rounded-md shadow-sm"
-            >
-              <div className="font-medium text-gray-800">
-                {invite.nickname}님의 그룹
+          invites
+            .filter((invite) => invite.requestStatus !== 'ACCEPTED')
+            .slice(0, visibleInvites)
+            .map((invite) => (
+              <div
+                key={invite.requestId}
+                className="flex items-center justify-between bg-white p-3 rounded-md shadow-sm"
+              >
+                <div className="font-medium text-gray-800">
+                  {invite.nickname}님의 그룹
+                </div>
+                <div className="space-x-2">
+                  <button
+                    onClick={() => handleInviteReject(invite.requestId)}
+                    className="text-xs px-2 py-1 bg-gray-300 rounded hover:bg-gray-400"
+                  >
+                    거절
+                  </button>
+                  <button
+                    onClick={() => handleInviteAccept(invite.requestId)}
+                    className="text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                  >
+                    승인
+                  </button>
+                </div>
               </div>
-              <div className="space-x-2">
-                <button className="text-xs px-2 py-1 bg-gray-300 rounded hover:bg-gray-400">
-                  거절
-                </button>
-                <button className="text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600">
-                  승인
-                </button>
-              </div>
-            </div>
-          ))
+            ))
         )}
 
-        {visibleInvites < invites.length && (
+        {visibleInvites <
+          invites.filter((invite) => invite.requestStatus !== 'ACCEPTED')
+            .length && (
           <div className="text-center mt-2">
             <Button
               type="button"
