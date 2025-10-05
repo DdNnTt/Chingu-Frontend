@@ -76,7 +76,7 @@ function GroupDetailContent() {
           const groupData = await res.json();
           setGroupName(groupData.groupName || '그룹명 없음');
         } else {
-          console.error('[그룹 상세 조회 오류] 상태 코드:', res.status);
+          // console.error('[그룹 상세 조회 오류] 상태 코드:', res.status);
         }
       })
       .catch((err) => {
@@ -97,8 +97,8 @@ function GroupDetailContent() {
           if (!res.ok) throw new Error(data.message || '앨범 조회 실패');
           if (!Array.isArray(data))
             throw new Error('응답 데이터가 배열이 아닙니다.');
-          console.log('[그룹 상세 - 앨범] API 응답 데이터:', data);
-          console.log('[그룹 상세 - 앨범] 첫 번째 앨범 구조:', data[0]);
+          // console.log('[그룹 상세 - 앨범] API 응답 데이터:', data);
+          // console.log('[그룹 상세 - 앨범] 첫 번째 앨범 구조:', data[0]);
           setAlbums(data);
         } catch (err) {
           console.error('[앨범 조회 오류]', err);

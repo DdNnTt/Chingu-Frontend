@@ -163,7 +163,72 @@ export default function ScheduleModal({
             <div>
               <div className="px-2 font-medium main-color">날짜 & 시간</div>
               <div className="bg-gray-100 px-3 py-2 rounded text-base mt-1">
-                {new Date(detail.scheduleDate).toLocaleString()}
+                {(() => {
+                  // 백엔드에서 받은 scheduleDate와 로컬 스토리지의 시간 정보를 조합하여 사용
+                  const dateStr = detail.scheduleDate;
+
+                  // 로컬 스토리지에서 시간 정보 확인
+                  const storedTimeInfo = localStorage.getItem(
+                    `schedule_time_${detail.scheduleId}`
+                  );
+                  let timeStr = '00:00:00';
+
+                  if (storedTimeInfo) {
+                    try {
+                      const timeInfo = JSON.parse(storedTimeInfo);
+                      timeStr = timeInfo.time || '00:00:00';
+                      console.log(
+                        '[일정 표시] 로컬 스토리지 시간 정보:',
+                        timeInfo
+                      );
+                    } catch (e) {
+                      console.log('[일정 표시] 로컬 스토리지 파싱 오류:', e);
+                    }
+                  }
+
+                  // 백엔드 응답에서 scheduleTime 필드가 있으면 우선 사용
+                  const backendTime = (
+                    detail as ScheduleDetail & { scheduleTime?: string }
+                  ).scheduleTime;
+                  if (backendTime && backendTime !== '00:00:00') {
+                    timeStr = backendTime;
+                    console.log(
+                      '[일정 표시] 백엔드 scheduleTime 사용:',
+                      backendTime
+                    );
+                  }
+
+                  console.log('[일정 표시] 원본 scheduleDate:', dateStr);
+                  console.log('[일정 표시] 최종 사용할 시간:', timeStr);
+                  console.log('[일정 표시] detail 객체 전체:', detail);
+
+                  // scheduleDate에서 날짜 부분만 추출 (T가 이미 있으면 날짜 부분만)
+                  const dateOnly = dateStr.includes('T')
+                    ? dateStr.split('T')[0]
+                    : dateStr;
+
+                  // 날짜와 시간을 조합하여 완전한 datetime 생성
+                  const fullDateTime = `${dateOnly}T${timeStr}`;
+                  console.log('[일정 표시] 추출된 날짜:', dateOnly);
+                  console.log('[일정 표시] 조합된 datetime:', fullDateTime);
+
+                  const date = new Date(fullDateTime);
+                  console.log('[일정 표시] Date 객체:', date);
+                  console.log('[일정 표시] Date toString:', date.toString());
+
+                  const result = date.toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                    timeZone: 'Asia/Seoul',
+                  });
+
+                  console.log('[일정 표시] 최종 표시 결과:', result);
+                  return result;
+                })()}
               </div>
             </div>
 
