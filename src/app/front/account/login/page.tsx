@@ -114,8 +114,6 @@ export default function Login() {
       password: data.password,
     };
 
-    console.log('[로그인 요청 payload]', payload); // 디버깅용
-
     try {
       const response = await axios.post('/api/auth/login', payload, {
         headers: {
@@ -162,7 +160,6 @@ export default function Login() {
     const cleanApiBaseUrl = apiBaseUrl.replace(/\/$/, '');
     const kakaoLoginUrl = `${cleanApiBaseUrl}/oauth2/authorization/kakao`;
 
-    console.log('[카카오 로그인 URL]', kakaoLoginUrl);
     window.location.href = kakaoLoginUrl;
   };
 
@@ -173,8 +170,6 @@ export default function Login() {
     // URL 끝에 슬래시가 있는지 확인하고 제거
     const cleanApiBaseUrl = apiBaseUrl.replace(/\/$/, '');
     const googleLoginUrl = `${cleanApiBaseUrl}/oauth2/authorization/google`;
-
-    console.log('[구글 로그인 URL]', googleLoginUrl);
     window.location.href = googleLoginUrl;
   };
 

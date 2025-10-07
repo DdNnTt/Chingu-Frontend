@@ -9,6 +9,7 @@ import Image from 'next/image';
 import CheckableInput from '@/components/common/CheckableInput';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
+import SocialLoginBadge from '@/components/common/SocialLoginBadge';
 import { getCookieValue } from '@/utils/cookie';
 
 const MypageSchema = z.object({
@@ -30,6 +31,8 @@ export default function Mypage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [canUploadToday, setCanUploadToday] = useState(true);
   const [lastUploadDate, setLastUploadDate] = useState<string | null>(null);
+  const [jwtNickname, setJwtNickname] = useState<string>('');
+  const [socialType, setSocialType] = useState<string>('');
 
   const { register, reset, getValues, setValue } = useForm<MypageFormValues>({
     resolver: zodResolver(MypageSchema),
@@ -41,6 +44,88 @@ export default function Mypage() {
       isNicknameChecked: true,
     },
   });
+
+  // JWT 토큰에서 닉네임 추출 함수
+  function decodeJwtPayload(token: string): {
+    nickname?: string;
+    sub?: string;
+    socialType?: string;
+    [key: string]: unknown;
+  } | null {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
+          .join('')
+      );
+
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error('[토큰 파싱 오류]', e);
+      return null;
+    }
+  }
+
+  // JWT 토큰에서 닉네임 추출
+  useEffect(() => {
+    const token = getCookieValue('accessToken');
+    if (!token) return;
+
+    const payload = decodeJwtPayload(token);
+
+    if (payload?.nickname) {
+      setJwtNickname(payload.nickname);
+      // 즉시 폼에 설정
+      setValue('nickname', payload.nickname);
+    } else if (payload?.sub) {
+      setJwtNickname(payload.sub);
+      // 즉시 폼에 설정
+      setValue('nickname', payload.sub);
+    }
+
+    // socialType 필드 확인 및 설정
+    if (payload?.socialType) {
+      setSocialType(payload.socialType);
+    } else {
+      // 다른 가능한 필드명들 확인
+      const possibleSocialFields = [
+        'social_type',
+        'provider',
+        'auth_provider',
+        'login_type',
+        'iss', // JWT issuer
+        'aud', // JWT audience
+        'sub', // JWT subject
+        'name',
+        'given_name',
+        'family_name',
+      ];
+      for (const field of possibleSocialFields) {
+        if (payload?.[field] && typeof payload[field] === 'string') {
+          const value = payload[field] as string;
+
+          // 카카오 관련 키워드 확인
+          if (
+            value.toLowerCase().includes('kakao') ||
+            value.toLowerCase().includes('kakao.com') ||
+            value.toLowerCase().includes('kakaoaccount')
+          ) {
+            setSocialType('kakao');
+            break;
+          }
+          // 구글 관련 키워드 확인
+          if (value.toLowerCase().includes('google')) {
+            setSocialType('google');
+            break;
+          }
+        }
+      }
+    }
+  }, [setValue, socialType]);
 
   useEffect(() => {
     const token = getCookieValue('accessToken');
@@ -88,6 +173,17 @@ export default function Mypage() {
       Math.min(timeUntilMidnight, 24 * 60 * 60 * 1000)
     );
 
+    // JWT 토큰에서 닉네임 추출 (소셜 로그인 사용자용)
+    const payload = decodeJwtPayload(token);
+    let tokenNickname = '';
+    if (payload?.nickname) {
+      tokenNickname = payload.nickname;
+    } else if (payload?.sub) {
+      tokenNickname = payload.sub;
+    } else {
+      tokenNickname = '';
+    }
+
     fetch('/api/users/mypage', {
       method: 'GET',
       headers: {
@@ -95,7 +191,6 @@ export default function Mypage() {
       },
     })
       .then(async (res) => {
-        console.log('[마이페이지] API 응답 상태:', res.status);
         if (res.status === 401) {
           alert('세션이 만료되었습니다. 다시 로그인해 주세요.');
           router.push('/front/account/login');
@@ -105,11 +200,14 @@ export default function Mypage() {
         return res.json();
       })
       .then((data) => {
-        console.log('[마이페이지] API 응답 데이터:', data);
         if (!data) return;
 
+        // API 응답의 닉네임이 없거나 비어있으면 JWT 토큰의 닉네임 사용
+        const finalNickname =
+          data.nickname || tokenNickname || jwtNickname || '';
+
         reset({
-          nickname: data.nickname || '',
+          nickname: finalNickname,
           name: data.name || '',
           userId: data.userId || '',
           email: data.email || '',
@@ -122,7 +220,7 @@ export default function Mypage() {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [router, reset]);
+  }, [router, reset, jwtNickname, socialType]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // 하루 1개 업로드 제한 체크
@@ -371,7 +469,16 @@ export default function Mypage() {
         style={{ scrollbarGutter: 'stable' }}
       >
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold mb-2">내 정보</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold mb-2">내 정보</h3>
+            <SocialLoginBadge socialType={socialType} />
+            {/* 디버깅용: socialType 상태 확인 */}
+            {!socialType && (
+              <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                socialType: {socialType || 'undefined'}
+              </div>
+            )}
+          </div>
           <Button
             type="button"
             onClick={() => setIsEditable(true)}
