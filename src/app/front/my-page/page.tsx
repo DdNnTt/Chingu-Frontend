@@ -95,6 +95,7 @@ export default function Mypage() {
       },
     })
       .then(async (res) => {
+        console.log('[마이페이지] API 응답 상태:', res.status);
         if (res.status === 401) {
           alert('세션이 만료되었습니다. 다시 로그인해 주세요.');
           router.push('/front/account/login');
@@ -104,6 +105,7 @@ export default function Mypage() {
         return res.json();
       })
       .then((data) => {
+        console.log('[마이페이지] API 응답 데이터:', data);
         if (!data) return;
 
         reset({
