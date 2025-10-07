@@ -48,7 +48,7 @@ export default function MypageChangePw() {
       setErrorMsg('');
 
       const res = await fetch('/api/users/mypage/edit', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
