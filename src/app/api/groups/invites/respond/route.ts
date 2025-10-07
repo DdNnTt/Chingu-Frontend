@@ -4,6 +4,10 @@ export async function POST(req: NextRequest) {
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');
 
+  if (!API_BASE) {
+    return NextResponse.json({ error: 'API_BASE_URL 누락됨' }, { status: 500 });
+  }
+
   if (!token) {
     return NextResponse.json(
       { message: '인증 토큰이 필요합니다.' },
@@ -16,6 +20,13 @@ export async function POST(req: NextRequest) {
     const { requestId, status } = reqBody;
 
     console.log('[초대 응답 요청]', { requestId, status });
+
+    if (!requestId || typeof status !== 'string' || !status.trim()) {
+      return NextResponse.json(
+        { message: '유효한 requestId와 status가 필요합니다.' },
+        { status: 400 }
+      );
+    }
 
     const url = `${API_BASE}/api/groups/invites/${requestId}`;
     const headers = {

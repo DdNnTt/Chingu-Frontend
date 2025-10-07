@@ -92,13 +92,16 @@ export default function GroupList() {
       return;
     }
 
-    // 내 그룹 목록 조회
-    fetchGroups();
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([fetchGroups(), fetchInvites()]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    // 초대 목록 조회
-    fetchInvites();
-
-    setIsLoading(false);
+    load();
   }, [router]);
 
   // 그룹 초대 승인

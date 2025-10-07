@@ -4,8 +4,9 @@ export async function POST(req: NextRequest) {
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');
 
-  console.log('[그룹 초대 API] 토큰:', token ? '존재' : '없음');
-  console.log('[그룹 초대 API] API_BASE:', API_BASE);
+  if (!API_BASE) {
+    return NextResponse.json({ error: 'API_BASE_URL 누락됨' }, { status: 500 });
+  }
 
   if (!token || !token.startsWith('Bearer')) {
     return NextResponse.json(
@@ -17,6 +18,18 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { groupId, toUserId } = body;
+
+    if (
+      groupId === undefined ||
+      groupId === null ||
+      toUserId === undefined ||
+      toUserId === null
+    ) {
+      return NextResponse.json(
+        { message: 'groupId와 toUserId가 모두 필요합니다.' },
+        { status: 400 }
+      );
+    }
 
     console.log('[그룹 초대 요청]', { groupId, toUserId });
 
@@ -83,6 +96,10 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');
+
+  if (!API_BASE) {
+    return NextResponse.json({ error: 'API_BASE_URL 누락됨' }, { status: 500 });
+  }
 
   try {
     const res = await fetch(`${API_BASE}/api/groups/invites`, {
