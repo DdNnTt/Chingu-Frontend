@@ -108,7 +108,7 @@ export default function SearchUser() {
               // Authorization 헤더 없음
             },
           });
-          console.log('🧪 [테스트] 결과:', {
+          console.log('🧪 [테스트ㅇㅇ] 결과:', {
             status: testRes.status,
             statusText: testRes.statusText,
             ok: testRes.ok,
