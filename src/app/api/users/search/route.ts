@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
+  console.log('🚀 [검색 API] 함수 시작됨!');
+
   const API_BASE = process.env.API_BASE_URL;
   const token = req.headers.get('authorization');
   const { searchParams } = new URL(req.url);
   const keyword = searchParams.get('keyword');
 
-  console.log('[검색 API] 요청 시작:', {
+  console.log('🔍 [검색 API] 요청 시작:', {
     hasToken: Boolean(token),
     tokenLength: token?.length,
     keyword: keyword,
