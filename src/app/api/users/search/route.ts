@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
       url,
       hasToken: Boolean(token),
       tokenStart: token?.substring(0, 20) + '...',
+      authorizationHeader: token,
     });
 
     const res = await fetch(url, {
