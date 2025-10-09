@@ -59,6 +59,30 @@ export default function SearchUser() {
           tokenStart: token?.substring(0, 20) + '...',
         });
 
+        // 토큰 상세 분석
+        if (token) {
+          try {
+            const tokenParts = token.replace('Bearer ', '').split('.');
+            if (tokenParts.length === 3) {
+              const payload = JSON.parse(atob(tokenParts[1]));
+              console.log('🔍 [프론트엔드] 토큰 페이로드:', {
+                sub: payload.sub,
+                id: payload.id,
+                nickname: payload.nickname,
+                iat: payload.iat,
+                exp: payload.exp,
+                expDate: new Date(payload.exp * 1000).toISOString(),
+                isExpired: Date.now() > payload.exp * 1000,
+                timeUntilExpiry:
+                  Math.round((payload.exp * 1000 - Date.now()) / 1000 / 60) +
+                  '분',
+              });
+            }
+          } catch (e) {
+            console.error('❌ [프론트엔드] 토큰 파싱 오류:', e);
+          }
+        }
+
         // Authorization 헤더 포함 요청
         const res = await fetch(url, {
           method: 'GET',
