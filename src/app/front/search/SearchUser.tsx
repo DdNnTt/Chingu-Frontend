@@ -51,9 +51,10 @@ export default function SearchUser() {
       }
 
       try {
-        const url = `/api/users/search?keyword=${encodeURIComponent(keyword)}`;
+        // 직접 백엔드로 요청 (프록시 우회)
+        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/users/search?keyword=${encodeURIComponent(keyword)}`;
         console.log('[검색 요청]', {
-          url,
+          url: backendUrl,
           hasToken: Boolean(token),
           tokenLength: token?.length,
           tokenStart: token?.substring(0, 20) + '...',
@@ -67,39 +68,71 @@ export default function SearchUser() {
           tokenStart: token?.substring(0, 30) + '...',
         });
 
+        // Base64URL 디코딩 함수
+        const base64UrlDecode = (str: string): string => {
+          // Base64URL을 Base64로 변환
+          str = str.replace(/-/g, '+').replace(/_/g, '/');
+
+          // 패딩 추가
+          while (str.length % 4) {
+            str += '=';
+          }
+
+          return atob(str);
+        };
+
         // 토큰 상세 분석
+        let payload: {
+          exp?: number;
+          iat?: number;
+          sub?: string;
+          id?: number;
+          nickname?: string;
+          iss?: string;
+          aud?: string;
+          roles?: string[];
+          authorities?: string[];
+          alg?: string;
+        } | null = null;
         if (token) {
           try {
             const tokenParts = token.replace('Bearer ', '').split('.');
             if (tokenParts.length === 3) {
-              const payload = JSON.parse(atob(tokenParts[1]));
+              payload = JSON.parse(base64UrlDecode(tokenParts[1]));
               console.log('🔍 [프론트엔드] 토큰 페이로드:', {
-                sub: payload.sub,
-                id: payload.id,
-                nickname: payload.nickname,
-                iat: payload.iat,
-                exp: payload.exp,
-                expDate: new Date(payload.exp * 1000).toISOString(),
-                isExpired: Date.now() > payload.exp * 1000,
-                timeUntilExpiry:
-                  Math.round((payload.exp * 1000 - Date.now()) / 1000 / 60) +
-                  '분',
+                sub: payload?.sub,
+                id: payload?.id,
+                nickname: payload?.nickname,
+                iat: payload?.iat,
+                exp: payload?.exp,
+                expDate: payload?.exp
+                  ? new Date(payload.exp * 1000).toISOString()
+                  : 'N/A',
+                isExpired: payload?.exp
+                  ? Date.now() > payload.exp * 1000
+                  : false,
                 // 토큰 시간 상세 분석
                 currentTime: new Date().toISOString(),
-                issuedAt: new Date(payload.iat * 1000).toISOString(),
-                expiresAt: new Date(payload.exp * 1000).toISOString(),
-                timeSinceIssued:
-                  Math.round((Date.now() - payload.iat * 1000) / 1000 / 60) +
-                  '분',
-                timeUntilExpiry:
-                  Math.round((payload.exp * 1000 - Date.now()) / 1000 / 60) +
-                  '분',
+                issuedAt: payload?.iat
+                  ? new Date(payload.iat * 1000).toISOString()
+                  : 'N/A',
+                expiresAt: payload?.exp
+                  ? new Date(payload.exp * 1000).toISOString()
+                  : 'N/A',
+                timeSinceIssued: payload?.iat
+                  ? Math.round((Date.now() - payload.iat * 1000) / 1000 / 60) +
+                    '분'
+                  : 'N/A',
+                timeUntilExpiry: payload?.exp
+                  ? Math.round((payload.exp * 1000 - Date.now()) / 1000 / 60) +
+                    '분'
+                  : 'N/A',
                 // 추가 필드들
-                iss: payload.iss,
-                aud: payload.aud,
-                roles: payload.roles,
-                authorities: payload.authorities,
-                alg: payload.alg,
+                iss: payload?.iss,
+                aud: payload?.aud,
+                roles: payload?.roles,
+                authorities: payload?.authorities,
+                alg: payload?.alg,
               });
             }
           } catch (e) {
@@ -111,7 +144,7 @@ export default function SearchUser() {
         if (Math.random() < 0.1) {
           // 10% 확률로 테스트
           console.log('🧪 [테스트] Authorization 없이 요청 시도');
-          const testRes = await fetch(url, {
+          const testRes = await fetch(backendUrl, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -137,7 +170,7 @@ export default function SearchUser() {
         }
 
         // Authorization 헤더 포함 요청
-        const res = await fetch(url, {
+        const res = await fetch(backendUrl, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -162,7 +195,8 @@ export default function SearchUser() {
           // 로그인 시 친구 목록업데이트
           try {
             if (token) {
-              const friendsResponse = await fetch('/api/friends', {
+              const friendsUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/friends`;
+              const friendsResponse = await fetch(friendsUrl, {
                 headers: { Authorization: `Bearer ${token}` },
               });
 
@@ -217,7 +251,8 @@ export default function SearchUser() {
     try {
       setRequestingFriends((prev) => new Set(prev).add(friendId));
 
-      const response = await fetch('/api/friends/request', {
+      const requestUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/friends/request`;
+      const response = await fetch(requestUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
