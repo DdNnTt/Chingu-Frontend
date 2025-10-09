@@ -56,9 +56,7 @@ export default function SocialLoginBadge({
           name: 'Kakao',
           icon: (
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-              {/* 노란색 배경 */}
               <rect x="1" y="1" width="25" height="25" rx="4" fill="#FEE500" />
-              {/* 카카오 말풍선 */}
               <path
                 d="M12 4c-4.5 0-8 3-8 6.5 0 2 1 3.8 2.5 4.8-.1.8-.5 2.2-1.8 3.4 0 0 2.6-.3 4.4-1.6.8.2 1.7.3 2.7.3 4.5 0 8-3 8-6.5s-3.5-6.5-8-6.5z"
                 fill="#000"
