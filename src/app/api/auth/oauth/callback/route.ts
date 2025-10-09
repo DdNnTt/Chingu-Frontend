@@ -43,7 +43,13 @@ export async function GET(req: NextRequest) {
     }
 
     const data = await response.json();
-    console.log('[OAuth 토큰 교환 성공]', data);
+    console.log('[OAuth 토큰 교환 성공]', {
+      hasAccessToken: Boolean(data.accessToken),
+      tokenLength: data.accessToken?.length,
+      tokenStart: data.accessToken?.substring(0, 20) + '...',
+      socialType: data.socialType,
+      fullData: data,
+    });
 
     // 토큰을 쿠키로 설정하고 메인 페이지로 리다이렉트
     const socialType = data.socialType || 'oauth';
