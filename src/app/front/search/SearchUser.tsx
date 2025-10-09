@@ -84,6 +84,16 @@ export default function SearchUser() {
                 timeUntilExpiry:
                   Math.round((payload.exp * 1000 - Date.now()) / 1000 / 60) +
                   '분',
+                // 토큰 시간 상세 분석
+                currentTime: new Date().toISOString(),
+                issuedAt: new Date(payload.iat * 1000).toISOString(),
+                expiresAt: new Date(payload.exp * 1000).toISOString(),
+                timeSinceIssued:
+                  Math.round((Date.now() - payload.iat * 1000) / 1000 / 60) +
+                  '분',
+                timeUntilExpiry:
+                  Math.round((payload.exp * 1000 - Date.now()) / 1000 / 60) +
+                  '분',
                 // 추가 필드들
                 iss: payload.iss,
                 aud: payload.aud,
@@ -108,11 +118,22 @@ export default function SearchUser() {
               // Authorization 헤더 없음
             },
           });
-          console.log('🧪 [테스트ㅇㅇdd] 결과:', {
+          console.log('🧪 [테스트] 결과:', {
             status: testRes.status,
             statusText: testRes.statusText,
             ok: testRes.ok,
           });
+        }
+
+        // 토큰 만료 확인 및 처리
+        if (payload && payload.exp && Date.now() > payload.exp * 1000) {
+          console.log(
+            '⚠️ [토큰 만료] 토큰이 만료되었습니다. 로그인이 필요합니다.'
+          );
+          alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+          // 로그인 페이지로 리다이렉트
+          window.location.href = '/front/account/login';
+          return;
         }
 
         // Authorization 헤더 포함 요청
