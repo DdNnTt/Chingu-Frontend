@@ -133,7 +133,6 @@ export default function SearchUser() {
                   ? Math.round((payload.exp * 1000 - Date.now()) / 1000 / 60) +
                     '분'
                   : 'N/A',
-                // 추가 필드들
                 iss: payload?.iss,
                 aud: payload?.aud,
                 roles: payload?.roles,
