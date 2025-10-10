@@ -67,7 +67,7 @@ export default function MessageList() {
   const messages = activeTab === 'sent' ? sentMessages : receivedMessages;
 
   return (
-    <div className="my-home-page py-4 px-4 pt-10 mx-auto rounded-lg bg-gray-100">
+    <div className="my-home-page py-4 px-4 pt-10 pb-10 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
       <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
         <button
           onClick={() => router.back()}
