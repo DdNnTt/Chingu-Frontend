@@ -54,7 +54,7 @@ export default function AdminMain() {
 
   return (
     <AdminGuard>
-      <div className="admin-page py-4 px-4 pt-24 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+      <div className="admin-page py-4 px-4 pt-10 pb-10 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
         <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
           <button
             onClick={() => router.back()}

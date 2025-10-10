@@ -226,7 +226,7 @@ export default function AdminMember() {
 
   return (
     <AdminGuard>
-      <div className="admin-page py-4 px-4 pt-24 pb-20 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
+      <div className="admin-page py-4 px-4 pt-10 pb-10 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
         {/* 페이지 헤더 */}
         <div className="mb-6">
           <div className="relative mb-4 min-h-[40px] flex items-center justify-center">
@@ -298,16 +298,16 @@ export default function AdminMember() {
                           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                         회원 정보
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                         가입일
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                         최근 로그인
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                         그룹 수
                       </th>
                     </tr>
