@@ -68,7 +68,17 @@ export default function MessageList() {
 
   return (
     <div className="my-home-page py-4 px-4 pt-10 mx-auto rounded-lg bg-gray-100">
-      <h2 className="text-2xl font-semibold mb-6 text-center">나의 쪽지함</h2>
+      <div className="relative mb-6 min-h-[40px] flex items-center justify-center">
+        <button
+          onClick={() => router.back()}
+          className="px-4 py-3 rounded-lg transition-colors bg-gray-200 text-gray-700 absolute left-0 top-1/2 -translate-y-1/2 px-3 py-1 text-sm"
+        >
+          ← 뒤로
+        </button>
+        <h2 className="text-2xl font-semibold text-center w-full">
+          나의 쪽지함
+        </h2>
+      </div>
 
       <div className="flex mb-4 gap-2">
         <button
