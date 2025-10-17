@@ -204,13 +204,44 @@ export default function SearchUser() {
               className="flex items-center justify-between bg-white p-3 rounded-md shadow-md border border-gray-100"
             >
               <div className="flex items-center gap-3">
-                <Image
-                  src={user.profilePictureUrl || '/images/default-profile.png'}
-                  alt="프로필"
-                  width={48}
-                  height={48}
-                  className="rounded-full border object-cover"
-                />
+                <div className="relative w-12 h-12 flex-shrink-0">
+                  {user.profilePictureUrl ? (
+                    <Image
+                      src={user.profilePictureUrl}
+                      alt={`${user.nickname} 프로필`}
+                      width={48}
+                      height={48}
+                      className="rounded-full border object-cover w-full h-full"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) {
+                          parent.innerHTML = `
+                            <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                              <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                              </svg>
+                            </div>
+                          `;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                      <svg
+                        className="w-6 h-6 text-gray-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
                 <div>
                   <p className="font-semibold text-gray-800">{user.nickname}</p>
                   <p className="text-sm text-gray-500">{user.name}</p>
