@@ -26,6 +26,7 @@ export default function SearchUser() {
   const [requestingFriends, setRequestingFriends] = useState<Set<number>>(
     new Set()
   );
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
 
   const getToken = () => getCookieValue('accessToken');
 
@@ -205,25 +206,15 @@ export default function SearchUser() {
             >
               <div className="flex items-center gap-3">
                 <div className="relative w-12 h-12 flex-shrink-0">
-                  {user.profilePictureUrl ? (
+                  {user.profilePictureUrl && !imageErrors.has(user.id) ? (
                     <Image
                       src={user.profilePictureUrl}
                       alt={`${user.nickname} 프로필`}
                       width={48}
                       height={48}
                       className="rounded-full border object-cover w-full h-full"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const parent = e.currentTarget.parentElement;
-                        if (parent) {
-                          parent.innerHTML = `
-                            <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                              <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                              </svg>
-                            </div>
-                          `;
-                        }
+                      onError={() => {
+                        setImageErrors((prev) => new Set(prev).add(user.id));
                       }}
                     />
                   ) : (
