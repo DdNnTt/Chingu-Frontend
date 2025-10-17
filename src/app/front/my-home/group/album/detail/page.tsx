@@ -113,8 +113,6 @@ function AlbumDetailContent() {
     // 자정에 한 번만 체크
     const timeoutId = setTimeout(checkUploadLimit, timeUntilMidnight);
 
-    return () => clearTimeout(timeoutId);
-
     const fetchAlbumDetail = async () => {
       try {
         // 앨범 상세 정보 조회 - 새로운 API 엔드포인트 사용
@@ -146,6 +144,8 @@ function AlbumDetailContent() {
     };
 
     fetchAlbumDetail();
+
+    return () => clearTimeout(timeoutId);
   }, [groupId, albumId]);
 
   // 날짜 포맷팅 (표시용)
@@ -559,28 +559,33 @@ function AlbumDetailContent() {
 
   return (
     <div className="group-album-detail-page h-screen flex flex-col py-24 px-4 mx-auto rounded-lg bg-gray-100">
-      <div className="flex items-center mb-6">
-        <button
-          onClick={() => router.back()}
-          className="text-gray-600 hover:text-gray-800"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-6 h-6"
+      <div className="mb-6">
+        <div className="flex items-center mb-3">
+          <button
+            onClick={() => router.back()}
+            className="text-gray-600 hover:text-gray-800"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-            />
-          </svg>
-        </button>
-        <h2 className="text-2xl font-semibold text-center flex-1">앨범 상세</h2>
-        <div className="flex gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+              />
+            </svg>
+          </button>
+          <h2 className="text-2xl font-semibold text-center flex-1">
+            앨범 상세
+          </h2>
+        </div>
+
+        <div className="flex gap-2 justify-end">
           <button
             onClick={handleEditAlbum}
             className="text-xs text-white border border-purple-200 px-3 py-1.5 rounded-lg font-medium shadow-sm hover:shadow-md hover:border-purple-300 transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-sm"
