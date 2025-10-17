@@ -474,6 +474,7 @@ function AlbumDetailContent() {
       <div className="group-album-detail-page h-screen flex flex-col py-24 px-4 mx-auto rounded-lg bg-gray-100">
         <div className="flex items-center mb-6">
           <button
+            type="button"
             onClick={() => router.back()}
             className="text-gray-600 hover:text-gray-800"
             aria-label="뒤로가기"
@@ -485,6 +486,8 @@ function AlbumDetailContent() {
               strokeWidth={2}
               stroke="currentColor"
               className="w-6 h-6"
+              aria-hidden="true"
+              focusable="false"
             >
               <path
                 strokeLinecap="round"
@@ -513,6 +516,7 @@ function AlbumDetailContent() {
       <div className="group-album-detail-page h-screen flex flex-col py-24 px-4 mx-auto rounded-lg bg-gray-100">
         <div className="flex items-center mb-6">
           <button
+            type="button"
             onClick={() => router.back()}
             className="text-gray-600 hover:text-gray-800"
             aria-label="뒤로가기"
@@ -524,6 +528,8 @@ function AlbumDetailContent() {
               strokeWidth={2}
               stroke="currentColor"
               className="w-6 h-6"
+              aria-hidden="true"
+              focusable="false"
             >
               <path
                 strokeLinecap="round"
@@ -544,6 +550,7 @@ function AlbumDetailContent() {
             </h3>
             <p className="text-gray-600 mb-4">{error}</p>
             <button
+              type="button"
               onClick={() => router.back()}
               className="bg-[#9477ff] hover:bg-[#6845f5] text-white px-6 py-2 rounded-lg"
             >
@@ -562,8 +569,10 @@ function AlbumDetailContent() {
       <div className="mb-6">
         <div className="flex items-center mb-3">
           <button
+            type="button"
             onClick={() => router.back()}
             className="text-gray-600 hover:text-gray-800"
+            aria-label="뒤로가기"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -572,6 +581,8 @@ function AlbumDetailContent() {
               strokeWidth={2}
               stroke="currentColor"
               className="w-6 h-6"
+              aria-hidden="true"
+              focusable="false"
             >
               <path
                 strokeLinecap="round"
