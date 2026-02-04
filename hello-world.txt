@@ -1,0 +1,3 @@
+Hello from Vibe Kanban test!
+
+This is a successful test run.
