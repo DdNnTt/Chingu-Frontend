@@ -249,9 +249,9 @@ export default function MyHome() {
   const groups = groupsQuery.data ?? [];
   const friendRequests = friendRequestsQuery.data ?? [];
   const receivedMessagesCount = messagesReadQuery.data?.length ?? 0;
-  const quizzes = myQuizzesQuery.data ?? [];
+  const quizzes: Quiz[] = myQuizzesQuery.data ?? [];
   const totalQuizzes = quizzes.length;
-  const quizStats = {
+  const quizStats: QuizStats = {
     totalFriendshipScore: friendshipScoreQuery.data ?? 0,
   };
 
