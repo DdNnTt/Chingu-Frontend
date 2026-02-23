@@ -6,9 +6,12 @@ import Button from '@/components/common/Button';
 import ScheduleModal from '@/components/my-home/ScheduleModal';
 import ScheduleEditModal from '@/components/my-home/ScheduleEditModal';
 import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/libs/axios';
 import { useRouter } from 'next/navigation';
 import { getCookieValue } from '@/utils/cookie';
+
+const STALE_TIME_MY_HOME = 60 * 1000; // 1분
 
 interface Schedule {
   id: number;
@@ -68,7 +71,6 @@ interface Quiz {
 }
 
 interface QuizStats {
-  totalQuizzes: number;
   totalFriendshipScore: number;
 }
 
@@ -89,286 +91,196 @@ interface MyQuizDetailResponse {
 // }
 
 export default function MyHome() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const token = getCookieValue('accessToken');
+
   const [nickname, setNickname] = useState<string>('');
-  const [profilePictureUrl, setProfilePictureUrl] = useState<string>('');
-  const [userRole, setUserRole] = useState<string>('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
-  const [receivedMessagesCount, setReceivedMessagesCount] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
     null
   );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showAllSchedules, setShowAllSchedules] = useState(false);
 
-  // 퀴즈 관련 상태 추가
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [quizStats, setQuizStats] = useState<QuizStats>({
-    totalQuizzes: 0,
-    totalFriendshipScore: 0,
+  function decodeJwtPayload(t: string): JwtPayload | null {
+    try {
+      const base64Url = t.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error('[토큰 파싱 오류]', e);
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    if (!token) return;
+    const payload = decodeJwtPayload(token);
+    if (payload?.nickname) setNickname(payload.nickname);
+    else if (payload?.sub) setNickname(payload.sub);
+  }, [token]);
+
+  const userInfoQuery = useQuery({
+    queryKey: ['users', 'mypage'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{
+        profilePictureUrl?: string;
+        role?: string;
+      }>('/api/users/mypage');
+      return {
+        profilePictureUrl: data.profilePictureUrl ?? '',
+        userRole: data.role ?? '',
+      };
+    },
+    enabled: !!token,
+    staleTime: STALE_TIME_MY_HOME,
   });
-  const [isQuizLoading, setIsQuizLoading] = useState(false);
 
-  // 랜덤 문제 및 전체 문제 상태 - 삭제
-  // const [randomQuestions, setRandomQuestions] = useState<Question[]>([]);
-  // const [allQuestions, setAllQuestions] = useState<Question[]>([]);
-  // const [isRandomLoading, setIsRandomLoading] = useState(false);
-  // const [isAllLoading, setIsAllLoading] = useState(false);
+  const schedulesQuery = useQuery({
+    queryKey: ['schedules'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<Schedule[]>('/api/schedules');
+      return Array.isArray(data) ? data : [];
+    },
+    enabled: !!token,
+    staleTime: STALE_TIME_MY_HOME,
+  });
 
-  // 더보기 상태 - 삭제
-  // const [showMoreRandom, setShowMoreRandom] = useState(false);
-  // const [showMoreAll, setShowMoreAll] = useState(false);
+  const friendsQuery = useQuery({
+    queryKey: ['friends'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<Friend[]>('/api/friends');
+      return Array.isArray(data) ? data : [];
+    },
+    enabled: !!token,
+    staleTime: STALE_TIME_MY_HOME,
+  });
 
-  const router = useRouter();
+  const friendRequestsQuery = useQuery({
+    queryKey: ['friends', 'requests'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<FriendRequest[]>(
+        '/api/friends/requests'
+      );
+      return Array.isArray(data) ? data : [];
+    },
+    enabled: !!token,
+    staleTime: STALE_TIME_MY_HOME,
+  });
 
-  // 사용자 정보 조회
-  const fetchUserInfo = async () => {
-    try {
-      const token = getCookieValue('accessToken');
-      if (!token) return;
+  const messagesReadQuery = useQuery({
+    queryKey: ['messages', 'read', 'all'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<unknown[]>(
+        '/api/messages/read/all'
+      );
+      return Array.isArray(data) ? data : [];
+    },
+    enabled: !!token,
+    staleTime: STALE_TIME_MY_HOME,
+  });
 
-      const response = await fetch('/api/users/mypage', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  const groupsQuery = useQuery({
+    queryKey: ['groups', 'mygroups'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<Group[]>('/api/groups/mygroups');
+      return Array.isArray(data) ? data : [];
+    },
+    enabled: !!token,
+    staleTime: STALE_TIME_MY_HOME,
+  });
 
-      if (response.ok) {
-        const userData = await response.json();
-        setProfilePictureUrl(userData.profilePictureUrl || '');
-        setUserRole(userData.role || '');
-      }
-    } catch (err) {
-      console.error('사용자 정보 조회 실패:', err);
-    }
-  };
-
-  // 일정 목록 조회
-  const fetchSchedules = async () => {
-    try {
-      const response = await axiosInstance.get('/api/schedules');
-      setSchedules(response.data);
-    } catch (err) {
-      console.error('일정 조회 실패:', err);
-    }
-  };
-
-  // 친구 목록 조회
-  const fetchFriends = async () => {
-    try {
-      const response = await axiosInstance.get('/api/friends');
-      setFriends(response.data);
-    } catch (err) {
-      console.error('친구 목록 조회 실패:', err);
-    }
-  };
-
-  const fetchFriendRequests = async () => {
-    try {
-      const response = await axiosInstance.get('/api/friends/requests');
-      setFriendRequests(response.data);
-    } catch (err) {
-      console.error('받은 친구 요청 조회 실패:', err);
-    }
-  };
-
-  // 내가 만든 퀴즈 목록 조회
-  const fetchMyQuizzes = async () => {
-    try {
-      setIsQuizLoading(true);
-
-      // 내가 만든 퀴즈 세트 조회
+  const myQuizzesQuery = useQuery({
+    queryKey: ['quizzes', 'my-quizzes'],
+    queryFn: async () => {
       const { data } = await axiosInstance.get<MyQuizDetailResponse[]>(
         '/api/quizzes/my-quizzes'
       );
-
       const items = Array.isArray(data) ? data : [];
-      if (items.length > 0) {
-        // 모든 퀴즈를 매핑하여 표시
-        const mappedQuizzes = items
-          .map((quiz) => {
-            const questionCount = quiz.questionCount || 0;
+      return items
+        .map((quiz) => {
+          const questionCount = quiz.questionCount || 0;
+          return {
+            id: quiz.quizSetId,
+            title: `퀴즈 세트 ${quiz.quizSetId}`,
+            description:
+              questionCount > 0 ? `${questionCount}개의 문제` : '문제 없음',
+            totalQuestions: questionCount,
+            creatorNickname: '나',
+          };
+        })
+        .filter((q) => q.totalQuestions > 0);
+    },
+    enabled: !!token,
+    staleTime: STALE_TIME_MY_HOME,
+  });
 
-            return {
-              id: quiz.quizSetId,
-              title: `퀴즈 세트 ${quiz.quizSetId}`,
-              description:
-                questionCount > 0 ? `${questionCount}개의 문제` : '문제 없음',
-              totalQuestions: questionCount,
-              creatorNickname: '나',
-            };
-          })
-          .filter((quiz) => quiz.totalQuestions > 0); // 문제가 있는 퀴즈만 표시
-
-        setQuizzes(mappedQuizzes);
-        setQuizStats((prev) => ({
-          ...prev,
-          totalQuizzes: mappedQuizzes.length, // 실제 표시되는 퀴즈 수로 설정
-        }));
-      } else {
-        setQuizzes([]);
-        setQuizStats((prev) => ({ ...prev, totalQuizzes: 0 }));
-      }
-    } catch (err) {
-      console.error('내 퀴즈 조회 실패:', err);
-      setQuizzes([]);
-      setQuizStats((prev) => ({
-        ...prev,
-        totalQuizzes: 0,
-      }));
-    } finally {
-      setIsQuizLoading(false);
-    }
-  };
-
-  // 우정 점수 총합 조회
-  const fetchTotalFriendshipScore = async () => {
-    try {
-      const response = await axiosInstance.get('/api/quizzes/scores');
-
-      // 응답 데이터 구조를 안전하게 처리
-      const items = Array.isArray(response.data)
-        ? response.data
-        : Array.isArray(response.data?.items)
-          ? response.data.items
+  const friendshipScoreQuery = useQuery({
+    queryKey: ['quizzes', 'scores'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<
+        { score?: number }[] | { items?: { score: number }[] }
+      >('/api/quizzes/scores');
+      const items = Array.isArray(data)
+        ? data
+        : Array.isArray((data as { items?: { score: number }[] })?.items)
+          ? (data as { items: { score: number }[] }).items
           : [];
-
-      const totalScore = items.reduce(
-        (
-          sum: number,
-          score: { friendId: number; friendNickname: string; score: number }
-        ) => sum + score.score,
+      return items.reduce(
+        (sum: number, item: { score?: number }) => sum + (item?.score ?? 0),
         0
       );
+    },
+    enabled: !!token,
+    staleTime: STALE_TIME_MY_HOME,
+  });
 
-      setQuizStats((prev) => ({
-        ...prev,
-        totalFriendshipScore: totalScore,
-      }));
-    } catch (err) {
-      console.error('우정 점수 총합 조회 실패:', err);
-      // 에러 발생 시 기본값 설정
-      setQuizStats((prev) => ({
-        ...prev,
-        totalFriendshipScore: 0,
-      }));
-    }
+  const profilePictureUrl = userInfoQuery.data?.profilePictureUrl ?? '';
+  const userRole = userInfoQuery.data?.userRole ?? '';
+  const schedules = schedulesQuery.data ?? [];
+  const friends = friendsQuery.data ?? [];
+  const groups = groupsQuery.data ?? [];
+  const friendRequests = friendRequestsQuery.data ?? [];
+  const receivedMessagesCount = messagesReadQuery.data?.length ?? 0;
+  const quizzes = myQuizzesQuery.data ?? [];
+  const totalQuizzes = quizzes.length;
+  const quizStats = {
+    totalFriendshipScore: friendshipScoreQuery.data ?? 0,
   };
 
-  // 퀴즈 만들기 페이지로 이동
+  const isLoading =
+    userInfoQuery.isPending ||
+    schedulesQuery.isPending ||
+    friendsQuery.isPending ||
+    friendRequestsQuery.isPending ||
+    messagesReadQuery.isPending ||
+    groupsQuery.isPending;
+  const isQuizLoading =
+    myQuizzesQuery.isPending || friendshipScoreQuery.isPending;
+  const error =
+    userInfoQuery.error ? String(userInfoQuery.error) :
+    schedulesQuery.error ? String(schedulesQuery.error) :
+    friendsQuery.error ? String(friendsQuery.error) :
+    friendRequestsQuery.error ? String(friendRequestsQuery.error) :
+    messagesReadQuery.error ? String(messagesReadQuery.error) :
+    groupsQuery.error ? String(groupsQuery.error) : null;
+
   const handleCreateQuiz = () => {
     router.push('/front/game/guess-me/make-quiz');
   };
 
-  // 랜덤 문제 10개 조회 - 삭제
-  // const fetchRandomQuestions = async () => {
-  //   try {
-  //     setIsRandomLoading(true);
-  //     const response = await axiosInstance.get('/api/quizzes/question-random');
-  //     // 응답 스키마를 안전하게 노멀라이즈
-  //     const items = Array.isArray(response.data)
-  //       ? response.data
-  //       : Array.isArray((response.data as { items?: unknown[] })?.items)
-  //         ? (response.data as { items: unknown[] }).items
-  //         : [];
-  //     // ... 기존 코드
-  //   } catch (err) {
-  //     // ... 에러 처리
-  //   } finally {
-  //     setIsRandomLoading(false);
-  //   }
-  // };
-
-  // 전체 문제 조회 - 삭제
-  // const fetchAllQuestions = async () => {
-  //   try {
-  //     setIsAllLoading(true);
-  //     const response = await axiosInstance.get('/api/quizzes/question-all');
-  //     // 응답 스키마를 안전하게 노멀라이즈
-  //     const items = Array.isArray(response.data)
-  //       ? response.data
-  //       : Array.isArray((response.data as { items?: unknown[] })?.items)
-  //         ? (response.data as { items: unknown[] }).items
-  //         : [];
-  //     // ... 기존 코드
-  //   } catch (err) {
-  //     // ... 에러 처리
-  //   } finally {
-  //     setIsAllLoading(false);
-  //   }
-  // };
-
-  // 랜덤 문제 더보기 - 삭제
-  // const handleShowMoreRandom = () => {
-  //   setShowMoreRandom(true);
-  // };
-
-  // 랜덤 문제 접기 - 삭제
-  // const handleShowLessRandom = () => {
-  //   setShowMoreRandom(false);
-  // };
-
-  // 전체 문제 더보기 - 삭제
-  // const handleShowMoreAll = () => {
-  //   setShowMoreAll(true);
-  // };
-
-  // 전체 문제 접기 - 삭제
-  // const handleShowLessAll = () => {
-  //   setShowMoreAll(false);
-  // };
-
-  // 받은 쪽지 개수 조회
-  const fetchReceivedMessagesCount = async () => {
-    try {
-      const response = await axiosInstance.get('/api/messages/read/all');
-      setReceivedMessagesCount(response.data.length);
-    } catch (err) {
-      console.error('받은 쪽지 개수 조회 실패:', err);
-    }
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError('');
-      try {
-        await Promise.all([
-          fetchUserInfo(),
-          fetchSchedules(),
-          fetchFriends(),
-          fetchFriendRequests(),
-          fetchReceivedMessagesCount(),
-          fetchGroups(),
-          fetchMyQuizzes(),
-          fetchTotalFriendshipScore(),
-          // fetchRandomQuestions(), // 삭제된 함수
-          // fetchAllQuestions(), // 삭제된 함수
-        ]);
-      } catch {
-        setError('데이터를 불러오는데 실패했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const handleOpenScheduleModal = () => {
-    setIsScheduleModalOpen(true);
-  };
+  const handleOpenScheduleModal = () => setIsScheduleModalOpen(true);
 
   const handleCloseScheduleModal = () => {
     setIsScheduleModalOpen(false);
-    // 모달이 닫힐 때 일정 목록 새로고침
-    fetchSchedules();
+    queryClient.invalidateQueries({ queryKey: ['schedules'] });
   };
 
   const handleOpenEditModal = (schedule: Schedule) => {
@@ -379,86 +291,15 @@ export default function MyHome() {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setSelectedSchedule(null);
-    // 모달이 닫힐 때 일정 목록 새로고침
-    fetchSchedules();
+    queryClient.invalidateQueries({ queryKey: ['schedules'] });
   };
 
-  // 로그인 후 닉네임 노출
-  function decodeJwtPayload(token: string): JwtPayload | null {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
-          .join('')
-      );
-
-      return JSON.parse(jsonPayload);
-    } catch (e) {
-      console.error('[토큰 파싱 오류]', e);
-      return null;
-    }
-  }
-
-  useEffect(() => {
-    // accessToken payload에서 nickname 추출
-    const token = getCookieValue('accessToken');
-
-    if (!token) return;
-
-    const payload = decodeJwtPayload(token);
-
-    if (payload?.nickname) {
-      setNickname(payload.nickname);
-    } else if (payload?.sub) {
-      setNickname(payload.sub);
-    }
-  }, []);
-
-  // 최신 3개의 일정만 표시
-  const recentSchedules = schedules
-    .sort(
-      (a, b) =>
-        new Date(b.scheduleDate).getTime() - new Date(a.scheduleDate).getTime()
-    )
-    .slice(0, 3);
-
-  // 전체 일정 (최신순 정렬)
-  const allSchedules = schedules.sort(
+  const sortedSchedules = [...schedules].sort(
     (a, b) =>
       new Date(b.scheduleDate).getTime() - new Date(a.scheduleDate).getTime()
   );
-
-  // 현재 표시할 일정 목록
-  const displaySchedules = showAllSchedules ? allSchedules : recentSchedules;
-
-  // 그룹 조회
-  const fetchGroups = async () => {
-    try {
-      const token = getCookieValue('accessToken');
-      // console.log('[그룹 조회] 토큰:', token ? '존재' : '없음');
-
-      const response = await axiosInstance.get('/api/groups/mygroups', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // console.log('[그룹 조회] 응답:', response.data);
-      // console.log('[그룹 조회] 그룹 개수:', response.data?.length || 0);
-
-      setGroups(response.data);
-    } catch (err) {
-      console.error('[그룹 조회] 실패:', err);
-      if (err && typeof err === 'object' && 'response' in err) {
-        const axiosError = err as { response?: { data?: unknown } };
-        console.error('[그룹 조회] 에러 상세:', axiosError.response?.data);
-      }
-    }
-  };
+  const recentSchedules = sortedSchedules.slice(0, 3);
+  const displaySchedules = showAllSchedules ? sortedSchedules : recentSchedules;
 
   return (
     <div className="my-home-page py-4 px-4 pt-10 pb-10 mx-auto rounded-lg bg-gray-100 overflow-y-auto">
@@ -575,7 +416,7 @@ export default function MyHome() {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="text-center p-3 bg-purple-50 rounded-lg">
             <div className="text-2xl font-bold text-purple-600">
-              {quizStats.totalQuizzes}
+              {totalQuizzes}
             </div>
             <div className="text-sm text-gray-600">만든 퀴즈</div>
           </div>
